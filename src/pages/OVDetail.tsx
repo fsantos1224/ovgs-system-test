@@ -11,13 +11,12 @@ export function OVDetail() {
   const { id } = useParams<{ id: string }>();
   const { data: ov, loading, refresh } = useFetch<OrdemVenda>(id ? `/ordensVenda/${id}` : null);
   const podeAlterarStatus = usePermissao('ov:alterar_status');
+  const [erroStatus, setErroStatus] = useState('');
 
   if (loading) return <p role="status" aria-live="polite" className="text-gray-500">Carregando...</p>;
   if (!ov) return <p className="text-red-500">Ordem de venda não encontrada.</p>;
 
   const transicoesPossiveis = STATUS_FLOW.filter((s) => canTransition(ov.status, s));
-
-  const [erroStatus, setErroStatus] = useState('');
 
   const handleStatusChange = async (novoStatus: OrdemVenda['status']) => {
     const statusAnterior = ov.status;
