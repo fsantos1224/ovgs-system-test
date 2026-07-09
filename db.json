@@ -26,6 +26,24 @@
       "telefone": "(31) 5555-4444",
       "endereco": "Rua C, 789",
       "ativo": false
+    },
+    {
+      "id": "4",
+      "nome": "Delta Logística ME",
+      "documento": "11.222.333/0001-44",
+      "email": "delta@log.com",
+      "telefone": "(41) 3333-2222",
+      "endereco": "Av. D, 1010",
+      "ativo": true
+    },
+    {
+      "id": "5",
+      "nome": "Epsilon Materiais Elétricos",
+      "documento": "66.777.888/0001-99",
+      "email": "vendas@epsilon.com",
+      "telefone": "(51) 4444-5555",
+      "endereco": "Rua E, 2020",
+      "ativo": true
     }
   ],
   "tiposTransporte": [
@@ -46,9 +64,21 @@
       "nome": "Navtec Marítimo",
       "modal": "maritimo",
       "ativo": true
+    },
+    {
+      "id": "4",
+      "nome": "Ferrovia Centro-Oeste",
+      "modal": "ferroviario",
+      "ativo": true
+    },
+    {
+      "id": "5",
+      "nome": "Expresso Flash",
+      "modal": "rodoviario",
+      "ativo": false
     }
   ],
-  "itens": [
+"itens": [
     {
       "id": "1",
       "nome": "Parafuso M10",
@@ -93,6 +123,51 @@
       "precoUnitario": 8.75,
       "unidadeMedida": "m",
       "ativo": true
+    },
+    {
+      "id": "6",
+      "nome": "Parafuso Sextavado",
+      "sku": "PAR-SEX-006",
+      "categoria": "Fixação",
+      "precoUnitario": 1.2,
+      "unidadeMedida": "un",
+      "ativo": true
+    },
+    {
+      "id": "7",
+      "nome": "Fita Veda Rosca",
+      "sku": "FIT-VED-007",
+      "categoria": "Hidráulica",
+      "precoUnitario": 4.5,
+      "unidadeMedida": "un",
+      "ativo": true
+    },
+    {
+      "id": "8",
+      "nome": "Disjuntor 16A",
+      "sku": "DIS-16A-008",
+      "categoria": "Elétrica",
+      "precoUnitario": 12.3,
+      "unidadeMedida": "un",
+      "ativo": true
+    },
+    {
+      "id": "9",
+      "nome": "Tubo PVC 50mm",
+      "sku": "TUB-50-009",
+      "categoria": "Hidráulica",
+      "precoUnitario": 6.2,
+      "unidadeMedida": "m",
+      "ativo": true
+    },
+    {
+      "id": "10",
+      "nome": "Lixa d'Água 220",
+      "sku": "LIX-220-010",
+      "categoria": "Ferramentas",
+      "precoUnitario": 1.9,
+      "unidadeMedida": "un",
+      "ativo": false
     }
   ],
   "ordensVenda": [
@@ -668,6 +743,17 @@
       "usuario": "admin",
       "dataHora": "2026-07-09T02:40:02.631Z",
       "detalhes": "OV OV-TEST-E2E criada com status CRIADA"
+    },
+    {
+      "id": "5",
+      "entidade": "item",
+      "entidadeId": "xD_9pqf",
+      "acao": "criacao",
+      "usuario": "admin@ovgs.com",
+      "dataHora": "2026-07-09T03:52:13.466Z",
+      "detalhes": "Item Parafuso Sextavado criado",
+      "estadoAnterior": null,
+      "estadoPosterior": "{\"nome\":\"Parafuso Sextavado\",\"sku\":\"PAR-SEX-006\",\"categoria\":\"Fixação\",\"precoUnitario\":1.2,\"unidadeMedida\":\"un\",\"ativo\":true,\"id\":\"xD_9pqf\"}"
     }
   ]
 }
