@@ -26,15 +26,24 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - RBAC: objeto hardcoded + hook `usePermissao` — sem Context/Provider (YAGNI)
 - fetch: wrapper minimalista (`apiGet`, `apiPost`, `apiPut`, `apiPatch`, `apiDelete` + hook `useFetch`)
 
+### Ticket 5 — Routing e Layout (resolvido)
+
+- Rotas definidas: `/`, `/ovs`, `/ovs/nova`, `/ovs/:id`, `/agendamento`, `/cadastros/clientes`, `/cadastros/transportes`, `/cadastros/itens`, `/auditoria`
+- Lazy loading com `React.lazy()` + `Suspense` — todas as páginas carregam sob demanda
+- Página 404 (`NotFound.tsx`) para rotas inexistentes
+- Sidebar (`AppLayout.tsx`) com NavLink para cada rota, active state visual
+- Links internos corrigidos para os novos paths (`/ordens-venda` → `/ovs`)
+- Página de Auditoria criada com tabela de eventos
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
 |---|---|---|---|---|
-| ~~1~~ | Stack Frontend | `01-stack-frontend` | `wayfinder:grilling` | — | ✔ Fechado
+| ~~1~~ | Stack Frontend | `01-stack-frontend` | `wayfinder:grilling` | — | ✔
+| ~~5~~ | Routing e Layout | `05-routing-layout` | `wayfinder:prototype` | 1 | ✔
 | 2 | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 |
 | 3 | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 |
 | 4 | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 |
-| 5 | Routing e Layout | `05-routing-layout` | `wayfinder:prototype` | 1 |
 | 6 | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 |
 | 7 | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 |
 | 8 | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 |
