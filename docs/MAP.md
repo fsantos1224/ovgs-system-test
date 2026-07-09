@@ -88,6 +88,15 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - Refresh após mutação via `.refresh()` — pattern simples sem cache layer
 - Estado local em páginas (filters, page, form state) sem Context global
 
+### Ticket 7 — Formulários (resolvido)
+
+- React Hook Form para criação de OV (formulário complexo com itens dinâmicos)
+- `useFieldArray` para gestão de lista de itens (adicionar/remover)
+- Validação manual inline via função `validate()` pura — sem Zod/Yup
+- Botão desabilitado durante `submitting` para evitar duplicatas visuais + `Idempotency-Key` real no POST
+- Erro do servidor exibido inline (`serverError`)
+- Cadastros simples (Clientes, Transportes, Itens) — validação manual via atributos HTML (`required`, `min`)
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
@@ -100,7 +109,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~3~~ | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 | ✔
 | ~~4~~ | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 | ✔
 | ~~6~~ | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 | ✔
-| 7 | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 |
+| ~~7~~ | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 | ✔
 | 8 | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 |
 | 11 | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 |
 | 12 | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 |
