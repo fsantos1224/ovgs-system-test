@@ -6,6 +6,8 @@ services:
       - .:/app
       - ovgs-data:/app/data
     command: node server.cjs
+    environment:
+      - NODE_ENV=production
     ports:
       - "3001:3001"
 

@@ -22,10 +22,39 @@ const router = jsonServer.router(DATA_FILE);
 const middlewares = jsonServer.defaults();
 
 server.use(jsonServer.bodyParser);
-server.use(require("cors")());
+// CORS restrito ao frontend que realmente consome a API.
+// Em Docker: nginx serve frontend em :80 (interno) e :8080 (host).
+// Em dev: Vite serve em :5173 ou :4173.
+const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "http://localhost:5173,http://localhost:4173,http://localhost:8080").split(",");
+server.use((req, res, next) => {
+  const origin = req.headers.origin;
+  if (origin && ALLOWED_ORIGINS.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+    res.header("Access-Control-Allow-Headers", "Content-Type, x-user, idempotency-key");
+    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    if (req.method === "OPTIONS") return res.sendStatus(204);
+  }
+  next();
+});
 
-// Idempotency store (in-memory, reseta ao reiniciar o servidor)
+// Idempotency store (in-memory, reseta ao reiniciar o servidor).
+// Bound por TTL + tamanho máximo para evitar DoS via keys arbitrários.
+const IDEMPOTENCY_TTL_MS = 60 * 60 * 1000; // 1h
+const IDEMPOTENCY_MAX_ENTRIES = 1000;
 const idempotencyStore = new Map();
+
+function idempotencyPrune() {
+  const now = Date.now();
+  for (const [key, entry] of idempotencyStore) {
+    if (entry.expiresAt <= now) idempotencyStore.delete(key);
+  }
+  if (idempotencyStore.size > IDEMPOTENCY_MAX_ENTRIES) {
+    const overflow = idempotencyStore.size - IDEMPOTENCY_MAX_ENTRIES;
+    const keys = idempotencyStore.keys();
+    for (let i = 0; i < overflow; i++) idempotencyStore.delete(keys.next().value);
+  }
+}
+setInterval(idempotencyPrune, 5 * 60 * 1000).unref();
 
 // Máquina de estados linear — alinhado com src/domain/types.ts e especificação do desafio.
 const STATUS_FLOW = [
@@ -43,8 +72,11 @@ const canTransition = (from, to) => {
 // POST /ordensVenda — valida regras + cria auditoria + idempotência
 server.post("/ordensVenda", (req, res) => {
   const idempotencyKey = req.headers["idempotency-key"];
-  if (idempotencyKey && idempotencyStore.has(idempotencyKey)) {
-    return res.status(200).json(idempotencyStore.get(idempotencyKey));
+  if (idempotencyKey) {
+    const cached = idempotencyStore.get(idempotencyKey);
+    if (cached && cached.expiresAt > Date.now()) {
+      return res.status(200).json(cached.value);
+    }
   }
 
   const body = req.body;
@@ -107,7 +139,7 @@ server.post("/ordensVenda", (req, res) => {
   };
   router.db.get("eventosAuditoria").push(evento).write();
 
-  if (idempotencyKey) idempotencyStore.set(idempotencyKey, novaOV);
+  if (idempotencyKey) idempotencyStore.set(idempotencyKey, { value: novaOV, expiresAt: Date.now() + IDEMPOTENCY_TTL_MS });
 
   res.status(201).json(novaOV);
 });

@@ -190,6 +190,36 @@ npm run test:e2e    # Playwright (E2E) — levanta servidores automaticamente
 
 ---
 
+## Segurança
+
+### Defesas implementadas
+
+- **CORS restrito** — apenas origens do frontend (`localhost:5173/4173/8080`)
+- **CSP no `index.html`** — `default-src 'self'`, sem `frame-ancestors`, sem `unsafe-eval`
+- **Headers nginx** — `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `server_tokens off`
+- **Idempotency store com TTL** — chaves expiram em 1h; máximo 1000 entradas; evita DoS via keys arbitrárias
+- **`NODE_ENV=production` no Docker** — sem stack traces em runtime
+- **Container API como root apenas onde necessário**; nginx master/workers separados
+- **Seed sem credenciais reais** — `.env.example` usa placeholders
+- **CSP via meta tag + nginx add_header** — defesa em profundidade
+
+### Limitações conhecidas (aceitáveis para mock de teste)
+
+Estas são **inerentes à escolha de json-server como mock API** e devem ser tratadas antes de qualquer deploy além de ambiente local:
+
+| Limitação | Por que existe | Mitigação real exigiria |
+|---|---|---|
+| Credenciais em bundle JS (`VITE_USUARIOS`) | Vite inline variáveis `VITE_*` no build | Mover auth para `server.cjs`, nunca enviar `senha` ao frontend |
+| `x-user` header é trust puro | json-server é deliberadamente sem auth | JWT/cookie httpOnly + middleware de validação |
+| RBAC só no cliente | Mesma razão acima | Middleware de autorização no servidor |
+| Sem TLS no nginx | Docker local | TLS-terminating proxy (Caddy/Traefik) + certificados válidos |
+| Sem rate limiting | json-server não tem | `express-rate-limit` em `/auth/login` |
+| Sem CSRF defense | Sem cookies/sessões | Quando migrar para cookies, adicionar tokens + `SameSite=Strict` |
+
+Em resumo: o sistema assume **ambiente controlado** (rede interna, Docker local, sem exposição à internet). Não deploy em produção sem substituir json-server por backend real.
+
+---
+
 ## Trade-offs e Limitações
 
 | Decisão | Trade-off |
@@ -197,9 +227,9 @@ npm run test:e2e    # Playwright (E2E) — levanta servidores automaticamente
 | Fetch nativo vs TanStack Query | Sem cache, sem refetch automático, sem optimistic updates. Mas zero bundle. |
 | useState vs Zustand | Sem estado global partilhado. Cada página gere os seus dados. |
 | Validação manual vs Zod | Mais código, menos segurança de tipos runtime. Mas zero deps. |
-| json-server vs backend real | Sem persistência real, sem concorrência. Mas prototipagem instantânea. |
-| Store de idempotência in-memory | Perde-se ao reiniciar o servidor. |
-| RBAC só no frontend | Segurança por obscuridade — `🐴` Aceitável porque o mock não tem autenticação real. |
+| json-server vs backend real | Sem persistência relacional, sem auth real. Mas prototipagem instantânea. |
+| Store de idempotência in-memory | Perde-se ao reiniciar o servidor. Agora bounded por TTL (1h) e tamanho máx (1000). |
+| RBAC só no frontend | Inerente ao json-server. Documentado como limitação. |
 | Playwright sem RTL | Testes de componente requerem E2E. Submissão RHF tem limitação conhecida. |
 
 ---
