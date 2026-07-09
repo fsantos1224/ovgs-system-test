@@ -4,6 +4,7 @@ import type { OrdemVenda } from '../domain/types';
 import { statusLabel, canTransition } from '../domain/types';
 import { usePermissao } from '../hooks/usePermission';
 import { apiPatch } from '../api/fetch';
+import { trackEvent } from '../lib/telemetry';
 
 export function OVDetail() {
   const { id } = useParams<{ id: string }>();
@@ -17,7 +18,9 @@ export function OVDetail() {
     .filter((s) => canTransition(ov.status, s));
 
   const handleStatusChange = async (novoStatus: OrdemVenda['status']) => {
+    const statusAnterior = ov.status;
     await apiPatch(`/ordensVenda/${ov.id}`, { status: novoStatus });
+    trackEvent('ov:status:alterar', 'ordem_venda', { ovId: ov.id, numero: ov.numero, de: statusAnterior, para: novoStatus });
     refresh();
   };
 

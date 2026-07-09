@@ -4,6 +4,7 @@ import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useFetch } from '../hooks/useFetch';
 import { apiPost } from '../api/fetch';
+import { trackEvent } from '../lib/telemetry';
 import type { Cliente, Item, TipoTransporte, ItemOV } from '../domain/types';
 
 export function OVNew() {
@@ -71,6 +72,7 @@ export function OVNew() {
     };
 
     await apiPost('/ordensVenda', novaOV);
+    trackEvent('ov:criar', 'ordem_venda', { numero: novaOV.numero, clienteId, transporteId });
     navigate('/ovs');
   };
 
