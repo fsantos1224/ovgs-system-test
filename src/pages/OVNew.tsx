@@ -11,6 +11,7 @@ import { canUseTransporte } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 import { useMemo, useState } from "react";
 import { ovSchema } from "../lib/validation";
+import { newId } from "../lib/id";
 
 type FormData = {
   clienteId: string;
@@ -94,6 +95,7 @@ export function OVNew() {
       .map((i) => {
         const item = itensMap.get(i.itemId);
         return {
+          id: newId(),
           itemId: i.itemId,
           nomeItem: item?.nome ?? "",
           quantidade: i.quantidade,

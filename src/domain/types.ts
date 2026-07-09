@@ -71,7 +71,8 @@ export interface Item {
 }
 
 export interface ItemOV {
-  itemId: string;
+  id: string; // UUID
+  itemId: string; // UUID do item no catálogo
   nomeItem: string;
   quantidade: number;
   precoUnitario: number;

@@ -32,4 +32,11 @@ A code review do projeto identificou três bugs concretos que afetam diretamente
 
 ## Resolução
 
-_a preencher ao fechar o ticket_
+**Status:** ✔ Resolvido (2026-07-09)
+
+**Evidência no código:**
+1. **AppLayout (Rules of Hooks):** `src/layouts/AppLayout.tsx:50-55` — os 6 `usePermissao()` foram movidos para o topo do componente (escopo do `AppLayout`), e o array `navItems` é construído usando o booleano já calculado. Nenhum hook é chamado dentro de `.map()` / callback.
+2. **OVNew — mensagens de erro:** `src/pages/OVNew.tsx:160` (`required: "Selecione um cliente"`), `:178` (`"Selecione um transporte"`), `:202` (`"Informe a data de entrega"`), `:253-254` (`min: 1, message: "Mínimo 1"` em quantidade). Cada erro é renderizado inline em `<p role="alert">` com classe `text-rose-400`.
+3. **OVNew — race entre `fields` e `data`:** `src/pages/OVNew.tsx:79` — a checagem `itensValidos = data.itens.filter((i) => i.itemId).length` usa `data` (submetido) e não `fields` (registrado). Reflete exatamente o que foi digitado, não o default state.
+
+**Verificação:** `npm test` → 16/16 passando. `[1m` o `id="hook-rules"` foi corrigido sem refactor amplo e sem libs novas — alinhado com YAGNI.

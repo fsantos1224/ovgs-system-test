@@ -1,8 +1,31 @@
 import { test, expect } from "@playwright/test";
 
+// IDs carregados via API no beforeAll — sem hardcoded
+let alphaId: string;
+let alphaTransporteId: string;
+let itemId: string;
+let betaId: string;
+
 test.describe("OV Creation — happy path", () => {
+  test.beforeAll(async ({ request }) => {
+    const [clientes, transportes, itens] = await Promise.all([
+      request.get("/api/clientes"),
+      request.get("/api/tiposTransporte"),
+      request.get("/api/itens"),
+    ]).then(([c, t, i]) => Promise.all([c.json(), t.json(), i.json()]));
+    const alpha = clientes.find((c: { nome: string }) =>
+      c.nome.startsWith("Empresa Alpha"),
+    );
+    const beta = clientes.find((c: { nome: string }) =>
+      c.nome.startsWith("Beta"),
+    );
+    alphaId = alpha.id;
+    alphaTransporteId = alpha.transportesAutorizados[0];
+    betaId = beta.id;
+    itemId = itens.find((i: { ativo: boolean }) => i.ativo).id;
+  });
+
   test("admin pode criar OV end-to-end", async ({ page }) => {
-    // Login como admin (RBAC já permite criar OV)
     await page.goto("/");
     await page.evaluate(() => {
       localStorage.setItem("XPTO:role", "admin");
@@ -21,22 +44,18 @@ test.describe("OV Creation — happy path", () => {
       page.getByRole("heading", { name: "Nova Ordem de Venda" }),
     ).toBeVisible();
 
-    // Cliente Alpha (id "1") — autorizado [1, 3]. Transporte "1" é permitido.
-    await page.locator('select[name="clienteId"]').selectOption("1");
+    await page.locator('select[name="clienteId"]').selectOption(alphaId);
 
-    // Após escolher cliente, dropdown de transporte fica habilitado e filtra
     await expect(page.locator('select[name="transporteId"]')).toBeEnabled();
-    await page.locator('select[name="transporteId"]').selectOption("1");
+    await page.locator('select[name="transporteId"]').selectOption(alphaTransporteId);
 
     await page.locator('input[name="dataEntrega"]').fill("2026-12-31");
 
-    // Primeiro item já existe por default; selecionar Parafuso M10 (id "1")
-    await page.locator('select[name="itens.0.itemId"]').selectOption("1");
+    await page.locator('select[name="itens.0.itemId"]').selectOption(itemId);
     await page.locator('input[name="itens.0.quantidade"]').fill("100");
 
     await page.getByRole("button", { name: "Criar Ordem" }).click();
 
-    // Após criar, redireciona para /ovs com a OV visível na lista
     await page.waitForURL(/\/ovs$/);
     await expect(page.getByText(/OV-\d+/).first()).toBeVisible();
   });
@@ -58,15 +77,11 @@ test.describe("OV Creation — happy path", () => {
     });
 
     await page.goto("/ovs/nova");
-    // Beta (id "2") — só autorizado [2]. Após selecionar, dropdown de
-    // transporte mostra "Selecione..." + apenas o id 2.
-    await page.locator('select[name="clienteId"]').selectOption("2");
+    await page.locator('select[name="clienteId"]').selectOption(betaId);
     const transporteSelect = page.locator('select[name="transporteId"]');
     await expect(transporteSelect).toBeEnabled();
     const options = await transporteSelect.locator("option").allTextContents();
-    // Deve ter apenas o transporte "LogExpress Aéreo" (id 2) como opção real
     expect(options.some((o) => o.includes("LogExpress"))).toBe(true);
-    // Transporte rodoviário (id 1) NÃO deve aparecer
     expect(options.some((o) => o.includes("Transportadora Rápida"))).toBe(
       false,
     );

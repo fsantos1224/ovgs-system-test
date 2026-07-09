@@ -19,7 +19,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - **React 18.3** + **Vite 5.4** + **TypeScript 5.6 (strict)** — configurado manualmente
 - **React Router v6** — BrowserRouter com 8 rotas aninhadas sob AppLayout
 - **Tailwind CSS 3.4** — postcss + autoprefixer
-- **json-server 0.17** — mock API em `db.json` (5 recursos)
+- **json-server 0.17** — mock API em `db.seed.json` (5 recursos)
 - **concurrently** — `dev:full` para dev + mock paralelos
 - Estrutura `src/{domain,api,hooks,layouts,pages,components}/` criada
 - `as const` necessário para manter tipo literal em array de transições (TypeScript strict)
@@ -48,7 +48,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - `usePaginatedFetch` hook — gerencia página, filtros, totalPages; reseta página 1 ao mudar filtro
 - `Pagination` component — botões Anterior/Próximo, oculta se totalPages <= 1
 - `OVList.tsx` atualizada: campo de busca com debounce 300ms + tabela paginada
-- `db.json` populado com 25 OVs (demonstra 2 páginas com pageSize=20)
+- `db.seed.json` populado com 25 OVs (demonstra 2 páginas com pageSize=20)
 
 ### Ticket 6 — RBAC (resolvido)
 
@@ -77,7 +77,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 
 - Status alinhados com a especificação: `CRIADA → PLANEJADA → AGENDADA → EM_TRANSPORTE → ENTREGUE`
 - `STATUS_FLOW` — array `as const` + função `canTransition()` que compara índices
-- `server.cjs` e `db.json` atualizados com os novos status
+- `server.cjs` e `db.seed.json` atualizados com os novos status
 - `OVDetail.tsx`, `OVNew.tsx`, `Agendamento.tsx` — referências de status corrigidas
 
 ### Ticket 4 — Estado (resolvido)
@@ -114,8 +114,8 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 
 ### Ticket 11 — Testes (resolvido)
 
-- Vitest para 6 testes unitários de lógica de domínio pura (`canTransition`, `statusLabel`)
-- Playwright para 3 testes E2E (RBAC: viewer não vê + admin vê + formulário carrega)
+- Vitest para **9 testes unitários** de lógica de domínio pura (`canTransition`, `statusLabel`, `canUseTransporte`) + **7 testes de integração** do `server.cjs` (regras de negócio, idempotência, transições, auditoria)
+- Playwright para **9 testes E2E** em 4 specs: `rbac.spec.ts` (3), `ov-create.spec.ts` (2), `ov-detail.spec.ts` (2), `ov-list-filters.spec.ts` (2)
 - `playwright.config.ts` com `webServer` para json-server + Vite
 - Sem RTL, sem Testing Library — Playwright `getByRole` nativo
 - `🐴` Submissão RHF via Playwright → `🐴` conhecido: `handleSubmit` não reconhece eventos sintéticos do Playwright. API testada diretamente (funciona), form load testado sem erros JS.
@@ -152,15 +152,20 @@ Code review contra `CONTEXT.md` + senior-level criteria identificou 9 tickets ad
 
 | #   | Título                                         | Slug                                | Tipo                    | Bloqueado por | Status |
 | --- | ---------------------------------------------- | ----------------------------------- | ----------------------- | ------------- | ------ |
-| 13  | Bugs em AppLayout + OVNew                      | `13-bugs-applayout-ovnew`           | `wayfinder:bugfix`      | —             | ☐      |
-| 14a | Transporte autorizado — domain + seed + server | `14a-transporte-autorizado-backend` | `wayfinder:feature`     | —             | ☐      |
-| 14b | Transporte autorizado — dropdown dependente    | `14b-transporte-autorizado-ui`      | `wayfinder:feature`     | 14a           | ☐      |
-| 15a | Filtrar clientes inativos no dropdown de OV    | `15a-clientes-ativos-dropdown`      | `wayfinder:bugfix`      | —             | ☐      |
-| 15b | Permission gate na página de Auditoria         | `15b-auditoria-permission-gate`     | `wayfinder:bugfix`      | —             | ☐      |
-| 16  | Testes de integração do server.cjs             | `16-testes-integracao-server`       | `wayfinder:quality`     | —             | ☐      |
-| 17  | Web Vitals conforme spec W3C                   | `17-web-vitals-w3c`                 | `wayfinder:quality`     | —             | ☐      |
-| 18  | Bundle splitting + preload hints               | `18-bundle-splitting`               | `wayfinder:performance` | —             | ☐      |
-| 19  | E2E do happy path de criar OV                  | `19-e2e-criar-ov`                   | `wayfinder:quality`     | 13, 14b       | ☐      |
+| ~~13~~  | Bugs em AppLayout + OVNew                  | `13-bugs-applayout-ovnew`           | `wayfinder:bugfix`      | —             | ✔   |
+| ~~14a~~ | Transporte autorizado — domain + seed + server | `14a-transporte-autorizado-backend` | `wayfinder:feature`     | —             | ✔   |
+| ~~14b~~ | Transporte autorizado — dropdown dependente    | `14b-transporte-autorizado-ui`      | `wayfinder:feature`     | 14a           | ✔   |
+| ~~15a~~ | Filtrar clientes inativos no dropdown de OV    | `15a-clientes-ativos-dropdown`      | `wayfinder:bugfix`      | —             | ✔   |
+| ~~15b~~ | Permission gate na página de Auditoria         | `15b-auditoria-permission-gate`     | `wayfinder:bugfix`      | —             | ✔   |
+| ~~16~~  | Testes de integração do server.cjs             | `16-testes-integracao-server`       | `wayfinder:quality`     | —             | ✔   |
+| ~~17~~  | Web Vitals conforme spec W3C                   | `17-web-vitals-w3c`                 | `wayfinder:quality`     | —             | ✔   |
+| ~~18~~  | Bundle splitting + preload hints               | `18-bundle-splitting`               | `wayfinder:performance` | —             | ✔   |
+| ~~19~~  | E2E do happy path de criar OV                  | `19-e2e-criar-ov`                   | `wayfinder:quality`     | 13, 14b       | ✔   |
+| ~~20~~  | Identity gate no server.cjs (F1)               | `20-identity-gate-server`           | `wayfinder:bugfix`      | —             | ✔   |
+| ~~21~~  | Allowlist de campos em PATCH (F3)              | `21-allowlist-patch`                | `wayfinder:bugfix`      | —             | ✔   |
+| ~~22~~  | DELETE auditado (F5)                          | `22-audit-delete`                   | `wayfinder:bugfix`      | —             | ✔   |
+| ~~23~~  | Hardening de idempotência (F4+F7)              | `23-idempotency-hardening`          | `wayfinder:bugfix`      | —             | ✔   |
+| ~~24~~  | Migração de IDs para UUID                      | `24-uuid-migration`                 | `wayfinder:refactor`    | —             | ✔   |
 
 ### Ordem de execução sugerida (fronteira)
 

@@ -34,4 +34,19 @@ O projeto tem 6 unit tests ✅ mas **zero integration tests** ❌. A camada `ser
 
 ## Resolução
 
-_a preencher ao fechar o ticket_
+**Status:** ✔ Resolvido (2026-07-09)
+
+**Suite criada:** `tests/integration/server.test.ts` — 7 testes em 4 describe blocks.
+
+**Abordagem escolhida:** spawn do `server.cjs` em subprocesso com `DATA_FILE` apontando para tempdir (isolamento do volume Docker). Cada teste é independente — `beforeAll` roda uma vez, `afterAll` mata o processo e limpa o tempdir.
+
+**Cenários cobertos (todos os 4 do ticket + extras pós-14a):**
+1. ✅ **Cliente inativo** — POST com `clienteId: "3"` (Gamma) retorna 400 com `error` matching `/inativo/i`.
+2. ✅ **Transporte não autorizado** — POST com `clienteId: "2"` + `transporteId: "1"` (Beta só aceita [2]) retorna 400 com `transportesAutorizados: ["2"]` no body.
+3. ✅ **Idempotência** — dois POSTs com mesmo `Idempotency-Key`: primeiro 201, segundo 200, mesmo `id` no body.
+4. ✅ **Transição inválida** — PATCH `CRIADA → AGENDADA` (salto) retorna 422 com `transicoesValidas: ["PLANEJADA"]`.
+5. ✅ **Transição válida** — PATCH `CRIADA → PLANEJADA` retorna 200 e atualiza o `status`.
+6. ✅ **Auditoria em criação** — POST de OV gera evento com `acao: "criacao"`, `estadoAnterior: null`, `estadoPosterior: "CRIADA"`, `usuario` refletindo `x-user` header.
+7. ✅ **OV válida é criada** — POST happy path com Alpha + transporte 1 retorna 201, status `CRIADA`, valor total correto.
+
+**Verificação:** `npm test` → 16/16 (9 unit + 7 integration).

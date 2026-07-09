@@ -58,11 +58,38 @@
   animation: fadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
+:root {
+  color-scheme: dark;
+}
+[data-theme="light"] {
+  color-scheme: light;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--color-canvas);
   color: var(--color-text);
   overflow-x: hidden;
+}
+
+input[type="date"],
+input[type="time"],
+input[type="datetime-local"] {
+  min-width: 8rem;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  opacity: 0.6;
+  padding: 0 4px;
+}
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
 }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }

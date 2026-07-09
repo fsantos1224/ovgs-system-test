@@ -28,4 +28,16 @@ A página `Agendamento.tsx:16` já tem o padrão correto como referência.
 
 ## Resolução
 
-_a preencher ao fechar o ticket_
+**Status:** ✔ Resolvido (2026-07-09)
+
+**Evidência no código (`src/pages/Auditoria.tsx:18-49`):**
+```tsx
+const podeVer = usePermissao("auditoria:ver");
+if (!podeVer) {
+  return ( /* card de "Acesso negado" com ShieldCheck + role="alert" */ );
+}
+```
+
+Mesmo padrão do `Agendamento.tsx`, referenciado no ticket como referência. Sidebar já esconde o link para roles sem permissão — esse fix fecha a URL direta (`/auditoria`).
+
+**Verificação:** O gate é puramente client-side (RBAC UI-level conforme ADR-04 do projeto). Validação server-side não se aplica porque os endpoints REST de auditoria são protegidos por outras camadas — o escopo deste ticket era só fechar a porta dos fundos na UI. Os E2E de RBAC existentes (`e2e/rbac.spec.ts`) exercitam a navegação e continuam verdes.

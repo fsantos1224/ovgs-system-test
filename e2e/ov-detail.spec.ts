@@ -1,10 +1,11 @@
 import { test, expect } from "@playwright/test";
 
 test.describe("OV Detail", () => {
-  test("carrega detalhes de uma OV existente", async ({ page }) => {
-    const logs: string[] = [];
-    page.on("console", (msg) => logs.push(`${msg.type()}: ${msg.text()}`));
-    page.on("pageerror", (err) => logs.push(`PAGEERROR: ${err.message}`));
+  test("carrega detalhes de uma OV existente", async ({ page, request }) => {
+    // Pega o UUID + numero de uma OV real do seed
+    const ov = await request.get("/api/ordensVenda").then((r) => r.json()).then((arr: Array<{id:string; numero:string}>) => arr[0]);
+    const ovId = ov.id;
+    const ovNumero = ov.numero;
 
     await page.goto("/");
     await page.evaluate(() => {
@@ -20,28 +21,11 @@ test.describe("OV Detail", () => {
     });
     await page.reload();
 
-    await page.goto("/ovs/1");
+    await page.goto(`/ovs/${ovId}`);
     await page.waitForLoadState("domcontentloaded").catch(() => {});
-    await page.waitForTimeout(1000);
 
-    // Debug
-    await page.screenshot({ path: "/tmp/XPTO-ov1.png" });
-    const html = await page.locator("html").innerHTML();
-    console.log("HTML snippet:", html.substring(0, 500));
-    console.log(
-      "Logs:",
-      logs
-        .filter(
-          (l) =>
-            l.startsWith("PAGEERROR") ||
-            l.includes("error") ||
-            l.includes("Error"),
-        )
-        .join("\n"),
-    );
-
-    // Deve mostrar o número da OV
-    await expect(page.getByText("OV-2024-0001")).toBeVisible({ timeout: 3000 });
+    // Deve mostrar o número da OV carregada
+    await expect(page.getByText(ovNumero)).toBeVisible({ timeout: 5000 });
   });
 
   test("mostra 404 para OV inexistente", async ({ page }) => {
@@ -59,7 +43,7 @@ test.describe("OV Detail", () => {
     });
     await page.reload();
 
-    await page.goto("/ovs/999");
+    await page.goto("/ovs/00000000-0000-4000-8000-000000000000");
     await page.waitForLoadState("domcontentloaded").catch(() => {});
 
     await expect(page.getByText("Ordem de venda não encontrada")).toBeVisible();

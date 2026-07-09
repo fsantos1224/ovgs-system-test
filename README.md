@@ -136,7 +136,8 @@ src/
 └── main.tsx               # Entry point
 
 server.cjs      # json-server programático com middleware de negócio
-db.json         # Dados mock (25 OVs, 3 clientes, 3 transportes, 5 itens)
+db.seed.json    # Seed versionado (25 OVs, 3 clientes, 3 transportes, 5 itens)
+data/db.json    # Runtime gerado pelo json-server (ignorado no git)
 nginx.conf      # Config nginx para SPA routing
 Dockerfile      # Multi-stage build
 docker-compose.yml  # frontend + api
@@ -188,9 +189,10 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 
 ## Estratégia de Persistência
 
-- **`db.json`** — ficheiro JSON plano, lido/escrito pelo json-server.
+- **`db.seed.json`** — template versionado no git; ponto de partida dos dados mock.
+- **`data/db.json`** — ficheiro de runtime em memória persistente (ignorado no `.gitignore` e `.dockerignore`); o `server.cjs` copia o `db.seed.json` para cá no primeiro boot se não existir.
 - **`idempotencyStore`** — `Map` em memória no processo `server.cjs`. Reseta ao reiniciar.
-- **`localStorage`** — role do utilizador (`XPTO:role`) e eventos de telemetria.
+- **`localStorage`** — role do utilizador (`XPTO:role`), tema (`XPTO:theme`) e eventos de telemetria.
 - Sem base de dados real. `🐴` Aceitável para protótipo/desafio.
 
 ---

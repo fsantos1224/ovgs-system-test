@@ -86,7 +86,7 @@ Sem bordas ultra-arredondadas (`rounded-2xl`), sem JetBrains Mono para tudo — 
 - **Estado/Hooks**: `src/hooks/useFetch.ts`, `usePaginatedFetch.ts`, `useAuth.ts`, `usePermission.ts`
 - **API**: `src/api/fetch.ts`
 - **Domínio**: `src/domain/types.ts`, `src/domain/*.ts`, `src/auth/credentials.ts`
-- **Dados**: `src/data/*.ts`, `src/data/*.json`, `db.json`
+- **Dados**: `src/data/*.ts`, `src/data/*.json`, `db.seed.json` (template), `data/db.json` (runtime)
 - **Telemetria**: `src/lib/telemetry.ts`
 - **Mock backend**: `server.cjs` — json-server inteiro
 - **Testes**: `e2e/*.spec.ts` (4 arquivos), `vitest.config.ts` (se existir), testes unitários

@@ -16,7 +16,18 @@ O principal objetivo de negócios do sistema é garantir que cada transição de
 
 A interface do XPTO segue uma estética **Dark Minimalist / Tech-Editorial** inspirada em painéis de monitoramento industrial de alta densidade e tipografia clássica europeia.
 
-### 2.1 Paleta de Cores
+### 2.1 Sistema de Temas
+
+O XPTO oferece dois temas visuais alternativos comutáveis pelo usuário a partir do botão de sol/lua no _sidebar_ (atalho persistido em `localStorage` sob a chave `XPTO:theme`). A seleção é aplicada via `data-theme="dark" | "light"` no elemento raiz (`<html>`) e os tokens são declarados como **CSS custom properties** no `src/index.css` (Tailwind v4 `@theme`), o que permite trocar a paleta inteira sem _rebuild_ e sem libs de tema em tempo de execução.
+
+- **Tema padrão (Dark) — `data-theme="dark"`:** estética principal do sistema; declarada dentro do bloco `@theme` (escopo `:root`).
+- **Tema alternativo (Light) — `data-theme="light"`:** declaradono bloco `[data-theme="light"] { ... }`, sobrescrevendo somente os tokens do `@theme` (cascade nativa do CSS).
+- **Variante `dark:` do Tailwind:** mapeada para `@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *))`, de modo que utilitários como `dark:bg-amber-950/30` continuam funcionando automaticamente quando o tema dark está ativo.
+- **Tokens semânticos (não usar hex/rgb direto nos componentes):** `canvas`, `surface`, `surface-elevated`, `text`, `text-muted`, `text-subtle`, `text-faint`, `accent`, `accent-soft`, `border`, `border-strong`, `border-subtle`, `input-bg`, `hover`, `hover-strong`, `overlay`, `on-accent`, `on-canvas`.
+
+#### 2.1.1 Paleta de Cores — Tema Dark (padrão)
+
+Inspirada em painéis de monitoramento industrial de alta densidade.
 
 - **Fundo Principal (Canvas):** `#0A0A0A` — Preto profundo que minimiza o cansaço visual em longas sessões operacionais.
 - **Superfícies de Componentes (Cards/Modais):** `#141414` e `#1c1c1c` — Tons de grafite escuro com bordas sutis.
@@ -25,13 +36,27 @@ A interface do XPTO segue uma estética **Dark Minimalist / Tech-Editorial** ins
 - **Texto Principal:** `#F0F0F0` (Gelo) — Contraste perfeitamente equilibrado que garante alta legibilidade sem ofuscar.
 - **Texto Secundário:** `rgba(255, 255, 255, 0.5)` — Legendas, metadados e marcadores secundários.
 
+#### 2.1.2 Paleta de Cores — Tema Light
+
+Versão diurna do mesmo sistema, otimizada para ambientes bem iluminados e impressão. Acento migra de Amber para Sky para preservar hierarquia visual com fundo claro; a paleta evita branco puro para reduzir fadiga em superfícies grandes.
+
+- **Fundo Principal (Canvas):** `#FFFFFF` — Branco neutro, ancorando a hierarquia em superfícies claras.
+- **Superfícies de Componentes (Cards/Modais):** `#FFFFFF` e `#F8FAFC` — Branco e cinza-quase-branco que simulam elevação por sombra de borda em vez de preenchimento escuro.
+- **Bordas e Linhas de Grade:** `#E2E8F0` (`slate-200`) — Separa blocos com o mesmo rigor do tema dark, mas com peso visível em fundos claros.
+- **Destaques e Ênfase:** `#0EA5E9` (Sky-500) — Acento primário e foco de interação (mesma função do Amber no dark). Badges de status (ex: `sky-50/sky-700` para AGENDADA) ganham uma versão clara análoga às suas contrapartes escuras.
+- **Texto Principal:** `#1F2937` (`slate-800`) — Contraste AA sobre superfícies brancas.
+- **Texto Secundário:** `#64748B` (`slate-500`) — Legendas, metadados e rótulos auxiliares.
+- **Overlay modal:** `rgb(15 23 42 / 0.55)` — Camada slate semi-transparente, mais leve que o `rgb(0 0 0 / 0.85)` do dark para não escurecer agressivamente o conteúdo.
+- **On-accent:** `#FFFFFF` — Cor de texto sobre o acento Sky (inverte o preto do tema dark).
+
 ### 2.2 Tipografia
 
-Para alcançar um ritmo visual refinado e uma distinção clara entre informações analíticas e dados numéricos, o sistema implementa uma estratégia de emparelhamento tipográfico:
+Para alcançar um ritmo visual refinado e uma distinção clara entre informações analíticas e dados numéricos, o sistema implementa uma estratégia de emparelhamento tipográfico **compartilhada entre os dois temas** (apenas a cor dos glifos muda via token `--color-text`):
 
 - **Títulos Principais (Display):** Estilo serifado e em itálico elegante para dar um tom de "editorial técnico" ou publicação especializada.
 - **Interface Geral e Textos de Leitura:** **Inter** (sans-serif) — Limpa, versátil e altamente legível em qualquer escala de tamanho.
 - **Códigos, IDs e Valores Monetários:** **JetBrains Mono** / **Fira Code** (monospaced) — Ideal para identificadores únicos (como códigos SKU, números de ordens de venda e timestamps de auditoria), assegurando alinhamento numérico impecável.
+- **Famílias registradas como tokens:** `--font-sans`, `--font-serif`, `--font-mono` em `src/index.css` — consumidas via classes utilitárias Tailwind (`font-sans`, `font-serif`, `font-mono`).
 
 ### 2.3 Elementos Visuais e Micro-interações
 

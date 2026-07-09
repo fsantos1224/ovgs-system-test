@@ -67,6 +67,21 @@ export function OVList() {
     return () => clearTimeout(id);
   }, [search]);
 
+  const toInputDate = (d: Date) => {
+    const y = d.getFullYear();
+    const m = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${y}-${m}-${day}`;
+  };
+
+  const aplicarAtalho = (dias: number) => {
+    const hoje = new Date();
+    const inicio = new Date(hoje);
+    inicio.setDate(hoje.getDate() - (dias - 1));
+    setDataDe(toInputDate(inicio));
+    setDataAte(toInputDate(hoje));
+  };
+
   const montarFiltros = useCallback(() => {
     const f: Record<string, string> = {};
     if (debouncedSearch) f.q = debouncedSearch;
@@ -124,8 +139,9 @@ export function OVList() {
       </div>
 
       {/* Filters Card */}
-      <div className="bg-surface rounded-xl border border-border p-5">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+      <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
+        {/* Linha 1 — filtros estruturais */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
               Status
@@ -179,28 +195,6 @@ export function OVList() {
           </div>
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
-              De
-            </label>
-            <input
-              type="date"
-              value={dataDe}
-              onChange={(e) => setDataDe(e.target.value)}
-              className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
-              Até
-            </label>
-            <input
-              type="date"
-              value={dataAte}
-              onChange={(e) => setDataAte(e.target.value)}
-              className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
               Buscar
             </label>
             <input
@@ -209,6 +203,82 @@ export function OVList() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden placeholder:text-text-faint"
+            />
+          </div>
+        </div>
+
+        {/* Linha 2 — período (atalhos + inputs de data) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 pt-4 border-t border-border-subtle">
+          <div className="space-y-1.5 lg:col-span-8">
+            <span className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
+              Atalhos de período
+            </span>
+            <div
+              className="flex flex-nowrap items-center gap-2"
+              role="group"
+              aria-label="Atalhos de período"
+            >
+              <button
+                type="button"
+                onClick={() => aplicarAtalho(7)}
+                className="whitespace-nowrap text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-md border border-border-strong text-text-muted hover:bg-accent hover:text-on-accent hover:border-accent transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                Últimos 7 dias
+              </button>
+              <button
+                type="button"
+                onClick={() => aplicarAtalho(30)}
+                className="whitespace-nowrap text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-md border border-border-strong text-text-muted hover:bg-accent hover:text-on-accent hover:border-accent transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                Últimos 30 dias
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setDataDe("");
+                  setDataAte("");
+                }}
+                disabled={!dataDe && !dataAte}
+                className="whitespace-nowrap text-[10px] font-bold uppercase tracking-wider px-3 py-2 rounded-md border border-border text-text-faint hover:text-text hover:border-border-strong transition-colors focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:border-border disabled:hover:text-text-faint"
+              >
+                Limpar
+              </button>
+            </div>
+          </div>
+          <div className="space-y-1.5 lg:col-span-2">
+            <label
+              htmlFor="filtro-data-de"
+              className="text-[10px] font-bold text-text-faint uppercase tracking-wider block"
+            >
+              De
+            </label>
+            <input
+              id="filtro-data-de"
+              type="date"
+              lang="pt-BR"
+              value={dataDe}
+              max={dataAte || undefined}
+              onChange={(e) => setDataDe(e.target.value)}
+              onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
+              className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
+            />
+          </div>
+          <div className="space-y-1.5 lg:col-span-2">
+            <label
+              htmlFor="filtro-data-ate"
+              className="text-[10px] font-bold text-text-faint uppercase tracking-wider block"
+            >
+              Até
+            </label>
+            <input
+              id="filtro-data-ate"
+              type="date"
+              lang="pt-BR"
+              value={dataAte}
+              min={dataDe || undefined}
+              onChange={(e) => setDataAte(e.target.value)}
+              onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
+              className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
             />
           </div>
         </div>

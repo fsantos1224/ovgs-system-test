@@ -20,7 +20,7 @@ test.describe("RBAC — autorização por role", () => {
     await page.goto("/ovs");
     await page.waitForLoadState("domcontentloaded").catch(() => {});
 
-    const btn = page.getByRole("link", { name: /nova ov/i });
+    const btn = page.getByRole("link", { name: /nova ordem/i });
     await expect(btn).toHaveCount(0);
   });
 
@@ -49,7 +49,7 @@ test.describe("RBAC — autorização por role", () => {
     if (html.includes("Login")) console.log("^^^ ON LOGIN PAGE");
     if (html.includes("Nova OV")) console.log("^^^ BUTTON FOUND IN HTML");
 
-    const btn = page.getByRole("link", { name: /nova ov/i });
+    const btn = page.getByRole("link", { name: /nova ordem/i });
     await expect(btn).toBeVisible({ timeout: 10000 });
   });
 

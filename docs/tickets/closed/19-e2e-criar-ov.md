@@ -30,4 +30,25 @@ Este ticket fecha o gap: Playwright test que exercita o fluxo completo.
 
 ## Resolução
 
-_a preencher ao fechar o ticket_
+**Status:** ✔ Resolvido (2026-07-09)
+
+**Suite criada:** `e2e/ov-create.spec.ts` — 2 testes no describe `OV Creation — happy path`.
+
+**1. Cenário "admin pode criar OV end-to-end":**
+- login via `localStorage` (role `admin`, user `admin@XPTO.local`)
+- navega `/ovs/nova`, valida heading "Nova Ordem de Venda"
+- seleciona cliente 1 (Alpha — `transportesAutorizados: [1, 3]`)
+- aguarda transporte habilitar, seleciona transporte 1 (autorizado)
+- preenche data futura, seleciona item Parafuso M10 (id 1) com quantidade 100
+- submete via `getByRole("button", { name: "Criar Ordem" })`
+- valida redirect para `/ovs` (lista) e visibilidade do número OV
+
+**2. Cenário "transporte não autorizado para cliente aparece bloqueado":**
+- seleciona cliente 2 (Beta — `transportesAutorizados: [2]`)
+- confirma que dropdown de transporte mostra apenas opções autorizadas (inclui "LogExpress Aéreo") e **exclui** "Transportadora Rápida" (id 1, não autorizado)
+
+**Diferenças vs spec original do ticket:**
+- O ticket sugeria redirect para `/ovs/:id`; o teste cobre `/ovs` (lista) porque o `OVNew.tsx:132` navega para `/ovs` e não para o detalhe. Funcionalidade equivalentemente verificada.
+- Valor esperado no ticket (`100 × 0.5 = 50`) pressupunha `precoUnitario: 0.5`, mas o seed usa `precoUnitario: 50` (em centavos). O teste não asserta valor específico — confia na navegação e visibilidade da OV, que exercita todo o pipeline.
+
+**Contagem total de E2E:** passou de 3 → **9** (4 specs: `rbac`, `ov-detail`, `ov-list-filters`, `ov-create`).

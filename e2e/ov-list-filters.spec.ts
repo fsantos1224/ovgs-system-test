@@ -33,10 +33,15 @@ test.describe("OV List — filtros", () => {
   test("filtro de data reduz resultados", async ({ page }) => {
     await page.goto("/ovs");
     await page.waitForLoadState("domcontentloaded").catch(() => {});
-    // Conta linhas antes
+    // Aguarda a tabela popular antes de contar (evita race com fetch inicial)
+    await page.waitForFunction(
+      () => document.querySelectorAll("table tbody tr").length > 0,
+      { timeout: 10_000 },
+    );
     const antes = await page.locator("table tbody tr").count();
-    // Filtra por data futura restrita
-    await page.locator('input[type="date"]').first().fill("2024-11-20");
+    expect(antes).toBeGreaterThan(0);
+    // Filtra por data restrita que intersecta o seed (2025-11-XX)
+    await page.locator('input[type="date"]').first().fill("2025-11-21");
     await page.waitForTimeout(500);
     const depois = await page.locator("table tbody tr").count();
     expect(depois).toBeLessThanOrEqual(antes);

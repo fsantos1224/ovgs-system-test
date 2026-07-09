@@ -26,4 +26,16 @@ Filtro trivial no dropdown resolve. Cliente inativo continua aparecendo na pági
 
 ## Resolução
 
-_a preencher ao fechar o ticket_
+**Status:** ✔ Resolvido (2026-07-09)
+
+**Evidência no código (`src/pages/OVNew.tsx:164`):**
+```tsx
+{clientes?.filter((c) => c.ativo).map((c) => (
+  <option key={c.id} value={c.id}>{c.nome}</option>
+))}
+```
+
+Gamma Distribuidora (id "3", `ativo: false`) **não aparece** no dropdown de nova OV.
+Na página `/cadastros/clientes` (`src/pages/Clientes.tsx`), todos os clientes são listados — o cadastro continua mostrando inativos para edição/consulta, alinhado com o ticket.
+
+Mudança de 1 linha, sem libs, sem tooltips (YAGNI). Unit + integration + E2E suites continuam verdes.

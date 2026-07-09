@@ -1,6 +1,6 @@
 // Testes unitários — funções puras do domínio, sem mock de network
 import { describe, it, expect } from "vitest";
-import { canTransition, statusLabel } from "./types";
+import { canTransition, canUseTransporte, statusLabel } from "./types";
 
 describe("canTransition", () => {
   it("permite transição sequencial CRIADA → PLANEJADA", () => {
@@ -30,5 +30,20 @@ describe("statusLabel", () => {
   it("retorna label em português", () => {
     expect(statusLabel("CRIADA")).toBe("Criada");
     expect(statusLabel("EM_TRANSPORTE")).toBe("Em Transporte");
+  });
+});
+
+describe("canUseTransporte", () => {
+  it("permite transporte presente na lista", () => {
+    expect(canUseTransporte({ transportesAutorizados: ["1", "3"] }, "3")).toBe(true);
+  });
+
+  it("rejeita transporte ausente", () => {
+    expect(canUseTransporte({ transportesAutorizados: ["1"] }, "2")).toBe(false);
+  });
+
+  it("retorna false para cliente nulo/indefinido", () => {
+    expect(canUseTransporte(null, "1")).toBe(false);
+    expect(canUseTransporte(undefined, "1")).toBe(false);
   });
 });

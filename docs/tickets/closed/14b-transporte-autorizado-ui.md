@@ -30,4 +30,16 @@ Este ticket faz o dropdown de transporte **depender do cliente selecionado**: ao
 
 ## Resolução
 
-_a preencher ao fechar o ticket_
+**Status:** ✔ Resolvido (2026-07-09)
+
+**Evidência no código (`src/pages/OVNew.tsx`):**
+- **L. 57-60** — `transportesDisponiveis = useMemo(() => (transportes ?? []).filter(t => canUseTransporte(clienteSelecionado, t.id)), ...)`. Dependências: `[transportes, clienteSelecionado]`.
+- **L. 62-68** — efeito de "limpar transporte inválido" via `setValue("transporteId", "")` se o transporte previamente escolhido não consta nos autorizados do novo cliente.
+- **L. 179-191** — `disabled={!clienteSelecionado}` no `<select>` de transporte, com mensagem contextual:
+  - sem cliente → "Selecione um cliente primeiro"
+  - cliente sem transporte → "Nenhum transporte autorizado"
+  - normal → "Selecione..."
+- **L. 88-89** — validação Zod adicional (`ovSchema.safeParse`) antes do POST captura erros de payload.
+- **L. 281-285** — `serverError` (com `role="alert"`) exibe a mensagem 400 do servidor inline.
+
+**Verificação:** E2E `e2e/ov-create.spec.ts:44-73` confirma que selecionar Beta (autorizado só [2]) esconde "Transportadora Rápida" (id 1) do dropdown.
