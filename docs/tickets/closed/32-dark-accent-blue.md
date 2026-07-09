@@ -32,3 +32,18 @@ Migração é exclusiva em tokens do `@theme` do Tailwind v4 em `src/index.css`.
 - Tokens semânticos (`--color-canvas`, `--color-surface`, `--color-text` etc.) **não mudam** — apenas accent e accent-soft.
 - Light theme mantém `#0EA5E9` (sky-500) já em uso — coerente com brand.
 - Crítico: `--color-on-accent` muda de preto para branco. Blue-500 não passa contraste AA com texto preto.
+
+## Resolução
+
+**Status:** ✔ Resolvido (2026-07-09)
+
+**Evidência no código:**
+- `src/index.css:18-20` — `--color-accent: #3b82f6` (Blue-500), `--color-accent-soft: rgb(59 130 246 / 0.15)`
+- `src/index.css:27` — `--color-on-accent: #ffffff` (blue-500 precisa de texto branco para contraste AA)
+- `docs/DESIGN.md:24` — paleta documentada com nota sobre badges semânticas preservadas
+
+**Verificação:**
+- `npm run build` → 19 chunks gerados, sem warnings
+- Badge colors semânticos intactos: `bg-amber-950/30` (CRIADA/PLANEJADA), `bg-sky-50` (AGENDADA), `bg-emerald-950/30` (ENTREGUE) — preservados
+- Dark theme: hover de botões primários, focus rings, KPI numbers, link hover agora usam Blue-500
+- Light theme: inalterado (`#0EA5E9` Sky)

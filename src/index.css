@@ -15,8 +15,8 @@
   --color-text-muted: rgb(240 240 240 / 0.5);
   --color-text-subtle: rgb(240 240 240 / 0.4);
   --color-text-faint: rgb(240 240 240 / 0.3);
-  --color-accent: #f59e0b;
-  --color-accent-soft: rgb(245 158 11 / 0.15);
+  --color-accent: #3b82f6;
+  --color-accent-soft: rgb(59 130 246 / 0.15);
   --color-border: rgb(255 255 255 / 0.1);
   --color-border-strong: rgb(255 255 255 / 0.2);
   --color-border-subtle: rgb(255 255 255 / 0.05);
@@ -24,7 +24,7 @@
   --color-hover: rgb(255 255 255 / 0.05);
   --color-hover-strong: rgb(255 255 255 / 0.1);
   --color-overlay: rgb(0 0 0 / 0.85);
-  --color-on-accent: #000000;
+  --color-on-accent: #ffffff;
   --color-on-canvas: #F0F0F0;
 }
 

@@ -32,7 +32,7 @@ Inspirada em painéis de monitoramento industrial de alta densidade.
 - **Fundo Principal (Canvas):** `#0A0A0A` — Preto profundo que minimiza o cansaço visual em longas sessões operacionais.
 - **Superfícies de Componentes (Cards/Modais):** `#141414` e `#1c1c1c` — Tons de grafite escuro com bordas sutis.
 - **Bordas e Linhas de Grade:** `rgba(255, 255, 255, 0.1)` (`border-white/10`) — Linhas finas que demarcam os espaços sem criar ruído visual.
-- **Destaques e Ênfase:** `#f59e0b` (Amber/Gold) — Usada de forma intencional para indicar ações primárias, números importantes ou janelas de agendamento ativas.
+- **Destaques e Ênfase:** `#3b82f6` (Blue-500) — Cor de marca alinhada à identidade corporativa; indica ações primárias, números importantes ou janelas de agendamento ativas. Badges de status (CRIADA/PLANEJADA/AGENDADA/EM_TRANSPORTE/ENTREGUE) seguem cores semânticas próprias (amber/sky/emerald/purple/zinc) — não são afetados pela troca de accent.
 - **Texto Principal:** `#F0F0F0` (Gelo) — Contraste perfeitamente equilibrado que garante alta legibilidade sem ofuscar.
 - **Texto Secundário:** `rgba(255, 255, 255, 0.5)` — Legendas, metadados e marcadores secundários.
 
