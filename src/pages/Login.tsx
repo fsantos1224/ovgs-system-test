@@ -71,8 +71,8 @@ export function Login() {
 
         <div className="text-xs text-slate-400 text-center space-y-1">
           <p>Contas de teste:</p>
-          <p>admin@ovgs.com / admin123</p>
-          <p>viewer@ovgs.com / viewer123</p>
+          <p>admin@ovgs.local / admin123</p>
+          <p>viewer@ovgs.local / viewer123</p>
         </div>
       </form>
     </div>

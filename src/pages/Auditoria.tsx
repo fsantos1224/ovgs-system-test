@@ -1,8 +1,21 @@
 import { useFetch } from '../hooks/useFetch';
+import { usePermissao } from '../hooks/usePermission';
 import type { EventoAuditoria } from '../domain/types';
 
 export function Auditoria() {
+  const podeVer = usePermissao('auditoria:ver');
   const { data: eventos, loading } = useFetch<EventoAuditoria[]>('/eventosAuditoria');
+
+  if (!podeVer) {
+    return (
+      <div role="alert" className="bg-white rounded-lg shadow p-6">
+        <h1 className="text-xl font-bold mb-2">Acesso negado</h1>
+        <p className="text-slate-500 text-sm">
+          Você não tem permissão para visualizar a auditoria do sistema.
+        </p>
+      </div>
+    );
+  }
 
   if (loading) return <p role="status" aria-live="polite" className="text-slate-500">Carregando...</p>;
 

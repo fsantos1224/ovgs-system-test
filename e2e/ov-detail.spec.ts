@@ -8,7 +8,7 @@ test.describe("OV Detail", () => {
 
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.com", nome: "Administrador", role: "admin" }));
+      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.local", nome: "Administrador", role: "admin" }));
       localStorage.setItem("ovgs:role", "admin");
     });
     await page.reload();
@@ -30,7 +30,7 @@ test.describe("OV Detail", () => {
   test("mostra 404 para OV inexistente", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.com", nome: "Administrador", role: "admin" }));
+      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.local", nome: "Administrador", role: "admin" }));
       localStorage.setItem("ovgs:role", "admin");
     });
     await page.reload();

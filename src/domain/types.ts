@@ -41,6 +41,16 @@ export interface Cliente {
   telefone: string;
   endereco: string;
   ativo: boolean;
+  transportesAutorizados: string[];
+}
+
+export function canUseTransporte(
+  cliente: Pick<Cliente, "transportesAutorizados"> | null | undefined,
+  transporteId: string,
+): boolean {
+  if (!cliente) return false;
+  // Backward-compat: clientes antigos sem o campo são tratados como "nenhum autorizado".
+  return cliente.transportesAutorizados?.includes(transporteId) ?? false;
 }
 
 export interface TipoTransporte {

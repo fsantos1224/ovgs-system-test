@@ -6,8 +6,9 @@ import { useFieldArray, useForm } from "react-hook-form";
 import { useFetch } from "../hooks/useFetch";
 import { apiPost } from "../api/fetch";
 import type { Cliente, Item, TipoTransporte, ItemOV } from "../domain/types";
+import { canUseTransporte } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 
 type FormData = {
   clienteId: string;
@@ -17,19 +18,10 @@ type FormData = {
   itens: { itemId: string; quantidade: number }[];
 };
 
-// Validação manual — função pura, sem Zod/Yup
-type ValidationErrors = Record<string, string>;
-const validate = (
-  data: FormData,
-  itensDisponiveis: number,
-): ValidationErrors => {
-  const errors: ValidationErrors = {};
-  if (!data.clienteId) errors.clienteId = "Selecione um cliente";
-  if (!data.transporteId) errors.transporteId = "Selecione um transporte";
-  if (!data.dataEntrega) errors.dataEntrega = "Informe a data de entrega";
-  if (itensDisponiveis === 0) errors.itens = "Adicione ao menos um item";
-  return errors;
-};
+// Validação por campo via React Hook Form (required messages + min).
+// Validação cross-field (itens vazios) feita em onSubmit usando `data` (fonte
+// da verdade do submit), não `fields` do useFieldArray — `fields` pode conter
+// defaults stale após edição.
 
 export function OVNew() {
   const navigate = useNavigate();
@@ -45,16 +37,50 @@ export function OVNew() {
     register,
     handleSubmit,
     control,
+    watch,
+    setError,
+    clearErrors,
+    setValue,
     formState: { errors: fieldErrors },
   } = useForm<FormData>({
     defaultValues: { itens: [{ itemId: "", quantidade: 1 }] },
   });
 
+  const clienteSelecionadoId = watch("clienteId");
+  const transporteSelecionadoId = watch("transporteId");
+
+  // Dropdown dependente: ao escolher cliente, filtra transportes pelos autorizados.
+  const clienteSelecionado = useMemo(
+    () => clientes?.find((c) => c.id === clienteSelecionadoId),
+    [clientes, clienteSelecionadoId],
+  );
+  const transportesDisponiveis = useMemo(
+    () => (transportes ?? []).filter((t) => canUseTransporte(clienteSelecionado, t.id)),
+    [transportes, clienteSelecionado],
+  );
+
+  // Se trocar de cliente e o transporte previamente escolhido não é mais
+  // autorizado, limpa o campo para evitar submit inválido.
+  if (
+    transporteSelecionadoId &&
+    clienteSelecionado &&
+    !canUseTransporte(clienteSelecionado, transporteSelecionadoId)
+  ) {
+    setValue("transporteId", "");
+  }
+
   const { fields, append, remove } = useFieldArray({ control, name: "itens" });
 
   const onSubmit = async (data: FormData) => {
-    const manualErrors = validate(data, fields.filter((f) => f.itemId).length);
-    if (Object.keys(manualErrors).length > 0) return;
+    // Cross-field: ao menos um item com itemId selecionado.
+    // Usa `data` (o que o usuário digitou), não `fields` (registro do RHF, que
+    // pode conter defaults stale).
+    const itensValidos = data.itens.filter((i) => i.itemId).length;
+    if (itensValidos === 0) {
+      setError("itens", { type: "manual", message: "Adicione ao menos um item" });
+      return;
+    }
+    clearErrors("itens");
 
     setSubmitting(true);
     setServerError("");
@@ -120,11 +146,11 @@ export function OVNew() {
         <div>
           <label className="block text-sm font-medium mb-1">Cliente</label>
           <select
-            {...register("clienteId", { required: true })}
+            {...register("clienteId", { required: "Selecione um cliente" })}
             className="w-full border rounded px-3 py-2 text-sm"
           >
             <option value="">Selecione...</option>
-            {clientes?.map((c) => (
+            {clientes?.filter((c) => c.ativo).map((c) => (
               <option key={c.id} value={c.id}>
                 {c.nome}
               </option>
@@ -140,18 +166,25 @@ export function OVNew() {
         <div>
           <label className="block text-sm font-medium mb-1">Transporte</label>
           <select
-            {...register("transporteId", { required: true })}
-            className="w-full border rounded px-3 py-2 text-sm"
+            {...register("transporteId", { required: "Selecione um transporte" })}
+            disabled={!clienteSelecionado}
+            className="w-full border rounded px-3 py-2 text-sm disabled:bg-slate-100"
           >
-            <option value="">Selecione...</option>
-            {transportes?.map((t) => (
+            <option value="">
+              {!clienteSelecionado
+                ? "Selecione um cliente primeiro"
+                : transportesDisponiveis.length === 0
+                  ? "Nenhum transporte autorizado"
+                  : "Selecione..."}
+            </option>
+            {transportesDisponiveis.map((t) => (
               <option key={t.id} value={t.id}>
                 {t.nome}
               </option>
             ))}
           </select>
           {fieldErrors.transporteId && (
-            <p className="text-red-500 text-xs mt-1">
+            <p role="alert" className="text-red-500 text-xs mt-1">
               {fieldErrors.transporteId.message}
             </p>
           )}
@@ -163,7 +196,7 @@ export function OVNew() {
           </label>
           <input
             type="date"
-            {...register("dataEntrega", { required: true })}
+            {...register("dataEntrega", { required: "Informe a data de entrega" })}
             className="w-full border rounded px-3 py-2 text-sm"
           />
           {fieldErrors.dataEntrega && (
@@ -211,7 +244,7 @@ export function OVNew() {
                 min={1}
                 {...register(`itens.${i}.quantidade`, {
                   valueAsNumber: true,
-                  min: 1,
+                  min: { value: 1, message: "Mínimo 1" },
                 })}
                 className="w-20 border rounded px-3 py-2 text-sm"
               />
@@ -226,6 +259,11 @@ export function OVNew() {
               )}
             </div>
           ))}
+          {fieldErrors.itens && (
+            <p role="alert" className="text-red-500 text-xs mt-1">
+              {fieldErrors.itens.message}
+            </p>
+          )}
         </div>
 
         {serverError && (

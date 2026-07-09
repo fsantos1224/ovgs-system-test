@@ -9,18 +9,26 @@ export function AppLayout() {
   const role = useRole();
   const { user, logout } = useAuth();
 
+  // Hooks no topo do componente — nunca dentro de callback (Rules of Hooks).
+  const canSeeOVs = usePermissao("ov:listar");
+  const canSeeAgendamento = usePermissao("agendamento:ver");
+  const canSeeClientes = usePermissao("clientes:listar");
+  const canSeeTransportes = usePermissao("transportes:listar");
+  const canSeeItens = usePermissao("itens:listar");
+  const canSeeAuditoria = usePermissao("auditoria:ver");
+
   const navItems = [
-    { to: "/", label: "Dashboard", perm: null as string | null },
-    { to: "/ovs", label: "Ordens de Venda", perm: "ov:listar" },
-    { to: "/agendamento", label: "Agendamento", perm: "agendamento:ver" },
-    { to: "/cadastros/clientes", label: "Clientes", perm: "clientes:listar" },
+    { to: "/", label: "Dashboard", show: true },
+    { to: "/ovs", label: "Ordens de Venda", show: canSeeOVs },
+    { to: "/agendamento", label: "Agendamento", show: canSeeAgendamento },
+    { to: "/cadastros/clientes", label: "Clientes", show: canSeeClientes },
     {
       to: "/cadastros/transportes",
       label: "Transportes",
-      perm: "transportes:listar",
+      show: canSeeTransportes,
     },
-    { to: "/cadastros/itens", label: "Itens", perm: "itens:listar" },
-    { to: "/auditoria", label: "Auditoria", perm: "auditoria:ver" },
+    { to: "/cadastros/itens", label: "Itens", show: canSeeItens },
+    { to: "/auditoria", label: "Auditoria", show: canSeeAuditoria },
   ];
 
   return (
@@ -46,26 +54,22 @@ export function AppLayout() {
         </div>
 
         <nav aria-label="Menu principal" className="flex-1 p-2 space-y-1">
-          {navItems.map((item) => {
-            const hasPerm = item.perm ? usePermissao(item.perm) : true;
-            if (!hasPerm) return null;
-            return (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.to === "/"}
-                className={({ isActive }) =>
-                  `block px-3 py-2 rounded transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400 ${
-                    isActive
-                      ? "bg-slate-600 text-white"
-                      : "text-slate-300 hover:bg-slate-700 hover:text-white"
-                  }`
-                }
-              >
-                {item.label}
-              </NavLink>
-            );
-          })}
+          {navItems.filter((item) => item.show).map((item) => (
+            <NavLink
+              key={item.to}
+              to={item.to}
+              end={item.to === "/"}
+              className={({ isActive }) =>
+                `block px-3 py-2 rounded transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400 ${
+                  isActive
+                    ? "bg-slate-600 text-white"
+                    : "text-slate-300 hover:bg-slate-700 hover:text-white"
+                }`
+              }
+            >
+              {item.label}
+            </NavLink>
+          ))}
         </nav>
 
         <div className="p-4 border-t border-slate-600 space-y-2">

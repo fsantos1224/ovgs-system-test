@@ -9,14 +9,16 @@ const path = require("path");
 const server = jsonServer.create();
 
 // Persistência do banco: data/db.json no volume nomeado.
-// Se não existir, copia do db.json original (seed) para o volume.
+// Em testes, DATA_FILE pode ser sobrescrito via env var (porta efêmera).
 const DATA_DIR = path.join(__dirname, "data");
-const DATA_FILE = path.join(DATA_DIR, "db.json");
-if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-if (!fs.existsSync(DATA_FILE)) {
-  const seed = path.join(__dirname, "db.json");
-  if (fs.existsSync(seed)) fs.copyFileSync(seed, DATA_FILE);
-  else fs.writeFileSync(DATA_FILE, JSON.stringify({}));
+const DATA_FILE = process.env.DATA_FILE || path.join(DATA_DIR, "db.json");
+if (DATA_FILE === path.join(DATA_DIR, "db.json")) {
+  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+  if (!fs.existsSync(DATA_FILE)) {
+    const seed = path.join(__dirname, "db.json");
+    if (fs.existsSync(seed)) fs.copyFileSync(seed, DATA_FILE);
+    else fs.writeFileSync(DATA_FILE, JSON.stringify({}));
+  }
 }
 const router = jsonServer.router(DATA_FILE);
 const middlewares = jsonServer.defaults();
@@ -101,6 +103,20 @@ server.post("/ordensVenda", (req, res) => {
   if (!cliente)
     return res.status(400).json({ error: "Cliente não encontrado" });
   if (!cliente.ativo) return res.status(400).json({ error: "Cliente inativo" });
+
+  // Regra central do domínio Cliente (CONTEXT.md): transporte precisa estar
+  // autorizado para o cliente. Backward-compat: clientes sem o campo são
+  // tratados como sem nenhum transporte autorizado.
+  const autorizados = cliente.transportesAutorizados || [];
+  if (!autorizados.includes(body.transporteId)) {
+    return res.status(400).json({
+      error: `Transporte não autorizado para o cliente ${cliente.nome}`,
+      clienteId: body.clienteId,
+      transporteId: body.transporteId,
+      transportesAutorizados: autorizados,
+    });
+  }
+
   if (!transporte)
     return res.status(400).json({ error: "Transporte não encontrado" });
 
@@ -294,6 +310,7 @@ server.post("/reset", (_req, res) => {
 
 server.use(router);
 
-server.listen(3001, () => {
-  console.log("OVGS Mock API rodando em http://localhost:3001");
+const PORT = parseInt(process.env.PORT || "3001", 10);
+server.listen(PORT, () => {
+  console.log(`OVGS Mock API rodando em http://localhost:${PORT}`);
 });

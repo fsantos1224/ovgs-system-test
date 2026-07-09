@@ -4,7 +4,7 @@ test.describe("OV List — filtros", () => {
   test.beforeEach(async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.com", nome: "Administrador", role: "admin" }));
+      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.local", nome: "Administrador", role: "admin" }));
       localStorage.setItem("ovgs:role", "admin");
     });
     await page.reload();

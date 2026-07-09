@@ -1,13 +1,14 @@
 {
   "clientes": [
-    {
+{
       "id": "1",
       "nome": "Empresa Alpha Ltda",
       "documento": "12.345.678/0001-90",
       "email": "contato@alpha.com",
       "telefone": "(11) 9999-8888",
       "endereco": "Rua A, 123",
-      "ativo": true
+      "ativo": true,
+      "transportesAutorizados": ["1", "3"]
     },
     {
       "id": "2",
@@ -16,7 +17,8 @@
       "email": "vendas@beta.com",
       "telefone": "(21) 7777-6666",
       "endereco": "Av. B, 456",
-      "ativo": true
+      "ativo": true,
+      "transportesAutorizados": ["2"]
     },
     {
       "id": "3",
@@ -25,7 +27,8 @@
       "email": "admin@gamma.com",
       "telefone": "(31) 5555-4444",
       "endereco": "Rua C, 789",
-      "ativo": false
+      "ativo": false,
+      "transportesAutorizados": ["3"]
     },
     {
       "id": "4",
@@ -34,7 +37,8 @@
       "email": "delta@log.com",
       "telefone": "(41) 3333-2222",
       "endereco": "Av. D, 1010",
-      "ativo": true
+      "ativo": true,
+      "transportesAutorizados": ["1", "2", "4"]
     },
     {
       "id": "5",
@@ -43,16 +47,8 @@
       "email": "vendas@epsilon.com",
       "telefone": "(51) 4444-5555",
       "endereco": "Rua E, 2020",
-      "ativo": true
-    },
-    {
-      "nome": "teste",
-      "documento": "abc-123",
-      "email": "teste@teste.com",
-      "telefone": "",
-      "endereco": "",
       "ativo": true,
-      "id": "YQf14Vc"
+      "transportesAutorizados": ["2", "4", "5"]
     }
   ],
   "tiposTransporte": [

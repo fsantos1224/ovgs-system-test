@@ -5,7 +5,7 @@ test.describe("RBAC — autorização por role", () => {
   test("viewer não vê botão de criar OV", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("ovgs:user", JSON.stringify({ email: "viewer@ovgs.com", nome: "Visualizador", role: "viewer" }));
+      localStorage.setItem("ovgs:user", JSON.stringify({ email: "viewer@ovgs.local", nome: "Visualizador", role: "viewer" }));
       localStorage.setItem("ovgs:role", "viewer");
     });
     await page.reload();
@@ -20,7 +20,7 @@ test.describe("RBAC — autorização por role", () => {
   test("admin vê botão de criar OV", async ({ page }) => {
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.com", nome: "Administrador", role: "admin" }));
+      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.local", nome: "Administrador", role: "admin" }));
       localStorage.setItem("ovgs:role", "admin");
     });
     await page.reload();
@@ -41,7 +41,7 @@ test.describe("RBAC — autorização por role", () => {
 
     await page.goto("/");
     await page.evaluate(() => {
-      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.com", nome: "Administrador", role: "admin" }));
+      localStorage.setItem("ovgs:user", JSON.stringify({ email: "admin@ovgs.local", nome: "Administrador", role: "admin" }));
       localStorage.setItem("ovgs:role", "admin");
     });
     await page.reload();
