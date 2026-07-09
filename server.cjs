@@ -175,6 +175,72 @@ server.patch("/ordensVenda/:id", (req, res) => {
   res.json(ovAtualizada);
 });
 
+// Mapa de nomes de entidade para auditoria
+const AUDIT_ENTITY = {
+  clientes: "cliente",
+  tiposTransporte: "transporte",
+  itens: "item",
+};
+
+const AUDIT_EXCLUDE = ["eventosAuditoria", "ordensVenda"];
+
+// Captura estado anterior antes de PATCH em entidades auditáveis
+server.use((req, res, next) => {
+  if (req.method === "PATCH") {
+    const parts = req.path.split("/").filter(Boolean);
+    const entity = parts[0];
+    const id = parts[1];
+    if (AUDIT_ENTITY[entity] && id) {
+      const before = router.db.get(entity).find({ id }).value();
+      if (before) req.__before = JSON.stringify(before);
+    }
+  }
+  next();
+});
+
+// Intercepta respostas do json-server para adicionar auditoria em CRUD
+const _render = router.render.bind(router);
+router.render = (req, res) => {
+  const parts = req.path.split("/").filter(Boolean);
+  const entity = parts[0];
+  const method = req.method;
+  const auditName = AUDIT_ENTITY[entity];
+
+  if (auditName && !AUDIT_EXCLUDE.includes(entity) && (method === "POST" || method === "PATCH")) {
+    const data = res.locals.data;
+    const acao = method === "POST" ? "criacao" : "alteracao";
+
+    let estadoAnterior = null;
+    if (method === "PATCH" && data?.id) {
+      estadoAnterior = req.__before || null;
+    }
+
+    let detalhes;
+    if (method === "POST") {
+      detalhes = `${auditName.charAt(0).toUpperCase() + auditName.slice(1)} ${data.nome || data.id || ""} criado`;
+    } else {
+      const bodyKeys = Object.keys(req.body).filter(k => k !== "id");
+      detalhes = `${auditName.charAt(0).toUpperCase() + auditName.slice(1)} ${data.nome || data.id} alterado: ${bodyKeys.join(", ")}`;
+    }
+
+    const evento = {
+      id: String(router.db.get("eventosAuditoria").value().length + 1),
+      entidade: auditName,
+      entidadeId: String(data.id),
+      acao,
+      usuario: req.headers["x-user"] || "admin",
+      dataHora: new Date().toISOString(),
+      detalhes,
+      estadoAnterior,
+      estadoPosterior: JSON.stringify(method === "PATCH" ? req.body : data),
+    };
+
+    router.db.get("eventosAuditoria").push(evento).write();
+  }
+
+  _render(req, res);
+};
+
 // POST /reset — limpa o cache de idempotência
 server.post("/reset", (_req, res) => {
   idempotencyStore.clear();
