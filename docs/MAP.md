@@ -79,6 +79,15 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - `server.cjs` e `db.json` atualizados com os novos status
 - `OVDetail.tsx`, `OVNew.tsx`, `Agendamento.tsx` — referências de status corrigidas
 
+### Ticket 4 — Estado (resolvido)
+
+- Padrão `useFetch` + `usePaginatedFetch` + `apiGet`/`apiPost`/`apiPatch` — sem TanStack Query, sem Zustand, sem Redux
+- `useFetch<T>(path)` — fetch com `useEffect`, `refresh()` via `refreshKey`, cancelamento em unmount
+- `usePaginatedFetch<T>(basePath, pageSize)` — paginação server-side com json-server (`_page`, `_limit`, `X-Total-Count`)
+- Mutação: `apiPost`, `apiPatch` com parse de erro do json-server middleware
+- Refresh após mutação via `.refresh()` — pattern simples sem cache layer
+- Estado local em páginas (filters, page, form state) sem Context global
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
@@ -89,7 +98,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~10~~ | Performance | `10-performance` | `wayfinder:research` | 1 | ✔
 | ~~2~~ | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 | ✔
 | ~~3~~ | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 | ✔
-| 4 | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 |
+| ~~4~~ | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 | ✔
 | ~~6~~ | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 | ✔
 | 7 | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 |
 | 8 | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 |
