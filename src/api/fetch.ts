@@ -3,7 +3,7 @@
 
 import { getCurrentUser } from "../hooks/useAuth";
 
-const API_BASE = "http://localhost:3001";
+const API_BASE = "/api";
 
 function authHeaders(): Record<string, string> {
   const user = getCurrentUser();

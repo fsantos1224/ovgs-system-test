@@ -3,3 +3,7 @@ dist
 .git
 *.md
 test-results
+data/
+.env
+.e2e.env
+README*

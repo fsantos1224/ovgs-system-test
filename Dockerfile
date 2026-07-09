@@ -1,9 +1,9 @@
-# Multi-stage: build Vite estático + serve com nginx
 FROM node:20-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm install && npm cache clean --force
-COPY . .
+COPY src/ src/
+COPY index.html vite.config.ts tsconfig*.json ./
 RUN npm run build
 
 FROM nginx:alpine
