@@ -9,6 +9,14 @@ export async function apiGet<T>(path: string): Promise<T> {
   return res.json();
 }
 
+// 🐴 Variante que expõe X-Total-Count para paginação server-side (json-server nativo)
+export async function apiGetPaginated<T>(path: string): Promise<{ data: T; totalCount: number }> {
+  const res = await fetch(`${API_BASE}${path}`);
+  if (!res.ok) throw new Error(`GET ${path} falhou: ${res.status}`);
+  const totalCount = parseInt(res.headers.get('X-Total-Count') ?? '0', 10);
+  return { data: await res.json(), totalCount };
+}
+
 export async function apiPost<T, B>(path: string, body: B): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
