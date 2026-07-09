@@ -17,13 +17,16 @@ export async function apiGetPaginated<T>(path: string): Promise<{ data: T; total
   return { data: await res.json(), totalCount };
 }
 
-export async function apiPost<T, B>(path: string, body: B): Promise<T> {
+export async function apiPost<T, B>(path: string, body: B, extraHeaders?: Record<string, string>): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...extraHeaders },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`POST ${path} falhou: ${res.status}`);
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error || `POST ${path} falhou: ${res.status}`);
+  }
   return res.json();
 }
 
@@ -43,7 +46,10 @@ export async function apiPatch<T, B>(path: string, body: Partial<B>): Promise<T>
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`PATCH ${path} falhou: ${res.status}`);
+  if (!res.ok) {
+    const errBody = await res.json().catch(() => ({}));
+    throw new Error(errBody.error || `PATCH ${path} falhou: ${res.status}`);
+  }
   return res.json();
 }
 

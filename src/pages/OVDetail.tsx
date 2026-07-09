@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useFetch } from '../hooks/useFetch';
 import type { OrdemVenda } from '../domain/types';
@@ -17,11 +18,18 @@ export function OVDetail() {
   const transicoesPossiveis: OrdemVenda['status'][] = (['rascunho', 'pendente', 'confirmada', 'em_transporte', 'entregue', 'cancelada'] as const)
     .filter((s) => canTransition(ov.status, s));
 
+  const [erroStatus, setErroStatus] = useState('');
+
   const handleStatusChange = async (novoStatus: OrdemVenda['status']) => {
     const statusAnterior = ov.status;
-    await apiPatch(`/ordensVenda/${ov.id}`, { status: novoStatus });
-    trackEvent('ov:status:alterar', 'ordem_venda', { ovId: ov.id, numero: ov.numero, de: statusAnterior, para: novoStatus });
-    refresh();
+    try {
+      setErroStatus('');
+      await apiPatch(`/ordensVenda/${ov.id}`, { status: novoStatus });
+      trackEvent('ov:status:alterar', 'ordem_venda', { ovId: ov.id, numero: ov.numero, de: statusAnterior, para: novoStatus });
+      refresh();
+    } catch (err) {
+      setErroStatus(err instanceof Error ? err.message : 'Erro ao alterar status');
+    }
   };
 
   return (
@@ -60,6 +68,9 @@ export function OVDetail() {
                 ))}
               </div>
             </div>
+          )}
+          {erroStatus && (
+            <p className="text-red-500 text-sm mt-2">{erroStatus}</p>
           )}
         </div>
 

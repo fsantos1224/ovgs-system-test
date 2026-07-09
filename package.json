@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "mock:api": "json-server --watch db.json --port 3001",
+    "mock:api": "node server.cjs",
     "dev:full": "concurrently \"npm run dev\" \"npm run mock:api\""
   },
   "dependencies": {

@@ -71,7 +71,8 @@ export function OVNew() {
       observacoes: observacoes || undefined,
     };
 
-    await apiPost('/ordensVenda', novaOV);
+    const idempotencyKey = crypto.randomUUID();
+    await apiPost('/ordensVenda', novaOV, { 'idempotency-key': idempotencyKey });
     trackEvent('ov:criar', 'ordem_venda', { numero: novaOV.numero, clienteId, transporteId });
     navigate('/ovs');
   };
