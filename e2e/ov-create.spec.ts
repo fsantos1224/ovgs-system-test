@@ -28,7 +28,7 @@ test.describe('OV Creation — happy path', () => {
     await page.locator('select[name="itens.0.itemId"]').selectOption('1');
     await page.locator('input[name="itens.0.quantidade"]').fill('100');
 
-    await page.getByRole('button', { name: 'Criar OV' }).click();
+    await page.getByRole('button', { name: 'Criar Ordem' }).click();
 
     // Após criar, redireciona para /ovs com a OV visível na lista
     await page.waitForURL(/\/ovs$/);
