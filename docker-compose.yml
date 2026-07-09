@@ -1,0 +1,16 @@
+services:
+  api:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - .:/app
+    command: node server.cjs
+    ports:
+      - "3001:3001"
+
+  frontend:
+    build: .
+    ports:
+      - "8080:80"
+    depends_on:
+      - api

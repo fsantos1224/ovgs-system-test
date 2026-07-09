@@ -22,4 +22,18 @@ Como containerizar o frontend + json-server e documentar o projeto para entrega 
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+### Decisão
+
+- Dockerfile multi-stage (node:20-alpine → npm build → nginx:alpine + dist)
+- nginx.conf minimalista com `try_files` para SPA routing
+- docker-compose.yml com 2 services: `api` (node server.cjs) + `frontend` (nginx construído)
+- README.md com: stack, 8 ADRs inline, modelagem de domínio, estrutura de pastas, instruções npm/Docker, estratégia de persistência, performance, trade-offs
+- `🐴` Build usa `npm install` (não `npm ci`) porque vitest puxa esbuild@0.28 que não está no lockfile gerado em macOS
+
+### Artefactos
+
+- `Dockerfile` — multi-stage build, produção ~50MB
+- `docker-compose.yml` — `docker compose up --build` expõe frontend em :8080 e API em :3001
+- `nginx.conf` — SPA routing sem proxy (frontend chama API_BASE diretamente)
+- `.dockerignore` — node_modules, dist, .git, *.md
+- `README.md` — documentação completa do projeto

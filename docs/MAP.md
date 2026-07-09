@@ -119,6 +119,15 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - Sem RTL, sem Testing Library — Playwright `getByRole` nativo
 - `🐴` Submissão RHF via Playwright → `🐴` conhecido: `handleSubmit` não reconhece eventos sintéticos do Playwright. API testada diretamente (funciona), form load testado sem erros JS.
 
+### Ticket 12 — Docker + Docs (resolvido)
+
+- Dockerfile multi-stage (node:20-alpine build + nginx:alpine final)
+- nginx.conf com SPA routing (`try_files $uri $uri/ /index.html`)
+- docker-compose.yml com `api` (json-server) + `frontend` (nginx)
+- `.dockerignore` para excluir node_modules/dist/.git
+- README.md completo: stack, 8 ADRs inline, modelagem de domínio, estrutura, instruções (npm + docker), testes, estratégia de persistência, performance, trade-offs
+- `🐴` Docker build usa `npm install` em vez de `npm ci` (lockfile incompatível com esbuild linux)
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
@@ -134,7 +143,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~7~~ | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 | ✔
 | ~~8~~ | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 | ✔
 | ~~11~~ | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 | ✔
-| 12 | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 |
+| ~~12~~ | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 | ✔
 
 ### Ordem de execução sugerida (fronteira)
 
