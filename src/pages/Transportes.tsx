@@ -4,13 +4,15 @@ import type { TipoTransporte } from '../domain/types';
 export function Transportes() {
   const { data: transportes, loading } = useFetch<TipoTransporte[]>('/tiposTransporte');
 
-  if (loading) return <p className="text-gray-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-gray-500">Carregando...</p>;
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Transportes</h1>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div role="region" aria-label="Lista de tipos de transporte">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="w-full text-sm">
+          <caption className="sr-only">Lista de tipos de transporte</caption>
           <thead className="bg-slate-100 text-left">
             <tr>
               <th className="p-3">Nome</th>
@@ -28,6 +30,7 @@ export function Transportes() {
             ))}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

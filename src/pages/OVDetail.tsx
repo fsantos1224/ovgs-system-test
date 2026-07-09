@@ -12,7 +12,7 @@ export function OVDetail() {
   const { data: ov, loading, refresh } = useFetch<OrdemVenda>(id ? `/ordensVenda/${id}` : null);
   const podeAlterarStatus = usePermissao('ov:alterar_status');
 
-  if (loading) return <p className="text-gray-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-gray-500">Carregando...</p>;
   if (!ov) return <p className="text-red-500">Ordem de venda não encontrada.</p>;
 
   const transicoesPossiveis = STATUS_FLOW.filter((s) => canTransition(ov.status, s));
@@ -60,7 +60,8 @@ export function OVDetail() {
                   <button
                     key={status}
                     onClick={() => handleStatusChange(status)}
-                    className="px-3 py-1 text-xs font-medium rounded bg-slate-700 text-white hover:bg-slate-600 transition-colors"
+                    aria-label={`Alterar status para ${statusLabel(status)}`}
+                    className="px-3 py-1 text-xs font-medium rounded bg-slate-700 text-white hover:bg-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400 transition-colors"
                   >
                     {statusLabel(status)}
                   </button>
@@ -69,7 +70,7 @@ export function OVDetail() {
             </div>
           )}
           {erroStatus && (
-            <p className="text-red-500 text-sm mt-2">{erroStatus}</p>
+            <p role="alert" className="text-red-500 text-sm mt-2">{erroStatus}</p>
           )}
         </div>
 

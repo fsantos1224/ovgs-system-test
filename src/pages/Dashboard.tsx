@@ -5,7 +5,7 @@ import { statusLabel } from '../domain/types';
 export function Dashboard() {
   const { data: ordens, loading } = useFetch<OrdemVenda[]>('/ordensVenda');
 
-  if (loading) return <p className="text-gray-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-gray-500">Carregando...</p>;
 
   const porStatus = ordens?.reduce<Record<string, number>>((acc, ov) => {
     const label = statusLabel(ov.status);

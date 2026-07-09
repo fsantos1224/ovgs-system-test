@@ -4,7 +4,7 @@ import type { EventoAuditoria } from '../domain/types';
 export function Auditoria() {
   const { data: eventos, loading } = useFetch<EventoAuditoria[]>('/eventosAuditoria');
 
-  if (loading) return <p className="text-slate-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-slate-500">Carregando...</p>;
 
   return (
     <div>

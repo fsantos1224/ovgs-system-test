@@ -5,7 +5,7 @@ import { statusLabel } from '../domain/types';
 export function Agendamento() {
   const { data: ordens, loading } = useFetch<OrdemVenda[]>('/ordensVenda');
 
-  if (loading) return <p className="text-gray-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-gray-500">Carregando...</p>;
 
   const paraAgendar = ordens?.filter((ov) => ov.status === 'CRIADA' || ov.status === 'PLANEJADA');
 

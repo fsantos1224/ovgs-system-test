@@ -4,13 +4,15 @@ import type { Cliente } from '../domain/types';
 export function Clientes() {
   const { data: clientes, loading } = useFetch<Cliente[]>('/clientes');
 
-  if (loading) return <p className="text-gray-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-gray-500">Carregando...</p>;
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Clientes</h1>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      <div role="region" aria-label="Lista de clientes">
+        <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="w-full text-sm">
+          <caption className="sr-only">Lista de clientes</caption>
           <thead className="bg-slate-100 text-left">
             <tr>
               <th className="p-3">Nome</th>
@@ -32,6 +34,7 @@ export function Clientes() {
             ))}
           </tbody>
         </table>
+      </div>
       </div>
     </div>
   );

@@ -161,7 +161,7 @@ export function OVNew() {
           ))}
         </div>
 
-        {serverError && <p className="text-red-500 text-sm">{serverError}</p>}
+        {serverError && <p role="alert" className="text-red-500 text-sm">{serverError}</p>}
 
         <button
           type="submit"

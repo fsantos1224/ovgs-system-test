@@ -27,7 +27,7 @@ export function OVList() {
 
   const podeCriar = usePermissao('ov:criar');
 
-  if (loading) return <p className="text-slate-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-slate-500">Carregando...</p>;
 
   return (
     <div>
