@@ -60,6 +60,17 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - `setRole()` com `window.location.reload()` para resetar o estado React (simplificação intencional)
 - Permissões usadas: `ov:listar`, `ov:criar`, `ov:alterar_status`, `clientes:listar`, `agendamento:ver`, `auditoria:ver`, etc.
 
+### Ticket 2 — Mock json-server (resolvido)
+
+- `server.cjs` com json-server programático + middleware custom
+- `POST /ordensVenda` — valida cliente ativo, campos obrigatórios, cria auditoria automaticamente
+- `PATCH /ordensVenda/:id` — valida transição de status contra a máquina de estados (`TRANSITIONS`), retorna 422 com sugestões se inválida
+- Idempotência via header `Idempotency-Key` + Map em memória
+- `POST /reset` — limpa cache de idempotência
+- `src/api/fetch.ts` — `apiPost` e `apiPatch` agora parseiam o body de erro para mensagens legíveis
+- `OVDetail.tsx` — mostra `erroStatus` inline quando transição é rejeitada (422)
+- `OVNew.tsx` — envia `idempotency-key` via `crypto.randomUUID()`
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
@@ -68,7 +79,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~5~~ | Routing e Layout | `05-routing-layout` | `wayfinder:prototype` | 1 | ✔
 | ~~9~~ | Observabilidade | `09-observabilidade` | `wayfinder:research` | 1 | ✔
 | ~~10~~ | Performance | `10-performance` | `wayfinder:research` | 1 | ✔
-| 2 | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 |
+| ~~2~~ | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 | ✔
 | 3 | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 |
 | 4 | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 |
 | ~~6~~ | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 | ✔
