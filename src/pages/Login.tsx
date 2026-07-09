@@ -1,38 +1,54 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth';
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 export function Login() {
-  const [email, setEmail] = useState('');
-  const [senha, setSenha] = useState('');
-  const [erro, setErro] = useState('');
+  const [email, setEmail] = useState("");
+  const [senha, setSenha] = useState("");
+  const [erro, setErro] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setErro('');
+    setErro("");
     const msg = login(email, senha);
     if (msg) {
       setErro(msg);
     } else {
-      navigate('/');
+      navigate("/");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-lg shadow-md w-full max-w-sm space-y-6"
-      >
-        <h1 className="text-2xl font-bold text-center text-slate-800">OVGS</h1>
-        <p className="text-sm text-slate-500 text-center">Sistema de Gestão de Ordens de Venda</p>
+    <div className="min-h-screen bg-canvas flex items-center justify-center p-4">
+      <div className="w-full max-w-md bg-surface rounded-2xl shadow-2xl border border-border p-10 space-y-8 animate-fade-in">
+        {/* Brand */}
+        <div className="text-center space-y-3">
+          <span className="text-[10px] tracking-[0.3em] font-bold uppercase text-text-faint">OVGS</span>
+          <h1 className="text-4xl font-serif italic tracking-tight text-text">
+            Gestão
+          </h1>
+          <div className="h-px bg-gradient-to-r from-transparent via-border-strong to-transparent w-full" />
+          <p className="text-[10px] text-accent font-bold tracking-[0.18em] uppercase">
+            Sistema de Gestão de Ordens de Venda
+          </p>
+        </div>
 
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium mb-1">
-              Email
+        {/* Form */}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          {erro && (
+            <div
+              role="alert"
+              className="bg-rose-950/30 border border-rose-500/30 text-rose-300 text-xs font-semibold p-4 rounded-lg"
+            >
+              {erro}
+            </div>
+          )}
+
+          <div className="space-y-2">
+            <label htmlFor="email" className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
+              E-mail
             </label>
             <input
               id="email"
@@ -41,12 +57,13 @@ export function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
-              className="w-full border rounded px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400"
+              placeholder="admin@ovgs.local"
+              className="w-full bg-canvas border border-border text-text text-sm font-medium rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden transition-all placeholder:text-text-faint"
             />
           </div>
 
-          <div>
-            <label htmlFor="senha" className="block text-sm font-medium mb-1">
+          <div className="space-y-2">
+            <label htmlFor="senha" className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
               Senha
             </label>
             <input
@@ -55,26 +72,50 @@ export function Login() {
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
               required
-              className="w-full border rounded px-3 py-2 text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400"
+              placeholder="••••••••"
+              className="w-full bg-canvas border border-border text-text text-sm font-medium rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden transition-all placeholder:text-text-faint"
             />
           </div>
+
+          <button
+            type="submit"
+            className="w-full bg-surface-elevated hover:bg-accent text-text hover:text-on-accent font-bold text-xs py-3.5 px-4 rounded-lg shadow-lg transition-all duration-150 cursor-pointer text-center uppercase tracking-widest border border-border-strong focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            Entrar no Sistema
+          </button>
+        </form>
+
+        {/* Test accounts */}
+        <div className="bg-canvas rounded-xl p-5 border border-dashed border-border-strong text-center">
+          <p className="text-[9px] font-bold text-text-faint uppercase tracking-widest mb-3">
+            Credenciais de Acesso
+          </p>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setEmail("admin@ovgs.local");
+                setSenha("admin123");
+                setErro("");
+              }}
+              className="text-xs font-semibold font-mono text-text-muted hover:text-accent hover:bg-hover px-2.5 py-2 border border-border rounded-md transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              admin@ovgs.local / admin123 (Admin)
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEmail("viewer@ovgs.local");
+                setSenha("viewer123");
+                setErro("");
+              }}
+              className="text-xs font-semibold font-mono text-text-muted hover:text-accent hover:bg-hover px-2.5 py-2 border border-border rounded-md transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              viewer@ovgs.local / viewer123 (Viewer)
+            </button>
+          </div>
         </div>
-
-        {erro && <p role="alert" className="text-red-500 text-sm text-center">{erro}</p>}
-
-        <button
-          type="submit"
-          className="w-full bg-slate-800 text-white py-2 rounded hover:bg-slate-700 transition-colors text-sm focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400"
-        >
-          Entrar
-        </button>
-
-        <div className="text-xs text-slate-400 text-center space-y-1">
-          <p>Contas de teste:</p>
-          <p>admin@ovgs.local / admin123</p>
-          <p>viewer@ovgs.local / viewer123</p>
-        </div>
-      </form>
+      </div>
     </div>
   );
 }
