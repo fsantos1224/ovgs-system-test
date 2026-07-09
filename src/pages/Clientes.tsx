@@ -4,7 +4,20 @@ import { useFetch } from "../hooks/useFetch";
 import { usePermissao } from "../hooks/usePermission";
 import { apiPost, apiPatch } from "../api/fetch";
 import { Modal } from "../components/Modal";
+import { clienteSchema } from "../lib/validation";
 import type { Cliente } from "../domain/types";
+
+function formatDocumento(val: string): string {
+  const d = val.replace(/\D/g, "");
+  if (d.length <= 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4").slice(0, 14);
+  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, "$1.$2.$3/$4-$5").slice(0, 18);
+}
+
+function formatTelefone(val: string): string {
+  const d = val.replace(/\D/g, "");
+  if (d.length <= 10) return d.replace(/(\d{2})(\d{4})(\d{4})/, "($1) $2-$3").slice(0, 14);
+  return d.replace(/(\d{2})(\d{5})(\d{4})/, "($1) $2-$3").slice(0, 15);
+}
 
 export function Clientes() {
   const { data: clientes, loading, refresh } = useFetch<Cliente[]>("/clientes");
@@ -20,20 +33,23 @@ export function Clientes() {
     e.preventDefault();
     setErro("");
     const fd = new FormData(e.currentTarget);
-    const body: Record<string, string | boolean> = {
-      nome: fd.get("nome") as string,
-      documento: fd.get("documento") as string,
-      email: fd.get("email") as string,
-      telefone: fd.get("telefone") as string,
-      endereco: fd.get("endereco") as string,
+    const raw = {
+      nome: (fd.get("nome") as string) || "",
+      documento: ((fd.get("documento") as string) || "").replace(/\D/g, ""),
+      email: (fd.get("email") as string) || "",
+      telefone: ((fd.get("telefone") as string) || "").replace(/\D/g, ""),
+      endereco: (fd.get("endereco") as string) || "",
       ativo: fd.get("ativo") === "true",
     };
 
+    const parsed = clienteSchema.safeParse(raw);
+    if (!parsed.success) { setErro(parsed.error.issues[0].message); return; }
+
     try {
       if (editando) {
-        await apiPatch(`/clientes/${editando.id}`, body);
+        await apiPatch(`/clientes/${editando.id}`, parsed.data);
       } else {
-        await apiPost("/clientes", body);
+        await apiPost("/clientes", parsed.data);
       }
       setEditando(null);
       setMostrarForm(false);
@@ -47,23 +63,19 @@ export function Clientes() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
         <div>
-          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 04 / CARTEIRA DE LOGÍSTICA</span>
+          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">Clientes / CARTEIRA DE LOGÍSTICA</span>
           <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Clientes</h1>
           <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Cadastre, edite e consulte a base de clientes.</p>
         </div>
         {podeCriar && (
-          <button
-            onClick={() => { setMostrarForm(true); setEditando(null); setErro(""); }}
-            className="inline-flex items-center gap-2 border border-border-strong text-[10px] uppercase tracking-widest hover:bg-accent hover:text-on-accent hover:border-accent text-text font-bold px-5 py-3 transition-all focus-visible:outline-2 focus-visible:outline-accent"
-          >
-            <Plus className="w-4 h-4" aria-hidden="true" />
-            Novo Cliente
+          <button onClick={() => { setMostrarForm(true); setEditando(null); setErro(""); }} className="inline-flex items-center gap-2 border border-border-strong text-[10px] uppercase tracking-widest hover:bg-accent hover:text-on-accent hover:border-accent text-text font-bold px-5 py-3 transition-all focus-visible:outline-2 focus-visible:outline-accent">
+            <Plus className="w-4 h-4" aria-hidden="true" /> Novo Cliente
           </button>
         )}
       </div>
 
       <Modal open={mostrarForm} title={editando ? `Editar Cliente: ${editando.nome}` : "Novo Cliente"} onClose={() => { setMostrarForm(false); setEditando(null); setErro(""); }}>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form key={editando?.id ?? "new"} onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Nome</label>
@@ -71,7 +83,7 @@ export function Clientes() {
             </div>
             <div>
               <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Documento</label>
-              <input name="documento" defaultValue={editando?.documento ?? ""} required className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden" />
+              <input name="documento" defaultValue={editando ? formatDocumento(editando.documento) : ""} required onInput={(e) => { e.currentTarget.value = formatDocumento(e.currentTarget.value); }} className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden" />
             </div>
             <div>
               <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Email</label>
@@ -79,7 +91,7 @@ export function Clientes() {
             </div>
             <div>
               <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Telefone</label>
-              <input name="telefone" defaultValue={editando?.telefone ?? ""} className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden" />
+              <input name="telefone" defaultValue={editando ? formatTelefone(editando.telefone) : ""} onInput={(e) => { e.currentTarget.value = formatTelefone(e.currentTarget.value); }} className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden" />
             </div>
           </div>
           <div>
@@ -123,30 +135,24 @@ export function Clientes() {
                   <div className="font-bold text-text text-sm">{c.nome}</div>
                   {c.endereco && <div className="text-[11px] text-text-faint mt-0.5 truncate max-w-[200px]">{c.endereco}</div>}
                 </td>
-                <td className="px-6 py-4 text-text-muted font-mono font-medium">{c.documento || '—'}</td>
-                <td className="px-6 py-4 text-text-muted font-medium">{c.email || '—'}</td>
-                <td className="px-6 py-4 text-text-subtle font-mono">{c.telefone || '—'}</td>
+                <td className="px-6 py-4 text-text-muted font-mono font-medium">{c.documento ? formatDocumento(c.documento) : "—"}</td>
+                <td className="px-6 py-4 text-text-muted font-medium">{c.email || "—"}</td>
+                <td className="px-6 py-4 text-text-subtle font-mono">{c.telefone ? formatTelefone(c.telefone) : "—"}</td>
                 <td className="px-6 py-4">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${c.ativo ? 'text-emerald-500' : 'text-text-faint'}`}>
-                    {c.ativo ? 'Ativo' : 'Inativo'}
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${c.ativo ? "text-emerald-500" : "text-text-faint"}`}>
+                    {c.ativo ? "Ativo" : "Inativo"}
                   </span>
                 </td>
                 {podeEditar && (
                   <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => { setEditando(c); setMostrarForm(true); setErro(""); }}
-                      className="text-[10px] uppercase tracking-widest border border-border-strong hover:bg-accent hover:text-on-accent hover:border-accent px-3 py-1.5 transition-all font-bold inline-flex items-center gap-1 focus-visible:outline-2 focus-visible:outline-accent"
-                    >
-                      <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
-                      Editar
+                    <button onClick={() => { setEditando(c); setMostrarForm(true); setErro(""); }} className="text-[10px] uppercase tracking-widest border border-border-strong hover:bg-accent hover:text-on-accent hover:border-accent px-3 py-1.5 transition-all font-bold inline-flex items-center gap-1 focus-visible:outline-2 focus-visible:outline-accent">
+                      <Pencil className="w-3.5 h-3.5" aria-hidden="true" /> Editar
                     </button>
                   </td>
                 )}
               </tr>
             ))}
-            {clientes?.length === 0 && (
-              <tr><td colSpan={6} className="px-6 py-12 text-center text-text-subtle italic">Nenhum cliente cadastrado.</td></tr>
-            )}
+            {clientes?.length === 0 && <tr><td colSpan={6} className="px-6 py-12 text-center text-text-subtle italic">Nenhum cliente cadastrado.</td></tr>}
           </tbody>
         </table>
       </div>

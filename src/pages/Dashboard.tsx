@@ -1,13 +1,19 @@
-import { useFetch } from '../hooks/useFetch';
-import type { OrdemVenda, OVStatus } from '../domain/types';
-import { statusLabel } from '../domain/types';
+import { useNavigate } from "react-router-dom";
+import { useFetch } from "../hooks/useFetch";
+import type { OrdemVenda, OVStatus } from "../domain/types";
+import { statusLabel } from "../domain/types";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
-  CRIADA: "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
-  PLANEJADA: "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
-  AGENDADA: "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
-  EM_TRANSPORTE: "dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-500/20 bg-purple-50 text-purple-700 border-purple-200",
-  ENTREGUE: "dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-500/20 bg-emerald-50 text-emerald-700 border-emerald-200",
+  CRIADA:
+    "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
+  PLANEJADA:
+    "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
+  AGENDADA:
+    "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
+  EM_TRANSPORTE:
+    "dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-500/20 bg-purple-50 text-purple-700 border-purple-200",
+  ENTREGUE:
+    "dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-500/20 bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
 const STATUS_ACCENT: Record<string, string> = {
@@ -26,10 +32,18 @@ const STATUS_BAR: Record<string, string> = {
   ENTREGUE: "bg-emerald-500",
 };
 
-const STATUS_ORDER: OVStatus[] = ["AGENDADA", "CRIADA", "EM_TRANSPORTE", "ENTREGUE"];
+const STATUS_ORDER: OVStatus[] = [
+  "AGENDADA",
+  "CRIADA",
+  "EM_TRANSPORTE",
+  "ENTREGUE",
+];
 
 function formatCurrency(val: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(val / 100);
 }
 
 function formatDate(dateStr: string) {
@@ -39,24 +53,33 @@ function formatDate(dateStr: string) {
 }
 
 export function Dashboard() {
-  const { data: ordens, loading } = useFetch<OrdemVenda[]>('/ordensVenda');
+  const navigate = useNavigate();
+  const { data: ordens, loading } = useFetch<OrdemVenda[]>("/ordensVenda");
 
-  if (loading) return <p role="status" aria-live="polite" className="text-text-muted">Carregando...</p>;
+  if (loading)
+    return (
+      <p role="status" aria-live="polite" className="text-text-muted">
+        Carregando...
+      </p>
+    );
 
-  const porStatus = ordens?.reduce<Record<string, number>>((acc, ov) => {
-    const label = statusLabel(ov.status);
-    acc[label] = (acc[label] || 0) + 1;
-    return acc;
-  }, {}) ?? {};
+  const porStatus =
+    ordens?.reduce<Record<string, number>>((acc, ov) => {
+      const label = statusLabel(ov.status);
+      acc[label] = (acc[label] || 0) + 1;
+      return acc;
+    }, {}) ?? {};
 
   return (
     <div className="space-y-8 animate-fade-in">
       {/* Editorial Header */}
       <div className="border-b border-border pb-6">
         <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-          VOL. 01 / MÓDULO PRINCIPAL
+          Dashboard / MÓDULO PRINCIPAL
         </span>
-        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Dashboard</h1>
+        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
+          Dashboard
+        </h1>
         <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
           Visão analítica das suas operações, ordens e fluxo logístico.
         </p>
@@ -72,12 +95,18 @@ export function Dashboard() {
               className="bg-surface rounded-xl border border-border p-6 relative overflow-hidden flex flex-col justify-between h-32 transition-all duration-200 hover:border-border-strong"
             >
               <div>
-                <span className={`text-4xl font-serif italic ${STATUS_ACCENT[status]}`}>{count}</span>
+                <span
+                  className={`text-4xl font-serif italic ${STATUS_ACCENT[status]}`}
+                >
+                  {count}
+                </span>
                 <p className="text-[10px] uppercase tracking-widest text-text-faint font-bold mt-2.5">
                   {statusLabel(status)}
                 </p>
               </div>
-              <div className={`absolute bottom-0 left-0 right-0 h-[3px] ${STATUS_BAR[status]}`} />
+              <div
+                className={`absolute bottom-0 left-0 right-0 h-[3px] ${STATUS_BAR[status]}`}
+              />
             </div>
           );
         })}
@@ -86,7 +115,9 @@ export function Dashboard() {
       {/* Latest Orders Table */}
       <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
         <div className="p-6 border-b border-border flex justify-between items-center bg-surface-elevated/40">
-          <h2 className="text-sm uppercase tracking-widest font-bold text-text">Últimas Ordens de Venda</h2>
+          <h2 className="text-sm uppercase tracking-widest font-bold text-text">
+            Últimas Ordens de Venda
+          </h2>
           <span className="text-[10px] uppercase tracking-widest text-text-faint">
             {ordens?.length ?? 0} registros
           </span>
@@ -104,23 +135,38 @@ export function Dashboard() {
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
               {ordens?.slice(0, 5).map((ov) => (
-                <tr key={ov.id} className="hover:bg-hover transition-colors duration-150 cursor-pointer">
-                  <td className="px-6 py-4.5 font-bold text-text font-mono">{ov.numero}</td>
-                  <td className="px-6 py-4.5 text-text-muted font-medium">{ov.nomeCliente}</td>
+                <tr
+                  key={ov.id}
+                onClick={() => navigate(`/ovs/${ov.id}`)}
+                  className="hover:bg-hover transition-colors duration-150 cursor-pointer"
+                  >
+                    <td className="px-6 py-4.5 font-bold text-text font-mono">
+                    {ov.numero}
+                  </td>
+                  <td className="px-6 py-4.5 text-text-muted font-medium">
+                    {ov.nomeCliente}
+                  </td>
                   <td className="px-6 py-4.5">
-                    <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}>
+                    <span
+                      className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}
+                    >
                       {statusLabel(ov.status)}
                     </span>
                   </td>
                   <td className="px-6 py-4.5 text-right font-bold text-accent font-mono">
                     {formatCurrency(ov.valorTotal)}
                   </td>
-                  <td className="px-6 py-4.5 text-text-subtle font-mono">{formatDate(ov.dataEmissao)}</td>
+                  <td className="px-6 py-4.5 text-text-subtle font-mono">
+                    {formatDate(ov.dataEmissao)}
+                  </td>
                 </tr>
               ))}
               {ordens?.length === 0 && (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-text-subtle italic">
+                  <td
+                    colSpan={5}
+                    className="px-6 py-12 text-center text-text-subtle italic"
+                  >
                     Nenhuma ordem de venda registrada.
                   </td>
                 </tr>

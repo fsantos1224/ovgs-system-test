@@ -6,7 +6,7 @@ import { initWebVitals } from "./lib/telemetry";
 
 // Aplica tema persistido antes do React montar (evita FOUC).
 document.documentElement.dataset.theme =
-  localStorage.getItem("ovgs:theme") ?? "dark";
+  localStorage.getItem("XPTO:theme") ?? "dark";
 
 // Performance monitoring via Performance Observer nativo
 initWebVitals();

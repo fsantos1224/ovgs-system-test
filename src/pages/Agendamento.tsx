@@ -8,9 +8,12 @@ import { statusLabel } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 
 const STATUS_BADGE: Record<string, string> = {
-  CRIADA: "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
-  PLANEJADA: "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
-  AGENDADA: "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
+  CRIADA:
+    "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
+  PLANEJADA:
+    "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
+  AGENDADA:
+    "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
 };
 
 function formatDate(dateStr: string) {
@@ -20,28 +23,50 @@ function formatDate(dateStr: string) {
 }
 
 export function Agendamento() {
-  const { data: ordens, loading, refresh } = useFetch<OrdemVenda[]>("/ordensVenda");
+  const {
+    data: ordens,
+    loading,
+    refresh,
+  } = useFetch<OrdemVenda[]>("/ordensVenda");
   const podeAgendar = usePermissao("agendamento:criar");
   const podeVer = usePermissao("agendamento:ver");
   const [editando, setEditando] = useState<string | null>(null);
 
-  if (loading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
-  if (!podeVer) return <p className="text-text-muted p-6">Sem permissão para acessar esta página.</p>;
+  if (loading)
+    return (
+      <p role="status" aria-live="polite" className="text-text-muted p-6">
+        Carregando...
+      </p>
+    );
+  if (!podeVer)
+    return (
+      <p className="text-text-muted p-6">
+        Sem permissão para acessar esta página.
+      </p>
+    );
 
-  const agendaveis = ordens?.filter((o) => o.status === "PLANEJADA" || o.status === "AGENDADA") ?? [];
+  const agendaveis =
+    ordens?.filter(
+      (o) => o.status === "PLANEJADA" || o.status === "AGENDADA",
+    ) ?? [];
 
   const handleSalvar = async (ov: OrdemVenda, form: HTMLFormElement) => {
     const fd = new FormData(form);
     const dataEntregaPrevista = fd.get("dataEntrega") as string;
     const janelaAtendimento = fd.get("janela") as string;
     const body: Record<string, string> = {};
-    if (dataEntregaPrevista) body.dataEntregaPrevista = new Date(dataEntregaPrevista).toISOString();
+    if (dataEntregaPrevista)
+      body.dataEntregaPrevista = new Date(dataEntregaPrevista).toISOString();
     if (janelaAtendimento) body.janelaAtendimento = janelaAtendimento;
     if (ov.status === "PLANEJADA") body.status = "AGENDADA";
 
     try {
       await apiPatch(`/ordensVenda/${ov.id}`, body);
-      trackEvent("ov:agendar", "ordem_venda", { ovId: ov.id, dataEntregaPrevista, janelaAtendimento });
+      trackEvent("ov:agendar", "ordem_venda", {
+        ovId: ov.id,
+        dataEntregaPrevista,
+        janelaAtendimento,
+      });
       setEditando(null);
       refresh();
     } catch (err) {
@@ -52,8 +77,12 @@ export function Agendamento() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="border-b border-border pb-6">
-        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 03 / AGENDA E OPERAÇÃO</span>
-        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Central de Agendamento</h1>
+        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
+          Agendamento / AGENDA E OPERAÇÃO
+        </span>
+        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
+          Central de Agendamento
+        </h1>
         <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
           Agende e organize janelas de entrega para ordens planejadas.
         </p>
@@ -69,25 +98,56 @@ export function Agendamento() {
             const editandoAgora = editando === ov.id;
             const isScheduled = ov.status === "AGENDADA";
             return (
-              <div key={ov.id} className="bg-surface rounded-2xl border border-border p-6 flex flex-col justify-between hover:border-border-strong transition-all duration-200 shadow-xl">
+              <div
+                key={ov.id}
+                className="bg-surface rounded-2xl border border-border p-6 flex flex-col justify-between hover:border-border-strong transition-all duration-200 shadow-xl"
+              >
                 <div>
                   <div className="flex justify-between items-start">
-                    <span className="text-lg font-bold text-text font-mono">{ov.numero}</span>
-                    <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}>
+                    <span className="text-lg font-bold text-text font-mono">
+                      {ov.numero}
+                    </span>
+                    <span
+                      className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}
+                    >
                       {statusLabel(ov.status)}
                     </span>
                   </div>
-                  <h3 className="text-sm font-bold text-text mt-3.5 truncate">{ov.nomeCliente}</h3>
+                  <h3 className="text-sm font-bold text-text mt-3.5 truncate">
+                    {ov.nomeCliente}
+                  </h3>
                 </div>
 
                 <div className="space-y-2.5 border-t border-b border-border-subtle py-4 my-3 text-xs">
                   <div className="flex items-center gap-2.5 text-text-muted font-mono">
-                    <Calendar className="w-4 h-4 text-text-faint" aria-hidden="true" />
-                    <span>Data prevista: <strong className="text-text font-bold">{formatDate(ov.dataEntregaPrevista)}</strong></span>
+                    <Calendar
+                      className="w-4 h-4 text-text-faint"
+                      aria-hidden="true"
+                    />
+                    <span>
+                      Data prevista:{" "}
+                      <strong className="text-text font-bold">
+                        {formatDate(ov.dataEntregaPrevista)}
+                      </strong>
+                    </span>
                   </div>
                   <div className="flex items-center gap-2.5 text-text-muted font-mono">
-                    <Clock className="w-4 h-4 text-text-faint" aria-hidden="true" />
-                    <span>Janela: <strong className={ov.janelaAtendimento ? "text-accent font-bold" : "text-text-faint"}>{ov.janelaAtendimento || "—"}</strong></span>
+                    <Clock
+                      className="w-4 h-4 text-text-faint"
+                      aria-hidden="true"
+                    />
+                    <span>
+                      Janela:{" "}
+                      <strong
+                        className={
+                          ov.janelaAtendimento
+                            ? "text-accent font-bold"
+                            : "text-text-faint"
+                        }
+                      >
+                        {ov.janelaAtendimento || "—"}
+                      </strong>
+                    </span>
                   </div>
                 </div>
 
@@ -100,17 +160,23 @@ export function Agendamento() {
                     className="space-y-3"
                   >
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">Data</label>
+                      <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
+                        Data
+                      </label>
                       <input
                         type="date"
                         name="dataEntrega"
-                        defaultValue={ov.dataEntregaPrevista?.split("T")[0] ?? ""}
+                        defaultValue={
+                          ov.dataEntregaPrevista?.split("T")[0] ?? ""
+                        }
                         required
                         className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">Janela</label>
+                      <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
+                        Janela
+                      </label>
                       <input
                         type="text"
                         name="janela"

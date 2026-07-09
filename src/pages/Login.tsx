@@ -25,7 +25,9 @@ export function Login() {
       <div className="w-full max-w-md bg-surface rounded-2xl shadow-2xl border border-border p-10 space-y-8 animate-fade-in">
         {/* Brand */}
         <div className="text-center space-y-3">
-          <span className="text-[10px] tracking-[0.3em] font-bold uppercase text-text-faint">OVGS</span>
+          <span className="text-[10px] tracking-[0.3em] font-bold uppercase text-text-faint">
+            XPTO
+          </span>
           <h1 className="text-4xl font-serif italic tracking-tight text-text">
             Gestão
           </h1>
@@ -47,7 +49,10 @@ export function Login() {
           )}
 
           <div className="space-y-2">
-            <label htmlFor="email" className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
+            <label
+              htmlFor="email"
+              className="text-[10px] font-bold text-text-faint uppercase tracking-widest block"
+            >
               E-mail
             </label>
             <input
@@ -57,13 +62,16 @@ export function Login() {
               onChange={(e) => setEmail(e.target.value)}
               required
               autoFocus
-              placeholder="admin@ovgs.local"
+              placeholder="admin@XPTO.local"
               className="w-full bg-canvas border border-border text-text text-sm font-medium rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden transition-all placeholder:text-text-faint"
             />
           </div>
 
           <div className="space-y-2">
-            <label htmlFor="senha" className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
+            <label
+              htmlFor="senha"
+              className="text-[10px] font-bold text-text-faint uppercase tracking-widest block"
+            >
               Senha
             </label>
             <input
@@ -94,24 +102,24 @@ export function Login() {
             <button
               type="button"
               onClick={() => {
-                setEmail("admin@ovgs.local");
+                setEmail("admin@XPTO.local");
                 setSenha("admin123");
                 setErro("");
               }}
               className="text-xs font-semibold font-mono text-text-muted hover:text-accent hover:bg-hover px-2.5 py-2 border border-border rounded-md transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
             >
-              admin@ovgs.local / admin123 (Admin)
+              admin@XPTO.local / admin123 (Admin)
             </button>
             <button
               type="button"
               onClick={() => {
-                setEmail("viewer@ovgs.local");
+                setEmail("viewer@XPTO.local");
                 setSenha("viewer123");
                 setErro("");
               }}
               className="text-xs font-semibold font-mono text-text-muted hover:text-accent hover:bg-hover px-2.5 py-2 border border-border rounded-md transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
             >
-              viewer@ovgs.local / viewer123 (Viewer)
+              viewer@XPTO.local / viewer123 (Viewer)
             </button>
           </div>
         </div>

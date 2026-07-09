@@ -40,7 +40,7 @@ const PERMISSOES_POR_ROLE: Record<UserRole["role"], Permissao[]> = {
   ],
 };
 
-const ROLE_KEY = "ovgs:role";
+const ROLE_KEY = "XPTO:role";
 
 function getRole(): UserRole["role"] {
   return (localStorage.getItem(ROLE_KEY) as UserRole["role"]) ?? "admin";

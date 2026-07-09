@@ -29,7 +29,7 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
   return (
     <dialog
       ref={dialogRef}
-      className="rounded-2xl border border-border w-full max-w-lg bg-surface text-text shadow-2xl backdrop:bg-overlay p-0"
+      className="rounded-2xl border border-border w-full max-w-lg bg-surface text-text shadow-2xl backdrop:bg-overlay p-0 fixed inset-0 m-auto h-fit max-h-[90vh] overflow-y-auto"
       aria-labelledby="modal-title"
     >
       <div className="p-6 border-b border-border bg-surface-elevated/40 flex justify-between items-center">

@@ -1,8 +1,13 @@
 import { useState } from "react";
-import { ChevronDown, ChevronUp, User as UserIcon, ShieldCheck } from "lucide-react";
-import { useFetch } from '../hooks/useFetch';
-import { usePermissao } from '../hooks/usePermission';
-import type { EventoAuditoria } from '../domain/types';
+import {
+  ChevronDown,
+  ChevronUp,
+  User as UserIcon,
+  ShieldCheck,
+} from "lucide-react";
+import { useFetch } from "../hooks/useFetch";
+import { usePermissao } from "../hooks/usePermission";
+import type { EventoAuditoria } from "../domain/types";
 
 function formatDateTime(dateStr: string) {
   const d = new Date(dateStr);
@@ -11,18 +16,26 @@ function formatDateTime(dateStr: string) {
 }
 
 export function Auditoria() {
-  const podeVer = usePermissao('auditoria:ver');
-  const { data: eventos, loading } = useFetch<EventoAuditoria[]>('/eventosAuditoria');
+  const podeVer = usePermissao("auditoria:ver");
+  const { data: eventos, loading } =
+    useFetch<EventoAuditoria[]>("/eventosAuditoria");
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (!podeVer) {
     return (
       <div className="space-y-6 animate-fade-in">
         <div className="border-b border-border pb-6">
-          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 07 / TRANSAÇÕES E AUDITORIA</span>
-          <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Auditoria</h1>
+          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
+            Auditoria / TRANSAÇÕES E AUDITORIA
+          </span>
+          <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
+            Auditoria
+          </h1>
         </div>
-        <div role="alert" className="bg-surface rounded-xl border border-border p-6 shadow-2xl">
+        <div
+          role="alert"
+          className="bg-surface rounded-xl border border-border p-6 shadow-2xl"
+        >
           <div className="flex items-center gap-3 mb-2">
             <ShieldCheck className="w-5 h-5 text-accent" aria-hidden="true" />
             <h2 className="text-lg font-bold text-text">Acesso negado</h2>
@@ -35,20 +48,33 @@ export function Auditoria() {
     );
   }
 
-  if (loading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
+  if (loading)
+    return (
+      <p role="status" aria-live="polite" className="text-text-muted p-6">
+        Carregando...
+      </p>
+    );
 
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="border-b border-border pb-6">
-        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 07 / TRANSAÇÕES E AUDITORIA</span>
-        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Auditoria</h1>
-        <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Histórico de ações e transações efetuadas no sistema.</p>
+        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
+          Auditoria / TRANSAÇÕES E AUDITORIA
+        </span>
+        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
+          Auditoria
+        </h1>
+        <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
+          Histórico de ações e transações efetuadas no sistema.
+        </p>
       </div>
 
       <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <caption className="sr-only">Eventos de auditoria do sistema</caption>
+            <caption className="sr-only">
+              Eventos de auditoria do sistema
+            </caption>
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
                 <th className="px-6 py-4.5">Data/Hora</th>
@@ -68,13 +94,20 @@ export function Auditoria() {
                     onClick={() => setExpandedId(isExpanded ? null : e.id)}
                     className="hover:bg-hover transition-colors cursor-pointer"
                   >
-                    <td className="px-6 py-4.5 text-text-muted font-mono">{formatDateTime(e.dataHora)}</td>
+                    <td className="px-6 py-4.5 text-text-muted font-mono">
+                      {formatDateTime(e.dataHora)}
+                    </td>
                     <td className="px-6 py-4.5">
                       <div className="flex items-center gap-2.5">
                         <div className="w-6 h-6 rounded-full bg-hover border border-border flex items-center justify-center shrink-0">
-                          <UserIcon className="w-3 h-3 text-text-faint" aria-hidden="true" />
+                          <UserIcon
+                            className="w-3 h-3 text-text-faint"
+                            aria-hidden="true"
+                          />
                         </div>
-                        <span className="text-text font-mono text-[11px]">{e.usuario}</span>
+                        <span className="text-text font-mono text-[11px]">
+                          {e.usuario}
+                        </span>
                       </div>
                     </td>
                     <td className="px-6 py-4.5">
@@ -82,16 +115,31 @@ export function Auditoria() {
                         {e.entidade}
                       </span>
                     </td>
-                    <td className="px-6 py-4.5 font-mono text-[11px] text-text font-bold">{e.acao}</td>
-                    <td className="px-6 py-4.5 text-text-muted">{e.detalhes}</td>
+                    <td className="px-6 py-4.5 font-mono text-[11px] text-text font-bold">
+                      {e.acao}
+                    </td>
+                    <td className="px-6 py-4.5 text-text-muted">
+                      {e.detalhes}
+                    </td>
                     <td className="px-6 py-4.5 text-center text-text-subtle">
-                      {isExpanded ? <ChevronUp className="w-4 h-4" aria-hidden="true" /> : <ChevronDown className="w-4 h-4" aria-hidden="true" />}
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4" aria-hidden="true" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4" aria-hidden="true" />
+                      )}
                     </td>
                   </tr>
                 );
               })}
               {eventos?.length === 0 && (
-                <tr><td colSpan={6} className="px-6 py-12 text-center text-text-subtle italic">Nenhum evento de auditoria registrado.</td></tr>
+                <tr>
+                  <td
+                    colSpan={6}
+                    className="px-6 py-12 text-center text-text-subtle italic"
+                  >
+                    Nenhum evento de auditoria registrado.
+                  </td>
+                </tr>
               )}
             </tbody>
           </table>

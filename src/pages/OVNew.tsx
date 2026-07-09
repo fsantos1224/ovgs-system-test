@@ -10,6 +10,7 @@ import type { Cliente, Item, TipoTransporte, ItemOV } from "../domain/types";
 import { canUseTransporte } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 import { useMemo, useState } from "react";
+import { ovSchema } from "../lib/validation";
 
 type FormData = {
   clienteId: string;
@@ -20,7 +21,7 @@ type FormData = {
 };
 
 function formatCurrency(val: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val / 100);
 }
 
 export function OVNew() {
@@ -84,6 +85,8 @@ export function OVNew() {
 
     setSubmitting(true);
     setServerError("");
+    const parsed = ovSchema.safeParse(data);
+    if (!parsed.success) { setServerError(parsed.error.issues[0].message); setSubmitting(false); return; }
     const idempotencyKey = crypto.randomUUID();
 
     const itensOV: ItemOV[] = data.itens
@@ -144,7 +147,7 @@ export function OVNew() {
 
       {/* Editorial Header */}
       <div className="border-b border-border pb-6">
-        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 02 / NOVA TRANSAÇÃO</span>
+        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">Ordens de Venda / NOVA TRANSAÇÃO</span>
         <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Nova Ordem de Venda</h1>
         <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Cadastre uma nova ordem de venda no sistema.</p>
       </div>

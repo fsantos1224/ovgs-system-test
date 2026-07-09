@@ -3,21 +3,34 @@ import { Link } from "react-router-dom";
 import { Plus, Calendar } from "lucide-react";
 import { usePaginatedFetch } from "../hooks/usePaginatedFetch";
 import { useFetch } from "../hooks/useFetch";
-import type { OrdemVenda, Cliente, TipoTransporte, OVStatus } from "../domain/types";
+import type {
+  OrdemVenda,
+  Cliente,
+  TipoTransporte,
+  OVStatus,
+} from "../domain/types";
 import { statusLabel, STATUS_FLOW } from "../domain/types";
 import { usePermissao } from "../hooks/usePermission";
 import { Pagination } from "../components/Pagination";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
-  CRIADA: "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
-  PLANEJADA: "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
-  AGENDADA: "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
-  EM_TRANSPORTE: "dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-500/20 bg-purple-50 text-purple-700 border-purple-200",
-  ENTREGUE: "dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-500/20 bg-emerald-50 text-emerald-700 border-emerald-200",
+  CRIADA:
+    "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
+  PLANEJADA:
+    "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
+  AGENDADA:
+    "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
+  EM_TRANSPORTE:
+    "dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-500/20 bg-purple-50 text-purple-700 border-purple-200",
+  ENTREGUE:
+    "dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-500/20 bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
 function formatCurrency(val: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(val / 100);
 }
 
 function formatDate(dateStr: string) {
@@ -47,7 +60,7 @@ export function OVList() {
     totalPages,
     setPage,
     setFilters,
-  } = usePaginatedFetch<OrdemVenda[]>("/ordensVenda", 20);
+  } = usePaginatedFetch<OrdemVenda[]>("/ordensVenda", 10);
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(search), 300);
@@ -63,7 +76,14 @@ export function OVList() {
     if (dataDe) f.dataEntregaPrevista_gte = dataDe;
     if (dataAte) f.dataEntregaPrevista_lte = dataAte;
     return f;
-  }, [debouncedSearch, filtroStatus, filtroCliente, filtroTransporte, dataDe, dataAte]);
+  }, [
+    debouncedSearch,
+    filtroStatus,
+    filtroCliente,
+    filtroTransporte,
+    dataDe,
+    dataAte,
+  ]);
 
   useEffect(() => {
     setFilters(montarFiltros());
@@ -83,7 +103,7 @@ export function OVList() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
         <div>
           <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-            VOL. 02 / FLUXO DE TRANSAÇÕES
+            Ordens de Venda / FLUXO DE TRANSAÇÕES
           </span>
           <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
             Ordens de Venda
@@ -98,7 +118,7 @@ export function OVList() {
             className="inline-flex items-center gap-2 border border-border-strong text-[10px] uppercase tracking-widest hover:bg-accent hover:text-on-accent hover:border-accent text-text font-bold px-5 py-3 transition-all focus-visible:outline-2 focus-visible:outline-accent"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
-            <span>Nova OV</span>
+            <span>Nova Ordem de Venda</span>
           </Link>
         )}
       </div>
@@ -107,7 +127,9 @@ export function OVList() {
       <div className="bg-surface rounded-xl border border-border p-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">Status</label>
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
+              Status
+            </label>
             <select
               value={filtroStatus}
               onChange={(e) => setFiltroStatus(e.target.value)}
@@ -115,12 +137,16 @@ export function OVList() {
             >
               <option value="">Todos</option>
               {STATUS_FLOW.map((s) => (
-                <option key={s} value={s}>{statusLabel(s)}</option>
+                <option key={s} value={s}>
+                  {statusLabel(s)}
+                </option>
               ))}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">Cliente</label>
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
+              Cliente
+            </label>
             <select
               value={filtroCliente}
               onChange={(e) => setFiltroCliente(e.target.value)}
@@ -128,12 +154,16 @@ export function OVList() {
             >
               <option value="">Todos</option>
               {clientes?.map((c) => (
-                <option key={c.id} value={c.nome}>{c.nome}</option>
+                <option key={c.id} value={c.nome}>
+                  {c.nome}
+                </option>
               ))}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">Transporte</label>
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
+              Transporte
+            </label>
             <select
               value={filtroTransporte}
               onChange={(e) => setFiltroTransporte(e.target.value)}
@@ -141,12 +171,16 @@ export function OVList() {
             >
               <option value="">Todos</option>
               {transportes?.map((t) => (
-                <option key={t.id} value={t.nome}>{t.nome}</option>
+                <option key={t.id} value={t.nome}>
+                  {t.nome}
+                </option>
               ))}
             </select>
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">De</label>
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
+              De
+            </label>
             <input
               type="date"
               value={dataDe}
@@ -155,7 +189,9 @@ export function OVList() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">Até</label>
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
+              Até
+            </label>
             <input
               type="date"
               value={dataAte}
@@ -164,7 +200,9 @@ export function OVList() {
             />
           </div>
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">Buscar</label>
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
+              Buscar
+            </label>
             <input
               type="text"
               placeholder="Número..."
@@ -194,25 +232,44 @@ export function OVList() {
             <tbody className="divide-y divide-border-subtle text-xs">
               {ordens?.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-text-subtle italic">
+                  <td
+                    colSpan={7}
+                    className="px-6 py-12 text-center text-text-subtle italic"
+                  >
                     Nenhuma ordem encontrada.
                   </td>
                 </tr>
               ) : (
                 ordens?.map((ov) => (
-                  <tr key={ov.id} className="hover:bg-hover transition-colors duration-150">
-                    <td className="px-6 py-4 font-bold text-text font-mono">{ov.numero}</td>
-                    <td className="px-6 py-4 text-text-muted font-medium">{ov.nomeCliente}</td>
-                    <td className="px-6 py-4 text-text-subtle">{ov.nomeTransporte}</td>
+                  <tr
+                    key={ov.id}
+                    className="hover:bg-hover transition-colors duration-150"
+                  >
+                    <td className="px-6 py-4 font-bold text-text font-mono">
+                      {ov.numero}
+                    </td>
+                    <td className="px-6 py-4 text-text-muted font-medium">
+                      {ov.nomeCliente}
+                    </td>
+                    <td className="px-6 py-4 text-text-subtle">
+                      {ov.nomeTransporte}
+                    </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}>
+                      <span
+                        className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}
+                      >
                         {statusLabel(ov.status)}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-accent font-mono">{formatCurrency(ov.valorTotal)}</td>
+                    <td className="px-6 py-4 text-right font-bold text-accent font-mono">
+                      {formatCurrency(ov.valorTotal)}
+                    </td>
                     <td className="px-6 py-4 text-text-subtle font-mono">
                       <span className="inline-flex items-center gap-1.5">
-                        <Calendar className="w-3.5 h-3.5 text-text-faint" aria-hidden="true" />
+                        <Calendar
+                          className="w-3.5 h-3.5 text-text-faint"
+                          aria-hidden="true"
+                        />
                         {formatDate(ov.dataEntregaPrevista)}
                       </span>
                     </td>
@@ -230,7 +287,11 @@ export function OVList() {
             </tbody>
           </table>
         </div>
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

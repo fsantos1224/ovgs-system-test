@@ -4,10 +4,11 @@ import { useFetch } from "../hooks/useFetch";
 import { usePermissao } from "../hooks/usePermission";
 import { apiPost, apiPatch } from "../api/fetch";
 import { Modal } from "../components/Modal";
+import { itemSchema } from "../lib/validation";
 import type { Item } from "../domain/types";
 
 function formatCurrency(val: number) {
-  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val / 100);
 }
 
 export function Itens() {
@@ -23,20 +24,23 @@ export function Itens() {
     e.preventDefault();
     setErro("");
     const fd = new FormData(e.currentTarget);
-    const body: Record<string, string | number | boolean> = {
-      nome: fd.get("nome") as string,
-      sku: fd.get("sku") as string,
-      categoria: fd.get("categoria") as string,
-      precoUnitario: parseFloat(fd.get("preco") as string),
-      unidadeMedida: fd.get("unidade") as string,
+    const raw = {
+      nome: (fd.get("nome") as string) || "",
+      sku: (fd.get("sku") as string) || "",
+      categoria: (fd.get("categoria") as string) || "",
+      precoUnitario: parseFloat(fd.get("preco") as string) || 0,
+      unidadeMedida: (fd.get("unidade") as string) || "un",
       ativo: fd.get("ativo") === "true",
     };
 
+    const parsed = itemSchema.safeParse(raw);
+    if (!parsed.success) { setErro(parsed.error.issues[0].message); return; }
+
     try {
       if (editando) {
-        await apiPatch(`/itens/${editando.id}`, body);
+        await apiPatch(`/itens/${editando.id}`, parsed.data);
       } else {
-        await apiPost("/itens", body);
+        await apiPost("/itens", parsed.data);
       }
       setEditando(null);
       setMostrarForm(false);
@@ -50,7 +54,7 @@ export function Itens() {
     <div className="space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
         <div>
-          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 05 / CATÁLOGO DE ATIVOS</span>
+          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">Itens / CATÁLOGO DE ATIVOS</span>
           <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Itens</h1>
           <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Consulte e gerencie o catálogo de produtos comercializáveis.</p>
         </div>
@@ -66,7 +70,7 @@ export function Itens() {
       </div>
 
       <Modal open={mostrarForm} title={editando ? `Editar Item: ${editando.nome}` : "Novo Item"} onClose={() => { setMostrarForm(false); setEditando(null); setErro(""); }}>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <form key={editando?.id ?? "new"} onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Nome</label>
