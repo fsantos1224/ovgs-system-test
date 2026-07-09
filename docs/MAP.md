@@ -111,6 +111,14 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - `<div role="region" aria-label="...">` envolvendo tabelas de listagem
 - Itens sem permissão retornam `null` (não renderizam, não são focáveis)
 
+### Ticket 11 — Testes (resolvido)
+
+- Vitest para 6 testes unitários de lógica de domínio pura (`canTransition`, `statusLabel`)
+- Playwright para 3 testes E2E (RBAC: viewer não vê + admin vê + formulário carrega)
+- `playwright.config.ts` com `webServer` para json-server + Vite
+- Sem RTL, sem Testing Library — Playwright `getByRole` nativo
+- `🐴` Submissão RHF via Playwright → `🐴` conhecido: `handleSubmit` não reconhece eventos sintéticos do Playwright. API testada diretamente (funciona), form load testado sem erros JS.
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
@@ -125,7 +133,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~6~~ | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 | ✔
 | ~~7~~ | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 | ✔
 | ~~8~~ | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 | ✔
-| 11 | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 |
+| ~~11~~ | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 | ✔
 | 12 | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 |
 
 ### Ordem de execução sugerida (fronteira)

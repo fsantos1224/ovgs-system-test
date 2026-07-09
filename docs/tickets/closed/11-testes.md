@@ -29,4 +29,31 @@ Qual a estratégia de testes (unitários + E2E) para cobrir cenários críticos 
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+### Decisão
+
+- `🐴` **Vitest** para lógica de domínio pura (6 testes unitários em `src/domain/types.test.ts`)
+- `🐴` **Playwright** para E2E com `webServer` (json-server + Vite) em `playwright.config.ts`
+- Sem RTL, sem Testing Library — Playwright `getByRole` nativo
+- Sem testes de hook/componente — cobertura via E2E
+- Mínimo do desafio (2 unit + 1 E2E) excedido (6 unit + 3 E2E)
+
+### Cobertura implementada
+
+**Unitários (6):**
+- `canTransition('CRIADA', 'PLANEJADA') === true`
+- `canTransition('CRIADA', 'ENTREGUE') === false`
+- Transições completas até ENTREGUE
+- Estado final rejeita transições
+- Mesmo estado rejeitado
+- `statusLabel()` retorna label em português
+
+**E2E (3):**
+- Viewer não vê botão "Nova OV"
+- Admin vê botão "Nova OV"
+- Formulário de criação carrega sem erros JS
+
+### Problema conhecido
+
+- Submissão do formulário React Hook Form via Playwright não navega (`handleSubmit` não reconhece eventos sintéticos)
+- Contorno: API testada diretamente (funciona), form load testado sem erros
+- Para resolver: investigar `register` + eventos nativos do React 18

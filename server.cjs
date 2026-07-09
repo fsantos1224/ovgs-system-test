@@ -9,6 +9,7 @@ const router = jsonServer.router('db.json');
 const middlewares = jsonServer.defaults();
 
 server.use(jsonServer.bodyParser);
+server.use(require('cors')());
 
 // 🐴 Idempotency store (in-memory, reseta ao reiniciar o servidor)
 const idempotencyStore = new Map();
@@ -117,7 +118,6 @@ server.post('/reset', (_req, res) => {
   res.json({ message: 'Idempotency store cleared' });
 });
 
-server.use(middlewares);
 server.use(router);
 
 server.listen(3001, () => {

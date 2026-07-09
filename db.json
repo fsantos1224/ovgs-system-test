@@ -608,6 +608,27 @@
         }
       ],
       "valorTotal": 62.5
+    },
+    {
+      "id": "26",
+      "numero": "OV-TEST-E2E",
+      "clienteId": "1",
+      "nomeCliente": "Empresa Alpha Ltda",
+      "dataEmissao": "2026-07-09T02:40:02.629Z",
+      "dataEntregaPrevista": "2026-07-09T02:40:02.592Z",
+      "transporteId": "1",
+      "nomeTransporte": "Transportadora Rápida",
+      "status": "CRIADA",
+      "itens": [
+        {
+          "itemId": "1",
+          "nomeItem": "Test",
+          "quantidade": 1,
+          "precoUnitario": 10
+        }
+      ],
+      "valorTotal": 10,
+      "observacoes": null
     }
   ],
   "eventosAuditoria": [
@@ -637,6 +658,15 @@
       "usuario": "admin@ovgs.com",
       "dataHora": "2024-11-11T09:00:00Z",
       "detalhes": "Status alterado de AGENDADA para EM_TRANSPORTE"
+    },
+    {
+      "id": "4",
+      "entidade": "ordemVenda",
+      "entidadeId": "26",
+      "acao": "criacao",
+      "usuario": "admin",
+      "dataHora": "2026-07-09T02:40:02.631Z",
+      "detalhes": "OV OV-TEST-E2E criada com status CRIADA"
     }
   ]
 }
