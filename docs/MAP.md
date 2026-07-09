@@ -50,6 +50,16 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - `OVList.tsx` atualizada: campo de busca com debounce 300ms + tabela paginada
 - `db.json` populado com 25 OVs (demonstra 2 páginas com pageSize=20)
 
+### Ticket 6 — RBAC (resolvido)
+
+- 4 roles: `viewer < operator < manager < admin` — hierarquia cumulativa de permissões
+- `PERMISSOES_POR_ROLE` — matriz de autorização declarativa em `usePermission.ts`
+- `getPermissoes()` — acumula permissões baseado na hierarquia (mais sénior herda das anteriores)
+- Role persistida em localStorage (`ovgs:role`), alterável via `<select>` no sidebar
+- Nav items no sidebar escondidos condicionalmente por role
+- `setRole()` com `window.location.reload()` para resetar o estado React (simplificação intencional)
+- Permissões usadas: `ov:listar`, `ov:criar`, `ov:alterar_status`, `clientes:listar`, `agendamento:ver`, `auditoria:ver`, etc.
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
