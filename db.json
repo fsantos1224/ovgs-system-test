@@ -102,7 +102,7 @@
       "clienteId": "1",
       "nomeCliente": "Empresa Alpha Ltda",
       "dataEmissao": "2024-11-01T10:00:00Z",
-      "dataEntregaPrevista": "2024-11-15T10:00:00Z",
+      "dataEntregaPrevista": "2024-11-21T00:00:00.000Z",
       "transporteId": "1",
       "nomeTransporte": "Transportadora Rápida",
       "status": "AGENDADA",
@@ -121,7 +121,8 @@
         }
       ],
       "valorTotal": 800,
-      "observacoes": "Entrega no endereço comercial"
+      "observacoes": "Entrega no endereço comercial",
+      "janelaAtendimento": "11:00"
     },
     {
       "id": "2",
