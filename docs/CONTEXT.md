@@ -45,26 +45,6 @@ A solução deverá contemplar a gestão completa das Ordens de Venda, incluindo
 
 ## Perfis Avaliados
 
-## Desenvolvedor Back-end
-
-## Implementar:
-
-- API REST;
-
-- Modelagem de domínio;
-
-- Persistência de dados;
-
-- Regras de negócio;
-
-- Auditoria;
-
-- Testes automatizados;
-
-- Documentação técnica.
-
-Não é necessária a implementação de interface gráfica.
-
 ## Desenvolvedor Front-end
 
 Implementar a interface da solução contemplando:
@@ -85,9 +65,6 @@ Implementar a interface da solução contemplando:
 
 A utilização de APIs simuladas (mockadas) é permitida.
 
-## Desenvolvedor Full Stack
-
-Implementar os requisitos previstos para Front-end e Back-end.
 
 ## Regras de Negócio
 

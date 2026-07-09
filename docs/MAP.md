@@ -145,6 +145,27 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~11~~ | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 | ✔
 | ~~12~~ | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 | ✔
 
+## Next frontier (code review 2026-07-09)
+
+Code review contra `CONTEXT.md` + senior-level criteria identificou 9 tickets adicionais. Fecham gaps de spec (transporte-autorizado, integração, visibilidade), bugs concretos (Rules of Hooks, error messages, validate race) e melhorias de senior bar (Web Vitals corretos, bundle splitting, E2E de criar OV).
+
+| # | Título | Slug | Tipo | Bloqueado por | Status |
+|---|---|---|---|---|---|
+| 13 | Bugs em AppLayout + OVNew | `13-bugs-applayout-ovnew` | `wayfinder:bugfix` | — | ☐ |
+| 14a | Transporte autorizado — domain + seed + server | `14a-transporte-autorizado-backend` | `wayfinder:feature` | — | ☐ |
+| 14b | Transporte autorizado — dropdown dependente | `14b-transporte-autorizado-ui` | `wayfinder:feature` | 14a | ☐ |
+| 15a | Filtrar clientes inativos no dropdown de OV | `15a-clientes-ativos-dropdown` | `wayfinder:bugfix` | — | ☐ |
+| 15b | Permission gate na página de Auditoria | `15b-auditoria-permission-gate` | `wayfinder:bugfix` | — | ☐ |
+| 16 | Testes de integração do server.cjs | `16-testes-integracao-server` | `wayfinder:quality` | — | ☐ |
+| 17 | Web Vitals conforme spec W3C | `17-web-vitals-w3c` | `wayfinder:quality` | — | ☐ |
+| 18 | Bundle splitting + preload hints | `18-bundle-splitting` | `wayfinder:performance` | — | ☐ |
+| 19 | E2E do happy path de criar OV | `19-e2e-criar-ov` | `wayfinder:quality` | 13, 14b | ☐ |
+
+### Ordem de execução sugerida (fronteira)
+
+Tickets 13, 14a, 15a, 15b, 16, 17, 18 podem ser atacados em paralelo (todos sem dependência).
+Depois: 14b (depende de 14a) → 19 (depende de 13 + 14b).
+
 ### Ordem de execução sugerida (fronteira)
 
 1. Ticket 1 — Stack (grátis, base para todos)

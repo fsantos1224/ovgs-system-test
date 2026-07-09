@@ -5,3 +5,6 @@ dist/
 test-results/
 playwright-report/
 data/
+.DS_Store
+**/.DS_Store
+.prototype
