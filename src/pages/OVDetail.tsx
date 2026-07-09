@@ -1,11 +1,30 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { ArrowLeft, Calendar, Package } from 'lucide-react';
 import { useFetch } from '../hooks/useFetch';
-import type { OrdemVenda } from '../domain/types';
+import type { OrdemVenda, OVStatus } from '../domain/types';
 import { statusLabel, canTransition, STATUS_FLOW } from '../domain/types';
 import { usePermissao } from '../hooks/usePermission';
 import { apiPatch } from '../api/fetch';
 import { trackEvent } from '../lib/telemetry';
+
+const STATUS_BADGE: Record<OVStatus, string> = {
+  CRIADA: "bg-zinc-900 text-zinc-400 border border-zinc-800",
+  PLANEJADA: "bg-amber-950/30 text-amber-300 border border-amber-500/20",
+  AGENDADA: "bg-blue-950/30 text-blue-300 border border-blue-500/20",
+  EM_TRANSPORTE: "bg-purple-950/30 text-purple-300 border border-purple-500/20",
+  ENTREGUE: "bg-emerald-950/30 text-emerald-300 border border-emerald-500/20",
+};
+
+function formatCurrency(val: number) {
+  return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+}
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("pt-BR");
+}
 
 export function OVDetail() {
   const { id } = useParams<{ id: string }>();
@@ -13,8 +32,8 @@ export function OVDetail() {
   const podeAlterarStatus = usePermissao('ov:alterar_status');
   const [erroStatus, setErroStatus] = useState('');
 
-  if (loading) return <p role="status" aria-live="polite" className="text-gray-500">Carregando...</p>;
-  if (!ov) return <p className="text-red-500">Ordem de venda não encontrada.</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
+  if (!ov) return <p className="text-rose-400 p-6">Ordem de venda não encontrada.</p>;
 
   const transicoesPossiveis = STATUS_FLOW.filter((s) => canTransition(ov.status, s));
 
@@ -31,70 +50,121 @@ export function OVDetail() {
   };
 
   return (
-    <div>
-      <div className="mb-4">
-        <Link to="/ovs" className="text-blue-600 hover:underline text-sm">&larr; Voltar</Link>
+    <div className="space-y-6 animate-fade-in">
+      <div>
+        <Link to="/ovs" className="inline-flex items-center gap-1.5 text-[10px] uppercase tracking-widest text-text-muted hover:text-accent transition-colors focus-visible:outline-2 focus-visible:outline-accent">
+          <ArrowLeft className="w-3.5 h-3.5" aria-hidden="true" />
+          Voltar
+        </Link>
       </div>
 
-      <h1 className="text-2xl font-bold mb-6">OV {ov.numero}</h1>
+      {/* Editorial Header */}
+      <div className="border-b border-border pb-6">
+        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">OV / REGISTRO DE TRANSAÇÃO</span>
+        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1 font-mono">{ov.numero}</h1>
+        <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Detalhes completos e gestão de status da ordem de venda.</p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-lg shadow p-4 space-y-3">
-          <h2 className="font-semibold text-lg">Dados da Ordem</h2>
-          <div className="text-sm space-y-1">
-            <p><span className="text-slate-500">Cliente:</span> {ov.nomeCliente}</p>
-            <p><span className="text-slate-500">Transporte:</span> {ov.nomeTransporte}</p>
-            <p><span className="text-slate-500">Data de Emissão:</span> {new Date(ov.dataEmissao).toLocaleDateString('pt-BR')}</p>
-            <p><span className="text-slate-500">Previsão de Entrega:</span> {new Date(ov.dataEntregaPrevista).toLocaleDateString('pt-BR')}</p>
-            <p><span className="text-slate-500">Status:</span> <span className="inline-block px-2 py-0.5 rounded text-xs font-medium bg-slate-200">{statusLabel(ov.status)}</span></p>
-            <p><span className="text-slate-500">Valor Total:</span> R$ {ov.valorTotal.toFixed(2)}</p>
-            {ov.observacoes && <p><span className="text-slate-500">Observações:</span> {ov.observacoes}</p>}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Card: Dados da Ordem */}
+        <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
+          <div className="p-6 border-b border-border bg-surface-elevated/40">
+            <h2 className="text-sm uppercase tracking-widest font-bold text-text">Dados da Ordem</h2>
           </div>
-
-          {podeAlterarStatus && transicoesPossiveis.length > 0 && (
-            <div className="pt-3 border-t">
-              <p className="text-sm text-slate-500 mb-2">Alterar Status:</p>
-              <div className="flex flex-wrap gap-2">
-                {transicoesPossiveis.map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => handleStatusChange(status)}
-                    aria-label={`Alterar status para ${statusLabel(status)}`}
-                    className="px-3 py-1 text-xs font-medium rounded bg-slate-700 text-white hover:bg-slate-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400 transition-colors"
-                  >
-                    {statusLabel(status)}
-                  </button>
-                ))}
+          <div className="p-6 space-y-4 text-xs">
+            <div>
+              <h4 className="text-[9px] font-bold text-text-faint uppercase tracking-widest">Cliente</h4>
+              <p className="text-sm font-bold text-text mt-1">{ov.nomeCliente}</p>
+            </div>
+            <div>
+              <h4 className="text-[9px] font-bold text-text-faint uppercase tracking-widest">Transporte</h4>
+              <p className="text-sm font-bold text-text mt-1">{ov.nomeTransporte}</p>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <h4 className="text-[9px] font-bold text-text-faint uppercase tracking-widest">Emissão</h4>
+                <p className="text-xs font-semibold text-text mt-1 font-mono inline-flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-text-faint" aria-hidden="true" />
+                  {formatDate(ov.dataEmissao)}
+                </p>
+              </div>
+              <div>
+                <h4 className="text-[9px] font-bold text-text-faint uppercase tracking-widest">Previsão</h4>
+                <p className="text-xs font-bold text-accent mt-1 font-mono">{formatDate(ov.dataEntregaPrevista)}</p>
               </div>
             </div>
-          )}
-          {erroStatus && (
-            <p role="alert" className="text-red-500 text-sm mt-2">{erroStatus}</p>
-          )}
+            <div>
+              <h4 className="text-[9px] font-bold text-text-faint uppercase tracking-widest">Status</h4>
+              <div className="mt-1.5">
+                <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}>
+                  {statusLabel(ov.status)}
+                </span>
+              </div>
+            </div>
+            {ov.observacoes && (
+              <div>
+                <h4 className="text-[9px] font-bold text-text-faint uppercase tracking-widest">Observações</h4>
+                <p className="text-xs text-text-muted mt-1 italic">{ov.observacoes}</p>
+              </div>
+            )}
+            {podeAlterarStatus && transicoesPossiveis.length > 0 && (
+              <div className="pt-4 border-t border-border">
+                <p className="text-[10px] font-bold text-text-faint uppercase tracking-widest mb-2.5">Alterar Status</p>
+                <div className="flex flex-wrap gap-2">
+                  {transicoesPossiveis.map((status) => (
+                    <button
+                      key={status}
+                      onClick={() => handleStatusChange(status)}
+                      aria-label={`Alterar status para ${statusLabel(status)}`}
+                      className="px-3 py-1.5 text-[10px] uppercase tracking-widest border border-border-strong rounded-lg hover:bg-accent hover:text-on-accent hover:border-accent font-bold transition-all focus-visible:outline-2 focus-visible:outline-accent"
+                    >
+                      {statusLabel(status)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+            {erroStatus && (
+              <p role="alert" className="text-rose-400 text-xs pt-2 border-t border-border">{erroStatus}</p>
+            )}
+          </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow p-4">
-          <h2 className="font-semibold text-lg mb-3">Itens</h2>
-          <table className="w-full text-sm">
-            <thead>
-              <tr className="text-left text-slate-500">
-                <th className="pb-2">Item</th>
-                <th className="pb-2">Qtd</th>
-                <th className="pb-2">Valor Unit.</th>
-                <th className="pb-2">Subtotal</th>
-              </tr>
-            </thead>
-            <tbody>
-              {ov.itens.map((item, i) => (
-                <tr key={i} className="border-t">
-                  <td className="py-2">{item.nomeItem}</td>
-                  <td className="py-2">{item.quantidade}</td>
-                  <td className="py-2">R$ {item.precoUnitario.toFixed(2)}</td>
-                  <td className="py-2">R$ {(item.quantidade * item.precoUnitario).toFixed(2)}</td>
+        {/* Card: Itens */}
+        <div className="lg:col-span-2 bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
+          <div className="p-6 border-b border-border bg-surface-elevated/40 flex justify-between items-center">
+            <h2 className="text-sm uppercase tracking-widest font-bold text-text inline-flex items-center gap-2">
+              <Package className="w-4 h-4 text-accent" aria-hidden="true" />
+              Itens Registrados
+            </h2>
+            <span className="text-[10px] uppercase tracking-widest text-text-faint">{ov.itens.length} {ov.itens.length === 1 ? 'item' : 'itens'}</span>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
+                  <th className="px-6 py-4">Item</th>
+                  <th className="px-6 py-4 text-center">Qtd</th>
+                  <th className="px-6 py-4 text-right">Valor Unit.</th>
+                  <th className="px-6 py-4 text-right">Subtotal</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border-subtle text-xs">
+                {ov.itens.map((item, i) => (
+                  <tr key={i} className="hover:bg-hover transition-colors">
+                    <td className="px-6 py-4 font-bold text-text">{item.nomeItem}</td>
+                    <td className="px-6 py-4 text-center font-mono text-text-muted">{item.quantidade}</td>
+                    <td className="px-6 py-4 text-right font-mono text-text-muted">{formatCurrency(item.precoUnitario)}</td>
+                    <td className="px-6 py-4 text-right font-bold text-accent font-mono">{formatCurrency(item.quantidade * item.precoUnitario)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-surface-elevated/20">
+            <span className="text-[10px] font-bold text-text-faint uppercase tracking-widest">Valor Total</span>
+            <span className="text-xl font-bold text-accent font-mono">{formatCurrency(ov.valorTotal)}</span>
+          </div>
         </div>
       </div>
     </div>
