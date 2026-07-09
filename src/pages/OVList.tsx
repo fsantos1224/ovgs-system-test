@@ -9,11 +9,11 @@ import { usePermissao } from "../hooks/usePermission";
 import { Pagination } from "../components/Pagination";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
-  CRIADA: "bg-zinc-900 text-zinc-400 border border-zinc-800",
-  PLANEJADA: "bg-amber-950/30 text-amber-300 border border-amber-500/20",
-  AGENDADA: "bg-blue-950/30 text-blue-300 border border-blue-500/20",
-  EM_TRANSPORTE: "bg-purple-950/30 text-purple-300 border border-purple-500/20",
-  ENTREGUE: "bg-emerald-950/30 text-emerald-300 border border-emerald-500/20",
+  CRIADA: "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
+  PLANEJADA: "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
+  AGENDADA: "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
+  EM_TRANSPORTE: "dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-500/20 bg-purple-50 text-purple-700 border-purple-200",
+  ENTREGUE: "dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-500/20 bg-emerald-50 text-emerald-700 border-emerald-200",
 };
 
 function formatCurrency(val: number) {

@@ -8,9 +8,9 @@ import { statusLabel } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 
 const STATUS_BADGE: Record<string, string> = {
-  CRIADA: "bg-zinc-900 text-zinc-400 border border-zinc-800",
-  PLANEJADA: "bg-amber-950/30 text-amber-300 border border-amber-500/20",
-  AGENDADA: "bg-blue-950/30 text-blue-300 border border-blue-500/20",
+  CRIADA: "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
+  PLANEJADA: "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
+  AGENDADA: "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
 };
 
 function formatDate(dateStr: string) {
