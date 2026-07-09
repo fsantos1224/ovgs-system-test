@@ -1,0 +1,74 @@
+{
+  "clientes": [
+    { "id": "1", "nome": "Empresa Alpha Ltda", "documento": "12.345.678/0001-90", "email": "contato@alpha.com", "telefone": "(11) 9999-8888", "endereco": "Rua A, 123", "ativo": true },
+    { "id": "2", "nome": "Beta Comércio S.A.", "documento": "98.765.432/0001-10", "email": "vendas@beta.com", "telefone": "(21) 7777-6666", "endereco": "Av. B, 456", "ativo": true },
+    { "id": "3", "nome": "Gamma Distribuidora", "documento": "55.555.555/0001-55", "email": "admin@gamma.com", "telefone": "(31) 5555-4444", "endereco": "Rua C, 789", "ativo": false }
+  ],
+  "tiposTransporte": [
+    { "id": "1", "nome": "Transportadora Rápida", "modal": "rodoviario", "ativo": true },
+    { "id": "2", "nome": "LogExpress Aéreo", "modal": "aereo", "ativo": true },
+    { "id": "3", "nome": "Navtec Marítimo", "modal": "maritimo", "ativo": true }
+  ],
+  "itens": [
+    { "id": "1", "nome": "Parafuso M10", "sku": "PAR-M10-001", "categoria": "Fixação", "precoUnitario": 0.50, "unidadeMedida": "un", "ativo": true },
+    { "id": "2", "nome": "Porca Sextavada", "sku": "POR-SEX-002", "categoria": "Fixação", "precoUnitario": 0.30, "unidadeMedida": "un", "ativo": true },
+    { "id": "3", "nome": "Chave de Fenda 6mm", "sku": "FER-CH6-003", "categoria": "Ferramentas", "precoUnitario": 15.00, "unidadeMedida": "un", "ativo": true },
+    { "id": "4", "nome": "Lâmpada LED 12W", "sku": "LED-12W-004", "categoria": "Iluminação", "precoUnitario": 22.90, "unidadeMedida": "un", "ativo": true },
+    { "id": "5", "nome": "Cano PVC 1m", "sku": "PVC-1M-005", "categoria": "Hidráulica", "precoUnitario": 8.75, "unidadeMedida": "m", "ativo": true }
+  ],
+  "ordensVenda": [
+    {
+      "id": "1",
+      "numero": "OV-2024-0001",
+      "clienteId": "1",
+      "nomeCliente": "Empresa Alpha Ltda",
+      "dataEmissao": "2024-11-01T10:00:00Z",
+      "dataEntregaPrevista": "2024-11-15T10:00:00Z",
+      "transporteId": "1",
+      "nomeTransporte": "Transportadora Rápida",
+      "status": "confirmada",
+      "itens": [
+        { "itemId": "1", "nomeItem": "Parafuso M10", "quantidade": 1000, "precoUnitario": 0.50 },
+        { "itemId": "2", "nomeItem": "Porca Sextavada", "quantidade": 1000, "precoUnitario": 0.30 }
+      ],
+      "valorTotal": 800.00,
+      "observacoes": "Entrega no endereço comercial"
+    },
+    {
+      "id": "2",
+      "numero": "OV-2024-0002",
+      "clienteId": "2",
+      "nomeCliente": "Beta Comércio S.A.",
+      "dataEmissao": "2024-11-05T14:30:00Z",
+      "dataEntregaPrevista": "2024-11-20T10:00:00Z",
+      "transporteId": "2",
+      "nomeTransporte": "LogExpress Aéreo",
+      "status": "rascunho",
+      "itens": [
+        { "itemId": "3", "nomeItem": "Chave de Fenda 6mm", "quantidade": 50, "precoUnitario": 15.00 },
+        { "itemId": "4", "nomeItem": "Lâmpada LED 12W", "quantidade": 200, "precoUnitario": 25.90 }
+      ],
+      "valorTotal": 5930.00
+    },
+    {
+      "id": "3",
+      "numero": "OV-2024-0003",
+      "clienteId": "1",
+      "nomeCliente": "Empresa Alpha Ltda",
+      "dataEmissao": "2024-11-10T09:00:00Z",
+      "dataEntregaPrevista": "2024-11-30T10:00:00Z",
+      "transporteId": "3",
+      "nomeTransporte": "Navtec Marítimo",
+      "status": "em_transporte",
+      "itens": [
+        { "itemId": "5", "nomeItem": "Cano de PVC 1m", "quantidade": 500, "precoUnitario": 8.75 }
+      ],
+      "valorTotal": 4375.00
+    }
+  ],
+  "eventosAuditoria": [
+    { "id": "1", "entidade": "ordemVenda", "entidadeId": "1", "acao": "criacao", "usuario": "admin@ovgs.com", "dataHora": "2024-11-01T10:00:00Z", "detalhes": "OV criada como rascunho" },
+    { "id": "2", "entidade": "ordemVenda", "entidadeId": "1", "acao": "alteracao_status", "usuario": "admin@ovgs.com", "dataHora": "2024-11-02T08:00:00Z", "detalhes": "Status alterado de rascunho para confirmada" },
+    { "id": "3", "entidade": "ordemVenda", "entidadeId": "3", "acao": "alteracao_status", "usuario": "admin@ovgs.com", "dataHora": "2024-11-11T09:00:00Z", "detalhes": "Status alterado de confirmada para em_transporte" }
+  ]
+}

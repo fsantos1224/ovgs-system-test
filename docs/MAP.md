@@ -1,0 +1,74 @@
+# OVGS Frontend — Wayfinder Map
+
+## Destination
+
+Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + TypeScript + json-server, com autorização RBAC demonstrando maturidade sénior (UI-level + operação-level), otimizado para observabilidade interna, acessibilidade (a11y) e performance de dashboards.
+
+## Notes
+
+- **Domínio:** Backoffice de logística — gestão de OVs, agendamentos, monitoramento operacional.
+- **Stack stack:** React 18 + Vite 5 + TypeScript + React Router v6 + Tailwind CSS + json-server.
+- **Princípio YAGNI:** Nada de libs desnecessárias. Nada de abstrações prematuras. Nada de boilerplate.
+- **`/🐴`** marca simplificações intencionais.
+- Skills: `frontend-design`, `react-patterns`, `a11y-runtime-tester`, `performance-profiling`.
+
+## Decisions so far
+
+### Ticket 1 — Stack Frontend (resolvido)
+
+- **React 18.3** + **Vite 5.4** + **TypeScript 5.6 (strict)** — configurado manualmente
+- **React Router v6** — BrowserRouter com 8 rotas aninhadas sob AppLayout
+- **Tailwind CSS 3.4** — postcss + autoprefixer
+- **json-server 0.17** — mock API em `db.json` (5 recursos)
+- **concurrently** — `dev:full` para dev + mock paralelos
+- Estrutura `src/{domain,api,hooks,layouts,pages,components}/` criada
+- `as const` necessário para manter tipo literal em array de transições (TypeScript strict)
+- RBAC: objeto hardcoded + hook `usePermissao` — sem Context/Provider (YAGNI)
+- fetch: wrapper minimalista (`apiGet`, `apiPost`, `apiPut`, `apiPatch`, `apiDelete` + hook `useFetch`)
+
+## Tickets
+
+| # | Ticket | Slug | Tipo | Bloqueado por |
+|---|---|---|---|---|
+| ~~1~~ | Stack Frontend | `01-stack-frontend` | `wayfinder:grilling` | — | ✔ Fechado
+| 2 | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 |
+| 3 | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 |
+| 4 | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 |
+| 5 | Routing e Layout | `05-routing-layout` | `wayfinder:prototype` | 1 |
+| 6 | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 |
+| 7 | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 |
+| 8 | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 |
+| 9 | Observabilidade — Performance Observer nativo | `09-observabilidade` | `wayfinder:research` | 1 |
+| 10 | Performance — Paginação server-side | `10-performance` | `wayfinder:research` | 1 |
+| 11 | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 |
+| 12 | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 |
+
+### Ordem de execução sugerida (fronteira)
+
+1. Ticket 1 — Stack (grátis, base para todos)
+2. Ticket 5 — Routing (só depende de 1)
+3. Ticket 9 — Observabilidade (só depende de 1)
+4. Ticket 10 — Performance (só depende de 1)
+5. Ticket 6 — RBAC (só depende de 1)
+6. Ticket 2 — Mock (depende de 1)
+7. Ticket 3 — Domínio (depende de 1)
+8. Ticket 4 — Estado (depende de 3)
+9. Ticket 7 — Formulários (depende de 3, 6)
+10. Ticket 8 — a11y (depende de 5, 6)
+11. Ticket 11 — Testes (depende de 2, 4, 6)
+12. Ticket 12 — Docker + Docs (depende de 2, 11)
+
+## Not yet specified
+
+- PWA / Offline-first para operadores de campo
+- i18n para colaboradores
+- Real-time no monitoramento (polling vs SSE)
+- CI/CD pipeline simples
+- Storybook para documentação de componentes
+
+## Out of scope
+
+- Backend real (NestJS, Prisma, DB) — tudo mockado via json-server
+- Autenticação real (OAuth/JWT) — mock simples
+- WebSockets, mobile nativo, multi-tenancy
+- SEO / GEO (sistema interno de backoffice)
