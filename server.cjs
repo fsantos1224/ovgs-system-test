@@ -89,6 +89,8 @@ server.post("/ordensVenda", (req, res) => {
     usuario: req.headers["x-user"] || "admin",
     dataHora: new Date().toISOString(),
     detalhes: `OV ${novaOV.numero} criada com status ${novaOV.status}`,
+    estadoAnterior: null,
+    estadoPosterior: novaOV.status,
   };
   router.db.get("eventosAuditoria").push(evento).write();
 
@@ -129,6 +131,8 @@ server.patch("/ordensVenda/:id", (req, res) => {
         usuario: req.headers["x-user"] || "admin",
         dataHora: new Date().toISOString(),
         detalhes: `Status alterado de ${ov.status} para ${novoStatus}`,
+        estadoAnterior: ov.status,
+        estadoPosterior: novoStatus,
       })
       .write();
   }
@@ -144,6 +148,26 @@ server.patch("/ordensVenda/:id", (req, res) => {
         usuario: req.headers["x-user"] || "admin",
         dataHora: new Date().toISOString(),
         detalhes: `Agendamento alterado: data prevista de ${ov.dataEntregaPrevista || "—"} para ${req.body.dataEntregaPrevista}`,
+        estadoAnterior: ov.dataEntregaPrevista || null,
+        estadoPosterior: req.body.dataEntregaPrevista,
+      })
+      .write();
+  }
+
+  if (req.body.transporteId && req.body.transporteId !== ov.transporteId) {
+    const novoTp = router.db.get("tiposTransporte").find({ id: req.body.transporteId }).value();
+    router.db
+      .get("eventosAuditoria")
+      .push({
+        id: String(router.db.get("eventosAuditoria").value().length + 1),
+        entidade: "ordemVenda",
+        entidadeId: id,
+        acao: "alteracao_transporte",
+        usuario: req.headers["x-user"] || "admin",
+        dataHora: new Date().toISOString(),
+        detalhes: `Transporte alterado de ${ov.nomeTransporte} para ${novoTp?.nome || req.body.transporteId}`,
+        estadoAnterior: ov.transporteId,
+        estadoPosterior: req.body.transporteId,
       })
       .write();
   }

@@ -84,6 +84,8 @@ export interface EventoAuditoria {
   usuario: string;
   dataHora: string;
   detalhes: string;
+  estadoAnterior?: string;
+  estadoPosterior?: string;
 }
 
 export interface UserRole {

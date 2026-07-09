@@ -18,6 +18,8 @@ export function Auditoria() {
               <th className="p-3">Entidade</th>
               <th className="p-3">Ação</th>
               <th className="p-3">Detalhes</th>
+              <th className="p-3">Estado Anterior</th>
+              <th className="p-3">Estado Posterior</th>
             </tr>
           </thead>
           <tbody>
@@ -28,6 +30,8 @@ export function Auditoria() {
                 <td className="p-3 text-slate-500">{e.entidade}</td>
                 <td className="p-3">{e.acao}</td>
                 <td className="p-3 text-slate-500 text-xs">{e.detalhes}</td>
+                <td className="p-3 text-xs font-mono text-slate-400">{e.estadoAnterior ?? "—"}</td>
+                <td className="p-3 text-xs font-mono text-slate-700">{e.estadoPosterior ?? "—"}</td>
               </tr>
             ))}
           </tbody>
