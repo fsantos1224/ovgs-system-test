@@ -133,6 +133,21 @@ server.patch("/ordensVenda/:id", (req, res) => {
       .write();
   }
 
+  if (req.body.dataEntregaPrevista && req.body.dataEntregaPrevista !== ov.dataEntregaPrevista) {
+    router.db
+      .get("eventosAuditoria")
+      .push({
+        id: String(router.db.get("eventosAuditoria").value().length + 1),
+        entidade: "ordemVenda",
+        entidadeId: id,
+        acao: "alteracao_agendamento",
+        usuario: req.headers["x-user"] || "admin",
+        dataHora: new Date().toISOString(),
+        detalhes: `Agendamento alterado: data prevista de ${ov.dataEntregaPrevista || "—"} para ${req.body.dataEntregaPrevista}`,
+      })
+      .write();
+  }
+
   res.json(ovAtualizada);
 });
 

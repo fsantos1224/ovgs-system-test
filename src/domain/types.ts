@@ -73,6 +73,7 @@ export interface OrdemVenda {
   itens: ItemOV[];
   valorTotal: number;
   observacoes?: string;
+  janelaAtendimento?: string;
 }
 
 export interface EventoAuditoria {
