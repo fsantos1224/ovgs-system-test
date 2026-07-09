@@ -1,32 +1,72 @@
-// 🐴 RBAC simplificado: objeto de configuração + hook. Sem Context, sem Provider global.
-// Para um projeto maior, buscaríamos as permissões duma rota /me.
+// 🐴 RBAC: objeto de configuração + hook. Sem CASL, sem libs, sem Provider.
+// Role do user persiste em localStorage e pode ser alterada via UI.
 
 import type { UserRole } from '../domain/types';
 
 type Permissao = string;
 
-interface RBACConfig {
-  role: UserRole['role'];
-  permissoes: Permissao[];
-}
-
-// 🐴 Hardcoded. Futuramente viria da API num GET /me.
-const USUARIO_ATUAL: RBACConfig = {
-  role: 'admin',
-  permissoes: [
-    'ov:listar', 'ov:criar', 'ov:editar', 'ov:excluir', 'ov:alterar_status',
-    'clientes:listar', 'clientes:criar', 'clientes:editar',
-    'transportes:listar', 'transportes:criar', 'transportes:editar',
-    'itens:listar', 'itens:criar', 'itens:editar',
-    'agendamento:ver', 'agendamento:criar',
+// 🐴 Matriz de permissões por role. Hierarquia: admin > manager > operator > viewer.
+// Cada role herda as permissões da role anterior e adiciona as suas.
+const PERMISSOES_POR_ROLE: Record<UserRole['role'], Permissao[]> = {
+  viewer: [
+    'ov:listar',
+    'clientes:listar',
+    'transportes:listar',
+    'itens:listar',
+  ],
+  operator: [
+    'ov:criar', 'ov:editar', 'ov:alterar_status',
+    'clientes:criar',
+    'transportes:criar',
+    'itens:criar',
+    'agendamento:ver',
+  ],
+  manager: [
+    'ov:excluir',
+    'clientes:editar',
+    'transportes:editar',
+    'itens:editar',
+    'agendamento:criar',
     'auditoria:ver',
+  ],
+  admin: [
+    'ov:listar_todas',
+    'clientes:excluir',
+    'transportes:excluir',
+    'itens:excluir',
+    'admin:gerenciar_usuarios',
   ],
 };
 
+const ROLE_KEY = 'ovgs:role';
+
+function getRole(): UserRole['role'] {
+  return (localStorage.getItem(ROLE_KEY) as UserRole['role']) ?? 'admin';
+}
+
+export function setRole(role: UserRole['role']) {
+  localStorage.setItem(ROLE_KEY, role);
+  window.location.reload(); // 🐴 simplificação: reload para resetar estado
+}
+
+function getPermissoes(): Permissao[] {
+  const role = getRole();
+  const roles: UserRole['role'][] = ['viewer', 'operator', 'manager', 'admin'];
+  const idx = roles.indexOf(role);
+  if (idx < 0) return [];
+
+  // 🐴 Hierarquia: cada role acumula permissões das roles anteriores
+  const permissoes: Permissao[] = [];
+  for (let i = 0; i <= idx; i++) {
+    permissoes.push(...(PERMISSOES_POR_ROLE[roles[i]] ?? []));
+  }
+  return [...new Set(permissoes)];
+}
+
 export function usePermissao(permissao: Permissao): boolean {
-  return USUARIO_ATUAL.permissoes.includes(permissao);
+  return getPermissoes().includes(permissao);
 }
 
 export function useRole(): UserRole['role'] {
-  return USUARIO_ATUAL.role;
+  return getRole();
 }
