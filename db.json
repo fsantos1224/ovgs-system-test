@@ -1,6 +1,6 @@
 {
   "clientes": [
-{
+    {
       "id": "1",
       "nome": "Empresa Alpha Ltda",
       "documento": "12.345.678/0001-90",
@@ -8,7 +8,10 @@
       "telefone": "(11) 9999-8888",
       "endereco": "Rua A, 123",
       "ativo": true,
-      "transportesAutorizados": ["1", "3"]
+      "transportesAutorizados": [
+        "1",
+        "3"
+      ]
     },
     {
       "id": "2",
@@ -18,7 +21,9 @@
       "telefone": "(21) 7777-6666",
       "endereco": "Av. B, 456",
       "ativo": true,
-      "transportesAutorizados": ["2"]
+      "transportesAutorizados": [
+        "2"
+      ]
     },
     {
       "id": "3",
@@ -28,7 +33,9 @@
       "telefone": "(31) 5555-4444",
       "endereco": "Rua C, 789",
       "ativo": false,
-      "transportesAutorizados": ["3"]
+      "transportesAutorizados": [
+        "3"
+      ]
     },
     {
       "id": "4",
@@ -38,7 +45,11 @@
       "telefone": "(41) 3333-2222",
       "endereco": "Av. D, 1010",
       "ativo": true,
-      "transportesAutorizados": ["1", "2", "4"]
+      "transportesAutorizados": [
+        "1",
+        "2",
+        "4"
+      ]
     },
     {
       "id": "5",
@@ -48,7 +59,11 @@
       "telefone": "(51) 4444-5555",
       "endereco": "Rua E, 2020",
       "ativo": true,
-      "transportesAutorizados": ["2", "4", "5"]
+      "transportesAutorizados": [
+        "2",
+        "4",
+        "5"
+      ]
     }
   ],
   "tiposTransporte": [
@@ -89,7 +104,7 @@
       "nome": "Parafuso M10",
       "sku": "PAR-M10-001",
       "categoria": "Fixação",
-      "precoUnitario": 0.5,
+      "precoUnitario": 50,
       "unidadeMedida": "un",
       "ativo": true
     },
@@ -98,7 +113,7 @@
       "nome": "Porca Sextavada",
       "sku": "POR-SEX-002",
       "categoria": "Fixação",
-      "precoUnitario": 0.3,
+      "precoUnitario": 30,
       "unidadeMedida": "un",
       "ativo": true
     },
@@ -107,7 +122,7 @@
       "nome": "Chave de Fenda 6mm",
       "sku": "FER-CH6-003",
       "categoria": "Ferramentas",
-      "precoUnitario": 15,
+      "precoUnitario": 1500,
       "unidadeMedida": "un",
       "ativo": true
     },
@@ -116,7 +131,7 @@
       "nome": "Lâmpada LED 12W",
       "sku": "LED-12W-004",
       "categoria": "Iluminação",
-      "precoUnitario": 22.9,
+      "precoUnitario": 2290,
       "unidadeMedida": "un",
       "ativo": true
     },
@@ -125,7 +140,7 @@
       "nome": "Cano PVC 1m",
       "sku": "PVC-1M-005",
       "categoria": "Hidráulica",
-      "precoUnitario": 8.75,
+      "precoUnitario": 875,
       "unidadeMedida": "m",
       "ativo": true
     },
@@ -134,7 +149,7 @@
       "nome": "Parafuso Sextavado",
       "sku": "PAR-SEX-006",
       "categoria": "Fixação",
-      "precoUnitario": 1.2,
+      "precoUnitario": 120,
       "unidadeMedida": "un",
       "ativo": true
     },
@@ -143,7 +158,7 @@
       "nome": "Fita Veda Rosca",
       "sku": "FIT-VED-007",
       "categoria": "Hidráulica",
-      "precoUnitario": 4.5,
+      "precoUnitario": 450,
       "unidadeMedida": "un",
       "ativo": true
     },
@@ -152,7 +167,7 @@
       "nome": "Disjuntor 16A",
       "sku": "DIS-16A-008",
       "categoria": "Elétrica",
-      "precoUnitario": 12.3,
+      "precoUnitario": 1230,
       "unidadeMedida": "un",
       "ativo": true
     },
@@ -161,7 +176,7 @@
       "nome": "Tubo PVC 50mm",
       "sku": "TUB-50-009",
       "categoria": "Hidráulica",
-      "precoUnitario": 6.2,
+      "precoUnitario": 620,
       "unidadeMedida": "m",
       "ativo": true
     },
@@ -170,7 +185,7 @@
       "nome": "Lixa d'Água 220",
       "sku": "LIX-220-010",
       "categoria": "Ferramentas",
-      "precoUnitario": 1.9,
+      "precoUnitario": 190,
       "unidadeMedida": "un",
       "ativo": false
     }
@@ -191,16 +206,16 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 1000,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         },
         {
           "itemId": "2",
           "nomeItem": "Porca Sextavada",
           "quantidade": 1000,
-          "precoUnitario": 0.3
+          "precoUnitario": 3000
         }
       ],
-      "valorTotal": 800,
+      "valorTotal": 80000,
       "observacoes": "Entrega no endereço comercial",
       "janelaAtendimento": "11:00"
     },
@@ -219,16 +234,16 @@
           "itemId": "3",
           "nomeItem": "Chave de Fenda 6mm",
           "quantidade": 50,
-          "precoUnitario": 15
+          "precoUnitario": 150000
         },
         {
           "itemId": "4",
           "nomeItem": "Lâmpada LED 12W",
           "quantidade": 200,
-          "precoUnitario": 25.9
+          "precoUnitario": 259000
         }
       ],
-      "valorTotal": 5930
+      "valorTotal": 593000
     },
     {
       "id": "3",
@@ -245,10 +260,10 @@
           "itemId": "5",
           "nomeItem": "Cano de PVC 1m",
           "quantidade": 500,
-          "precoUnitario": 8.75
+          "precoUnitario": 87500
         }
       ],
-      "valorTotal": 4375
+      "valorTotal": 437500
     },
     {
       "id": "4",
@@ -265,10 +280,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 104,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 52
+      "valorTotal": 5200
     },
     {
       "id": "5",
@@ -285,10 +300,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 105,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 52.5
+      "valorTotal": 5250
     },
     {
       "id": "6",
@@ -305,10 +320,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 106,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 53
+      "valorTotal": 5300
     },
     {
       "id": "7",
@@ -325,10 +340,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 107,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 53.5
+      "valorTotal": 5350
     },
     {
       "id": "8",
@@ -345,10 +360,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 108,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 54
+      "valorTotal": 5400
     },
     {
       "id": "9",
@@ -365,10 +380,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 109,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 54.5
+      "valorTotal": 5450
     },
     {
       "id": "10",
@@ -385,10 +400,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 110,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 55
+      "valorTotal": 5500
     },
     {
       "id": "11",
@@ -405,10 +420,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 111,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 55.5
+      "valorTotal": 5550
     },
     {
       "id": "12",
@@ -425,10 +440,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 112,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 56
+      "valorTotal": 5600
     },
     {
       "id": "13",
@@ -445,10 +460,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 113,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 56.5
+      "valorTotal": 5650
     },
     {
       "id": "14",
@@ -465,10 +480,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 114,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 57
+      "valorTotal": 5700
     },
     {
       "id": "15",
@@ -485,10 +500,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 115,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 57.5
+      "valorTotal": 5750
     },
     {
       "id": "16",
@@ -505,10 +520,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 116,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 58
+      "valorTotal": 5800
     },
     {
       "id": "17",
@@ -525,10 +540,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 117,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 58.5
+      "valorTotal": 5850
     },
     {
       "id": "18",
@@ -545,10 +560,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 118,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 59
+      "valorTotal": 5900
     },
     {
       "id": "19",
@@ -565,10 +580,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 119,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 59.5
+      "valorTotal": 5950
     },
     {
       "id": "20",
@@ -585,10 +600,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 120,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 60
+      "valorTotal": 6000
     },
     {
       "id": "21",
@@ -605,10 +620,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 121,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 60.5
+      "valorTotal": 6050
     },
     {
       "id": "22",
@@ -625,10 +640,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 122,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 61
+      "valorTotal": 6100
     },
     {
       "id": "23",
@@ -645,10 +660,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 123,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 61.5
+      "valorTotal": 6150
     },
     {
       "id": "24",
@@ -665,10 +680,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 124,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 62
+      "valorTotal": 6200
     },
     {
       "id": "25",
@@ -685,10 +700,10 @@
           "itemId": "1",
           "nomeItem": "Parafuso M10",
           "quantidade": 125,
-          "precoUnitario": 0.5
+          "precoUnitario": 5000
         }
       ],
-      "valorTotal": 62.5
+      "valorTotal": 6250
     },
     {
       "id": "26",
@@ -705,10 +720,10 @@
           "itemId": "1",
           "nomeItem": "Test",
           "quantidade": 1,
-          "precoUnitario": 10
+          "precoUnitario": 100000
         }
       ],
-      "valorTotal": 10,
+      "valorTotal": 1000,
       "observacoes": null
     }
   ],
@@ -718,7 +733,7 @@
       "entidade": "ordemVenda",
       "entidadeId": "1",
       "acao": "criacao",
-      "usuario": "admin@ovgs.com",
+      "usuario": "admin@XPTO.com",
       "dataHora": "2024-11-01T10:00:00Z",
       "detalhes": "OV criada como CRIADA"
     },
@@ -727,7 +742,7 @@
       "entidade": "ordemVenda",
       "entidadeId": "1",
       "acao": "alteracao_status",
-      "usuario": "admin@ovgs.com",
+      "usuario": "admin@XPTO.com",
       "dataHora": "2024-11-02T08:00:00Z",
       "detalhes": "Status alterado de CRIADA para AGENDADA"
     },
@@ -736,7 +751,7 @@
       "entidade": "ordemVenda",
       "entidadeId": "3",
       "acao": "alteracao_status",
-      "usuario": "admin@ovgs.com",
+      "usuario": "admin@XPTO.com",
       "dataHora": "2024-11-11T09:00:00Z",
       "detalhes": "Status alterado de AGENDADA para EM_TRANSPORTE"
     },
@@ -754,7 +769,7 @@
       "entidade": "item",
       "entidadeId": "xD_9pqf",
       "acao": "criacao",
-      "usuario": "admin@ovgs.com",
+      "usuario": "admin@XPTO.com",
       "dataHora": "2026-07-09T03:52:13.466Z",
       "detalhes": "Item Parafuso Sextavado criado",
       "estadoAnterior": null,
@@ -765,7 +780,7 @@
       "entidade": "cliente",
       "entidadeId": "YQf14Vc",
       "acao": "criacao",
-      "usuario": "admin@ovgs.com",
+      "usuario": "admin@XPTO.com",
       "dataHora": "2026-07-09T03:59:08.300Z",
       "detalhes": "Cliente teste criado",
       "estadoAnterior": null,
