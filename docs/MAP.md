@@ -42,6 +42,14 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - Eventos rastreados: `ov:criar` (OVNew), `ov:status:alterar` (OVDetail)
 - Zero dependências, zero SDKs externos
 
+### Ticket 10 — Performance (resolvido)
+
+- `apiGetPaginated()` em `src/api/fetch.ts` — expõe `X-Total-Count` do json-server
+- `usePaginatedFetch` hook — gerencia página, filtros, totalPages; reseta página 1 ao mudar filtro
+- `Pagination` component — botões Anterior/Próximo, oculta se totalPages <= 1
+- `OVList.tsx` atualizada: campo de busca com debounce 300ms + tabela paginada
+- `db.json` populado com 25 OVs (demonstra 2 páginas com pageSize=20)
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
@@ -49,13 +57,13 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~1~~ | Stack Frontend | `01-stack-frontend` | `wayfinder:grilling` | — | ✔
 | ~~5~~ | Routing e Layout | `05-routing-layout` | `wayfinder:prototype` | 1 | ✔
 | ~~9~~ | Observabilidade | `09-observabilidade` | `wayfinder:research` | 1 | ✔
+| ~~10~~ | Performance | `10-performance` | `wayfinder:research` | 1 | ✔
 | 2 | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 |
 | 3 | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 |
 | 4 | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 |
 | 6 | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 |
 | 7 | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 |
 | 8 | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 |
-| 10 | Performance — Paginação server-side | `10-performance` | `wayfinder:research` | 1 |
 | 11 | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 |
 | 12 | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 |
 
