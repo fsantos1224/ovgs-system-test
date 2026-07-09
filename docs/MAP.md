@@ -35,19 +35,26 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - Links internos corrigidos para os novos paths (`/ordens-venda` → `/ovs`)
 - Página de Auditoria criada com tabela de eventos
 
+### Ticket 9 — Observabilidade (resolvido)
+
+- `initWebVitals()` no `main.tsx` — Performance Observer nativo para LCP, CLS, INP (3 observers com try/catch)
+- `trackEvent()` em `src/lib/telemetry.ts` — eventos de negócio com console.table + localStorage (últimos 100)
+- Eventos rastreados: `ov:criar` (OVNew), `ov:status:alterar` (OVDetail)
+- Zero dependências, zero SDKs externos
+
 ## Tickets
 
 | # | Ticket | Slug | Tipo | Bloqueado por |
 |---|---|---|---|---|
 | ~~1~~ | Stack Frontend | `01-stack-frontend` | `wayfinder:grilling` | — | ✔
 | ~~5~~ | Routing e Layout | `05-routing-layout` | `wayfinder:prototype` | 1 | ✔
+| ~~9~~ | Observabilidade | `09-observabilidade` | `wayfinder:research` | 1 | ✔
 | 2 | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 |
 | 3 | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 |
 | 4 | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 |
 | 6 | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 |
 | 7 | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 |
 | 8 | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 |
-| 9 | Observabilidade — Performance Observer nativo | `09-observabilidade` | `wayfinder:research` | 1 |
 | 10 | Performance — Paginação server-side | `10-performance` | `wayfinder:research` | 1 |
 | 11 | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 |
 | 12 | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 |
