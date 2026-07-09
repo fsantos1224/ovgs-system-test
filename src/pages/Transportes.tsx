@@ -1,9 +1,17 @@
 import { useState } from "react";
+import { Plus, Truck } from "lucide-react";
 import { useFetch } from "../hooks/useFetch";
 import { usePermissao } from "../hooks/usePermission";
 import { apiPost, apiPatch } from "../api/fetch";
 import { Modal } from "../components/Modal";
 import type { TipoTransporte } from "../domain/types";
+
+const MODAL_LABEL: Record<string, string> = {
+  rodoviario: "Rodoviário",
+  aereo: "Aéreo",
+  maritimo: "Marítimo",
+  ferroviario: "Ferroviário",
+};
 
 export function Transportes() {
   const { data: transportes, loading, refresh } = useFetch<TipoTransporte[]>("/tiposTransporte");
@@ -13,7 +21,7 @@ export function Transportes() {
   const [mostrarForm, setMostrarForm] = useState(false);
   const [erro, setErro] = useState("");
 
-  if (loading) return <p role="status" aria-live="polite" className="text-gray-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -40,14 +48,19 @@ export function Transportes() {
   };
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Tipos de Transporte</h1>
+    <div className="space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
+        <div>
+          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 06 / MODAIS LOGÍSTICOS</span>
+          <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Tipos de Transporte</h1>
+          <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Cadastre e gerencie os modais de transporte disponíveis.</p>
+        </div>
         {podeCriar && (
           <button
             onClick={() => { setMostrarForm(true); setEditando(null); setErro(""); }}
-            className="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-700 text-sm"
+            className="inline-flex items-center gap-2 border border-border-strong text-[10px] uppercase tracking-widest hover:bg-accent hover:text-on-accent hover:border-accent text-text font-bold px-5 py-3 transition-all focus-visible:outline-2 focus-visible:outline-accent"
           >
+            <Plus className="w-4 h-4" aria-hidden="true" />
             Novo Transporte
           </button>
         )}
@@ -56,12 +69,12 @@ export function Transportes() {
       <Modal open={mostrarForm} title={editando ? `Editar Transporte: ${editando.nome}` : "Novo Transporte"} onClose={() => { setMostrarForm(false); setEditando(null); setErro(""); }}>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Nome</label>
-            <input name="nome" defaultValue={editando?.nome ?? ""} required className="w-full border rounded px-2 py-1.5 text-sm" />
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Nome</label>
+            <input name="nome" defaultValue={editando?.nome ?? ""} required className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden" />
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Modal</label>
-            <select name="modal" defaultValue={editando?.modal ?? "rodoviario"} className="w-full border rounded px-2 py-1.5 text-sm">
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Modal</label>
+            <select name="modal" defaultValue={editando?.modal ?? "rodoviario"} className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden cursor-pointer">
               <option value="rodoviario">Rodoviário</option>
               <option value="aereo">Aéreo</option>
               <option value="maritimo">Marítimo</option>
@@ -69,48 +82,58 @@ export function Transportes() {
             </select>
           </div>
           <div>
-            <label className="block text-xs text-slate-500 mb-1">Ativo</label>
-            <select name="ativo" defaultValue={editando?.ativo ? "true" : "false"} className="w-full border rounded px-2 py-1.5 text-sm">
+            <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Ativo</label>
+            <select name="ativo" defaultValue={editando?.ativo ? "true" : "false"} className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden cursor-pointer">
               <option value="true">Sim</option>
               <option value="false">Não</option>
             </select>
           </div>
-          {erro && <p role="alert" className="text-red-500 text-sm">{erro}</p>}
-          <div className="flex gap-2 justify-end">
-            <button type="button" onClick={() => { setMostrarForm(false); setEditando(null); setErro(""); }} className="text-sm text-slate-500 px-3 py-1.5 hover:underline">Cancelar</button>
-            <button type="submit" className="bg-slate-800 text-white px-4 py-1.5 rounded text-sm hover:bg-slate-700">
-              {editando ? "Salvar" : "Criar"}
+          {erro && <p role="alert" className="text-rose-400 text-xs">{erro}</p>}
+          <div className="flex gap-3 justify-end pt-4 border-t border-border">
+            <button type="button" onClick={() => { setMostrarForm(false); setEditando(null); setErro(""); }} className="px-5 py-2.5 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted focus-visible:outline-2 focus-visible:outline-accent">Cancelar</button>
+            <button type="submit" className="px-6 py-2.5 bg-surface-elevated hover:bg-accent text-text hover:text-on-accent font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-lg transition-all border border-border-strong focus-visible:outline-2 focus-visible:outline-accent">
+              {editando ? "Salvar Alterações" : "Criar Transporte"}
             </button>
           </div>
         </form>
       </Modal>
 
-      <div role="region" aria-label="Lista de tipos de transporte" className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full text-sm">
+      <div role="region" aria-label="Lista de tipos de transporte" className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
+        <table className="w-full text-left border-collapse">
           <caption className="sr-only">Lista de tipos de transporte</caption>
-          <thead className="bg-slate-100 text-left">
-            <tr>
-              <th className="p-3">Nome</th>
-              <th className="p-3">Modal</th>
-              <th className="p-3">Ativo</th>
-              {podeEditar && <th className="p-3"></th>}
+          <thead>
+            <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
+              <th className="px-6 py-4.5">Nome</th>
+              <th className="px-6 py-4.5">Modal</th>
+              <th className="px-6 py-4.5">Ativo</th>
+              {podeEditar && <th className="px-6 py-4.5 text-center">Ações</th>}
             </tr>
           </thead>
-          <tbody>
+          <tbody className="divide-y divide-border-subtle text-xs">
             {transportes?.map((t) => (
-              <tr key={t.id} className="border-t hover:bg-slate-50">
-                <td className="p-3 font-medium">{t.nome}</td>
-                <td className="p-3">{t.modal}</td>
-                <td className="p-3">{t.ativo ? "Sim" : "Não"}</td>
+              <tr key={t.id} className="hover:bg-hover transition-colors">
+                <td className="px-6 py-4 font-bold text-text text-sm inline-flex items-center gap-2">
+                  <Truck className="w-3.5 h-3.5 text-text-faint" aria-hidden="true" />
+                  {t.nome}
+                </td>
+                <td className="px-6 py-4 text-text-muted">{MODAL_LABEL[t.modal] ?? t.modal}</td>
+                <td className="px-6 py-4">
+                  <span className={`text-[10px] font-bold uppercase tracking-wider ${t.ativo ? 'text-emerald-500' : 'text-text-faint'}`}>
+                    {t.ativo ? 'Ativo' : 'Inativo'}
+                  </span>
+                </td>
                 {podeEditar && (
-                  <td className="p-3">
-                    <button onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }} className="text-blue-600 hover:underline text-sm">
+                  <td className="px-6 py-4 text-center">
+                    <button onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }} className="text-[10px] uppercase tracking-widest border border-border-strong hover:bg-accent hover:text-on-accent hover:border-accent px-3 py-1.5 transition-all font-bold focus-visible:outline-2 focus-visible:outline-accent">
                       Editar
                     </button>
                   </td>
                 )}
               </tr>
             ))}
+            {transportes?.length === 0 && (
+              <tr><td colSpan={4} className="px-6 py-12 text-center text-text-subtle italic">Nenhum transporte cadastrado.</td></tr>
+            )}
           </tbody>
         </table>
       </div>

@@ -16,17 +16,17 @@ export function Pagination({
   return (
     <nav
       aria-label="Navegação de páginas"
-      className="flex items-center justify-between px-3 py-3 border-t"
+      className="flex items-center justify-between px-6 py-4 border-t border-border bg-surface-elevated/10"
     >
-      <span className="text-sm text-slate-500">
-        Página {page} de {totalPages}
+      <span className="text-[10px] uppercase tracking-widest text-text-faint font-bold">
+        Página <span className="text-text">{page}</span> de <span className="text-text">{totalPages}</span>
       </span>
       <div className="flex gap-2">
         <button
           onClick={() => onPageChange(page - 1)}
           disabled={page <= 1}
           aria-label="Página anterior"
-          className="px-3 py-1 text-sm rounded border hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400"
+          className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-border-strong hover:bg-hover disabled:opacity-30 disabled:pointer-events-none transition-all text-text focus-visible:outline-2 focus-visible:outline-accent"
         >
           Anterior
         </button>
@@ -34,7 +34,7 @@ export function Pagination({
           onClick={() => onPageChange(page + 1)}
           disabled={page >= totalPages}
           aria-label="Próxima página"
-          className="px-3 py-1 text-sm rounded border hover:bg-slate-50 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-400"
+          className="px-3.5 py-1.5 text-[10px] font-bold uppercase tracking-wider rounded-lg border border-border-strong hover:bg-hover disabled:opacity-30 disabled:pointer-events-none transition-all text-text focus-visible:outline-2 focus-visible:outline-accent"
         >
           Próximo
         </button>

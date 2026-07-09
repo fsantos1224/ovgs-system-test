@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { X } from "lucide-react";
 
 interface ModalProps {
   open: boolean;
@@ -28,14 +29,20 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
   return (
     <dialog
       ref={dialogRef}
-      className="rounded-lg shadow-xl p-6 w-full max-w-lg backdrop:bg-black/40"
+      className="rounded-2xl border border-border w-full max-w-lg bg-surface text-text shadow-2xl backdrop:bg-overlay p-0"
       aria-labelledby="modal-title"
     >
-      <div className="flex items-center justify-between mb-4">
-        <h2 id="modal-title" className="text-lg font-semibold">{title}</h2>
-        <button onClick={onClose} className="text-slate-400 hover:text-slate-700 text-xl leading-none">&times;</button>
+      <div className="p-6 border-b border-border bg-surface-elevated/40 flex justify-between items-center">
+        <h2 id="modal-title" className="text-lg font-serif italic text-text">{title}</h2>
+        <button
+          onClick={onClose}
+          aria-label="Fechar"
+          className="text-text-faint hover:text-text rounded-full hover:bg-hover p-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+        >
+          <X className="w-5 h-5" aria-hidden="true" />
+        </button>
       </div>
-      {children}
+      <div className="p-6">{children}</div>
     </dialog>
   );
 }

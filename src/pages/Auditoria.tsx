@@ -1,54 +1,101 @@
+import { useState } from "react";
+import { ChevronDown, ChevronUp, User as UserIcon, ShieldCheck } from "lucide-react";
 import { useFetch } from '../hooks/useFetch';
 import { usePermissao } from '../hooks/usePermission';
 import type { EventoAuditoria } from '../domain/types';
 
+function formatDateTime(dateStr: string) {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleString("pt-BR");
+}
+
 export function Auditoria() {
   const podeVer = usePermissao('auditoria:ver');
   const { data: eventos, loading } = useFetch<EventoAuditoria[]>('/eventosAuditoria');
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (!podeVer) {
     return (
-      <div role="alert" className="bg-white rounded-lg shadow p-6">
-        <h1 className="text-xl font-bold mb-2">Acesso negado</h1>
-        <p className="text-slate-500 text-sm">
-          Você não tem permissão para visualizar a auditoria do sistema.
-        </p>
+      <div className="space-y-6 animate-fade-in">
+        <div className="border-b border-border pb-6">
+          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 07 / TRANSAÇÕES E AUDITORIA</span>
+          <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Auditoria</h1>
+        </div>
+        <div role="alert" className="bg-surface rounded-xl border border-border p-6 shadow-2xl">
+          <div className="flex items-center gap-3 mb-2">
+            <ShieldCheck className="w-5 h-5 text-accent" aria-hidden="true" />
+            <h2 className="text-lg font-bold text-text">Acesso negado</h2>
+          </div>
+          <p className="text-text-muted text-sm">
+            Você não tem permissão para visualizar a auditoria do sistema.
+          </p>
+        </div>
       </div>
     );
   }
 
-  if (loading) return <p role="status" aria-live="polite" className="text-slate-500">Carregando...</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Auditoria</h1>
-      <div className="bg-white rounded-lg shadow overflow-hidden">
-        <table className="w-full text-sm">
-          <thead className="bg-slate-100 text-left">
-            <tr>
-              <th className="p-3">Data/Hora</th>
-              <th className="p-3">Usuário</th>
-              <th className="p-3">Entidade</th>
-              <th className="p-3">Ação</th>
-              <th className="p-3">Detalhes</th>
-              <th className="p-3">Estado Anterior</th>
-              <th className="p-3">Estado Posterior</th>
-            </tr>
-          </thead>
-          <tbody>
-            {eventos?.map((e) => (
-              <tr key={e.id} className="border-t hover:bg-slate-50">
-                <td className="p-3">{new Date(e.dataHora).toLocaleString('pt-BR')}</td>
-                <td className="p-3">{e.usuario}</td>
-                <td className="p-3 text-slate-500">{e.entidade}</td>
-                <td className="p-3">{e.acao}</td>
-                <td className="p-3 text-slate-500 text-xs">{e.detalhes}</td>
-                <td className="p-3 text-xs font-mono text-slate-400">{e.estadoAnterior ?? "—"}</td>
-                <td className="p-3 text-xs font-mono text-slate-700">{e.estadoPosterior ?? "—"}</td>
+    <div className="space-y-6 animate-fade-in">
+      <div className="border-b border-border pb-6">
+        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 07 / TRANSAÇÕES E AUDITORIA</span>
+        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Auditoria</h1>
+        <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Histórico de ações e transações efetuadas no sistema.</p>
+      </div>
+
+      <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <caption className="sr-only">Eventos de auditoria do sistema</caption>
+            <thead>
+              <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
+                <th className="px-6 py-4.5">Data/Hora</th>
+                <th className="px-6 py-4.5">Usuário</th>
+                <th className="px-6 py-4.5">Entidade</th>
+                <th className="px-6 py-4.5">Ação</th>
+                <th className="px-6 py-4.5">Detalhes</th>
+                <th className="px-6 py-4.5 w-12"></th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border-subtle text-xs">
+              {eventos?.map((e) => {
+                const isExpanded = expandedId === e.id;
+                return (
+                  <tr
+                    key={e.id}
+                    onClick={() => setExpandedId(isExpanded ? null : e.id)}
+                    className="hover:bg-hover transition-colors cursor-pointer"
+                  >
+                    <td className="px-6 py-4.5 text-text-muted font-mono">{formatDateTime(e.dataHora)}</td>
+                    <td className="px-6 py-4.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-6 h-6 rounded-full bg-hover border border-border flex items-center justify-center shrink-0">
+                          <UserIcon className="w-3 h-3 text-text-faint" aria-hidden="true" />
+                        </div>
+                        <span className="text-text font-mono text-[11px]">{e.usuario}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4.5">
+                      <span className="font-bold text-text-muted bg-hover border border-border px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-wider">
+                        {e.entidade}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4.5 font-mono text-[11px] text-text font-bold">{e.acao}</td>
+                    <td className="px-6 py-4.5 text-text-muted">{e.detalhes}</td>
+                    <td className="px-6 py-4.5 text-center text-text-subtle">
+                      {isExpanded ? <ChevronUp className="w-4 h-4" aria-hidden="true" /> : <ChevronDown className="w-4 h-4" aria-hidden="true" />}
+                    </td>
+                  </tr>
+                );
+              })}
+              {eventos?.length === 0 && (
+                <tr><td colSpan={6} className="px-6 py-12 text-center text-text-subtle italic">Nenhum evento de auditoria registrado.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
