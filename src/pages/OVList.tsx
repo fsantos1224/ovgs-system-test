@@ -1,20 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { usePaginatedFetch } from "../hooks/usePaginatedFetch";
-import type { OrdemVenda } from "../domain/types";
-import { statusLabel } from "../domain/types";
+import { useFetch } from "../hooks/useFetch";
+import type { OrdemVenda, Cliente, TipoTransporte } from "../domain/types";
+import { statusLabel, STATUS_FLOW } from "../domain/types";
 import { usePermissao } from "../hooks/usePermission";
 import { Pagination } from "../components/Pagination";
 
 export function OVList() {
+  const podeCriar = usePermissao("ov:criar");
+
   const [search, setSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [filtroStatus, setFiltroStatus] = useState("");
+  const [filtroCliente, setFiltroCliente] = useState("");
+  const [filtroTransporte, setFiltroTransporte] = useState("");
+  const [dataDe, setDataDe] = useState("");
+  const [dataAte, setDataAte] = useState("");
 
-  // Debounce de 300ms para evitar refetch a cada tecla
-  useEffect(() => {
-    const id = setTimeout(() => setDebouncedSearch(search), 300);
-    return () => clearTimeout(id);
-  }, [search]);
+  const { data: clientes } = useFetch<Cliente[]>("/clientes");
+  const { data: transportes } = useFetch<TipoTransporte[]>("/tiposTransporte");
 
   const {
     data: ordens,
@@ -26,13 +31,25 @@ export function OVList() {
   } = usePaginatedFetch<OrdemVenda[]>("/ordensVenda", 20);
 
   useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
+
+  const montarFiltros = useCallback(() => {
     const f: Record<string, string> = {};
     if (debouncedSearch) f.q = debouncedSearch;
-    setFilters(f);
-    setPage(1);
-  }, [debouncedSearch, setFilters, setPage]);
+    if (filtroStatus) f.status = filtroStatus;
+    if (filtroCliente) f.nomeCliente_like = filtroCliente;
+    if (filtroTransporte) f.nomeTransporte_like = filtroTransporte;
+    if (dataDe) f.dataEntregaPrevista_gte = dataDe;
+    if (dataAte) f.dataEntregaPrevista_lte = dataAte;
+    return f;
+  }, [debouncedSearch, filtroStatus, filtroCliente, filtroTransporte, dataDe, dataAte]);
 
-  const podeCriar = usePermissao("ov:criar");
+  useEffect(() => {
+    setFilters(montarFiltros());
+    setPage(1);
+  }, [montarFiltros, setFilters, setPage]);
 
   if (loading)
     return (
@@ -43,24 +60,84 @@ export function OVList() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <h1 className="text-2xl font-bold">Ordens de Venda</h1>
-        <div className="flex gap-3 items-center">
+        {podeCriar && (
+          <Link
+            to="/ovs/nova"
+            className="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-700 transition-colors text-sm"
+          >
+            Nova OV
+          </Link>
+        )}
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-4 mb-4 flex flex-wrap gap-3 items-end">
+        <div>
+          <label className="block text-xs text-slate-500 mb-1">Status</label>
+          <select
+            value={filtroStatus}
+            onChange={(e) => setFiltroStatus(e.target.value)}
+            className="border rounded px-2 py-1.5 text-sm"
+          >
+            <option value="">Todos</option>
+            {STATUS_FLOW.map((s) => (
+              <option key={s} value={s}>{statusLabel(s)}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-slate-500 mb-1">Cliente</label>
+          <select
+            value={filtroCliente}
+            onChange={(e) => setFiltroCliente(e.target.value)}
+            className="border rounded px-2 py-1.5 text-sm"
+          >
+            <option value="">Todos</option>
+            {clientes?.map((c) => (
+              <option key={c.id} value={c.nome}>{c.nome}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-slate-500 mb-1">Transporte</label>
+          <select
+            value={filtroTransporte}
+            onChange={(e) => setFiltroTransporte(e.target.value)}
+            className="border rounded px-2 py-1.5 text-sm"
+          >
+            <option value="">Todos</option>
+            {transportes?.map((t) => (
+              <option key={t.id} value={t.nome}>{t.nome}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-xs text-slate-500 mb-1">Data prevista de</label>
+          <input
+            type="date"
+            value={dataDe}
+            onChange={(e) => setDataDe(e.target.value)}
+            className="border rounded px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
+          <label className="block text-xs text-slate-500 mb-1">até</label>
+          <input
+            type="date"
+            value={dataAte}
+            onChange={(e) => setDataAte(e.target.value)}
+            className="border rounded px-2 py-1.5 text-sm"
+          />
+        </div>
+        <div>
           <input
             type="text"
-            placeholder="Buscar por número, cliente..."
+            placeholder="Buscar por número..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="border rounded px-3 py-2 text-sm w-64"
+            className="border rounded px-2 py-1.5 text-sm w-48"
           />
-          {podeCriar && (
-            <Link
-              to="/ovs/nova"
-              className="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-700 transition-colors text-sm"
-            >
-              Nova OV
-            </Link>
-          )}
         </div>
       </div>
 

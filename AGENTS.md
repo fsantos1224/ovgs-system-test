@@ -3,6 +3,7 @@
 ## Issue tracker
 
 This project uses the **local-markdown** tracker.
+- Context: `docs/CONTEXT.md`
 - Map: `docs/MAP.md`
 - Tickets: `docs/tickets/`
 - A ticket is a markdown file in that directory.
