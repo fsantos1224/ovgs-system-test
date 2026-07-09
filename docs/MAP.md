@@ -94,8 +94,22 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - `useFieldArray` para gestão de lista de itens (adicionar/remover)
 - Validação manual inline via função `validate()` pura — sem Zod/Yup
 - Botão desabilitado durante `submitting` para evitar duplicatas visuais + `Idempotency-Key` real no POST
-- Erro do servidor exibido inline (`serverError`)
+- Erro do servidor exibido inline (`server error`)
 - Cadastros simples (Clientes, Transportes, Itens) — validação manual via atributos HTML (`required`, `min`)
+
+### Ticket 8 — Acessibilidade (resolvido)
+
+- Skip-to-content link como primeiro elemento focável (sr-only + focus:not-sr-only)
+- `role="navigation"`, `aria-label="Navegação principal"`, `aria-label="Menu principal"` no sidebar
+- `role="main"` e `id="main-content"` no `<main>`
+- `role="alert"` em mensagens de erro do servidor
+- `role="status"` + `aria-live="polite"` em todos os loading states
+- `aria-label` nos botões de alteração de status e paginação
+- `aria-label` no seletor de role
+- `focus-visible:outline` em todos os botões e links interativos
+- `<caption className="sr-only">` com descrição em todas as tabelas
+- `<div role="region" aria-label="...">` envolvendo tabelas de listagem
+- Itens sem permissão retornam `null` (não renderizam, não são focáveis)
 
 ## Tickets
 
@@ -110,7 +124,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~4~~ | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 | ✔
 | ~~6~~ | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 | ✔
 | ~~7~~ | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 | ✔
-| 8 | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 |
+| ~~8~~ | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 | ✔
 | 11 | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 |
 | 12 | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 |
 
