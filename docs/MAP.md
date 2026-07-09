@@ -1,4 +1,4 @@
-# OVGS Frontend — Wayfinder Map
+# XPTO Frontend — Wayfinder Map
 
 ## Destination
 
@@ -55,7 +55,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - 4 roles: `viewer < operator < manager < admin` — hierarquia cumulativa de permissões
 - `PERMISSOES_POR_ROLE` — matriz de autorização declarativa em `usePermission.ts`
 - `getPermissoes()` — acumula permissões baseado na hierarquia (mais sénior herda das anteriores)
-- Role persistida em localStorage (`ovgs:role`), alterável via `<select>` no sidebar
+- Role persistida em localStorage (`XPTO:role`), alterável via `<select>` no sidebar
 - Nav items no sidebar escondidos condicionalmente por role
 - `setRole()` com `window.location.reload()` para resetar o estado React (simplificação intencional)
 - Permissões usadas: `ov:listar`, `ov:criar`, `ov:alterar_status`, `clientes:listar`, `agendamento:ver`, `auditoria:ver`, etc.
@@ -131,36 +131,36 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 
 ## Tickets
 
-| # | Ticket | Slug | Tipo | Bloqueado por |
-|---|---|---|---|---|
-| ~~1~~ | Stack Frontend | `01-stack-frontend` | `wayfinder:grilling` | — | ✔
-| ~~5~~ | Routing e Layout | `05-routing-layout` | `wayfinder:prototype` | 1 | ✔
-| ~~9~~ | Observabilidade | `09-observabilidade` | `wayfinder:research` | 1 | ✔
-| ~~10~~ | Performance | `10-performance` | `wayfinder:research` | 1 | ✔
-| ~~2~~ | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 | ✔
-| ~~3~~ | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 | ✔
-| ~~4~~ | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 | ✔
-| ~~6~~ | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 | ✔
-| ~~7~~ | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 | ✔
-| ~~8~~ | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 | ✔
-| ~~11~~ | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 | ✔
-| ~~12~~ | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 | ✔
+| #      | Ticket                                     | Slug                       | Tipo                  | Bloqueado por |
+| ------ | ------------------------------------------ | -------------------------- | --------------------- | ------------- | --- |
+| ~~1~~  | Stack Frontend                             | `01-stack-frontend`        | `wayfinder:grilling`  | —             | ✔   |
+| ~~5~~  | Routing e Layout                           | `05-routing-layout`        | `wayfinder:prototype` | 1             | ✔   |
+| ~~9~~  | Observabilidade                            | `09-observabilidade`       | `wayfinder:research`  | 1             | ✔   |
+| ~~10~~ | Performance                                | `10-performance`           | `wayfinder:research`  | 1             | ✔   |
+| ~~2~~  | Mock HTTP — Apenas json-server             | `02-mock-json-server`      | `wayfinder:grilling`  | 1             | ✔   |
+| ~~3~~  | Domínio — Entidades + Máquina de Estados   | `03-dominio-status`        | `wayfinder:grilling`  | 1             | ✔   |
+| ~~4~~  | Estado — useState + fetch nativo           | `04-estado-fetch`          | `wayfinder:grilling`  | 3             | ✔   |
+| ~~6~~  | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao`      | `wayfinder:grilling`  | 1             | ✔   |
+| ~~7~~  | Formulários e Validação                    | `07-formularios-validacao` | `wayfinder:grilling`  | 3, 6          | ✔   |
+| ~~8~~  | a11y — HTML semântico + ARIA + Tailwind    | `08-acessibilidade`        | `wayfinder:prototype` | 5, 6          | ✔   |
+| ~~11~~ | Testes — Vitest + Playwright               | `11-testes`                | `wayfinder:grilling`  | 2, 4, 6       | ✔   |
+| ~~12~~ | Docker + Documentação                      | `12-docker-docs`           | `wayfinder:task`      | 2, 11         | ✔   |
 
 ## Next frontier (code review 2026-07-09)
 
 Code review contra `CONTEXT.md` + senior-level criteria identificou 9 tickets adicionais. Fecham gaps de spec (transporte-autorizado, integração, visibilidade), bugs concretos (Rules of Hooks, error messages, validate race) e melhorias de senior bar (Web Vitals corretos, bundle splitting, E2E de criar OV).
 
-| # | Título | Slug | Tipo | Bloqueado por | Status |
-|---|---|---|---|---|---|
-| 13 | Bugs em AppLayout + OVNew | `13-bugs-applayout-ovnew` | `wayfinder:bugfix` | — | ☐ |
-| 14a | Transporte autorizado — domain + seed + server | `14a-transporte-autorizado-backend` | `wayfinder:feature` | — | ☐ |
-| 14b | Transporte autorizado — dropdown dependente | `14b-transporte-autorizado-ui` | `wayfinder:feature` | 14a | ☐ |
-| 15a | Filtrar clientes inativos no dropdown de OV | `15a-clientes-ativos-dropdown` | `wayfinder:bugfix` | — | ☐ |
-| 15b | Permission gate na página de Auditoria | `15b-auditoria-permission-gate` | `wayfinder:bugfix` | — | ☐ |
-| 16 | Testes de integração do server.cjs | `16-testes-integracao-server` | `wayfinder:quality` | — | ☐ |
-| 17 | Web Vitals conforme spec W3C | `17-web-vitals-w3c` | `wayfinder:quality` | — | ☐ |
-| 18 | Bundle splitting + preload hints | `18-bundle-splitting` | `wayfinder:performance` | — | ☐ |
-| 19 | E2E do happy path de criar OV | `19-e2e-criar-ov` | `wayfinder:quality` | 13, 14b | ☐ |
+| #   | Título                                         | Slug                                | Tipo                    | Bloqueado por | Status |
+| --- | ---------------------------------------------- | ----------------------------------- | ----------------------- | ------------- | ------ |
+| 13  | Bugs em AppLayout + OVNew                      | `13-bugs-applayout-ovnew`           | `wayfinder:bugfix`      | —             | ☐      |
+| 14a | Transporte autorizado — domain + seed + server | `14a-transporte-autorizado-backend` | `wayfinder:feature`     | —             | ☐      |
+| 14b | Transporte autorizado — dropdown dependente    | `14b-transporte-autorizado-ui`      | `wayfinder:feature`     | 14a           | ☐      |
+| 15a | Filtrar clientes inativos no dropdown de OV    | `15a-clientes-ativos-dropdown`      | `wayfinder:bugfix`      | —             | ☐      |
+| 15b | Permission gate na página de Auditoria         | `15b-auditoria-permission-gate`     | `wayfinder:bugfix`      | —             | ☐      |
+| 16  | Testes de integração do server.cjs             | `16-testes-integracao-server`       | `wayfinder:quality`     | —             | ☐      |
+| 17  | Web Vitals conforme spec W3C                   | `17-web-vitals-w3c`                 | `wayfinder:quality`     | —             | ☐      |
+| 18  | Bundle splitting + preload hints               | `18-bundle-splitting`               | `wayfinder:performance` | —             | ☐      |
+| 19  | E2E do happy path de criar OV                  | `19-e2e-criar-ov`                   | `wayfinder:quality`     | 13, 14b       | ☐      |
 
 ### Ordem de execução sugerida (fronteira)
 

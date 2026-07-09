@@ -1,9 +1,11 @@
-# AGENTS.md — OVGS System Test
+# AGENTS.md — XPTO System Test
 
 ## Issue tracker
 
 This project uses the **local-markdown** tracker.
+
 - Context: `docs/CONTEXT.md`
+- Design System: `docs/DESIGN.md`
 - Map: `docs/MAP.md`
 - Tickets: `docs/tickets/`
 - A ticket is a markdown file in that directory.
@@ -20,6 +22,7 @@ This project uses the **local-markdown** tracker.
 ## Agent skills
 
 Skills to consult during wayfinding sessions:
+
 - `frontend-design`, `react-patterns`, `a11y-runtime-tester`, `performance-profiling`, `testing-patterns`
 
 ## Domain docs

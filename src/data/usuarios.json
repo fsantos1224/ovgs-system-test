@@ -1,24 +1,24 @@
 [
   {
-    "email": "admin@ovgs.local",
+    "email": "admin@XPTO.local",
     "senha": "admin123",
     "role": "admin",
     "nome": "Administrador"
   },
   {
-    "email": "manager@ovgs.local",
+    "email": "manager@XPTO.local",
     "senha": "manager123",
     "role": "manager",
     "nome": "Gerente"
   },
   {
-    "email": "operator@ovgs.local",
+    "email": "operator@XPTO.local",
     "senha": "operator123",
     "role": "operator",
     "nome": "Operador"
   },
   {
-    "email": "viewer@ovgs.local",
+    "email": "viewer@XPTO.local",
     "senha": "viewer123",
     "role": "viewer",
     "nome": "Visualizador"

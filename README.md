@@ -1,4 +1,4 @@
-# OVGS — Sistema de Gestão de Ordens de Venda
+# XPTO — Sistema de Gestão de Ordens de Venda
 
 > Sistema de backoffice para gestão do ciclo de vida de ordens de venda, com controlo de acessos baseado em papéis (RBAC), auditoria e suporte a contentores Docker.
 
@@ -6,17 +6,17 @@
 
 ## Stack
 
-| Camada | Tecnologia | Justificação |
-|---|---|---|
-| Runtime | Node 20 + TypeScript strict | |
-| UI | React 18 + Vite 5 | Dev server rápido, HMR nativo |
-| Roteamento | React Router v6 | lazy loading + Suspense |
-| Estilização | Tailwind CSS v3 | Utilitário, sem runtime CSS |
-| Formulários | React Hook Form | `useFieldArray` para itens dinâmicos |
-| Mock API | json-server + `server.cjs` | Prototipagem rápida com middleware custom |
-| Testes unitários | Vitest | Nativo Vite, zero config |
-| Testes E2E | Playwright | `getByRole` nativo, sem Testing Library |
-| Contentorização | Docker (multi-stage) + docker-compose | |
+| Camada           | Tecnologia                            | Justificação                              |
+| ---------------- | ------------------------------------- | ----------------------------------------- |
+| Runtime          | Node 20 + TypeScript strict           |                                           |
+| UI               | React 18 + Vite 5                     | Dev server rápido, HMR nativo             |
+| Roteamento       | React Router v6                       | lazy loading + Suspense                   |
+| Estilização      | Tailwind CSS v3                       | Utilitário, sem runtime CSS               |
+| Formulários      | React Hook Form                       | `useFieldArray` para itens dinâmicos      |
+| Mock API         | json-server + `server.cjs`            | Prototipagem rápida com middleware custom |
+| Testes unitários | Vitest                                | Nativo Vite, zero config                  |
+| Testes E2E       | Playwright                            | `getByRole` nativo, sem Testing Library   |
+| Contentorização  | Docker (multi-stage) + docker-compose |                                           |
 
 ---
 
@@ -175,12 +175,12 @@ npm run test:e2e    # Playwright (E2E) — levanta servidores automaticamente
 
 As contas de login são **fake data** em `src/data/usuarios.json`:
 
-| Email | Senha | Role |
-|---|---|---|
-| admin@ovgs.local | admin123 | admin |
-| manager@ovgs.local | manager123 | manager |
-| operator@ovgs.local | operator123 | operator |
-| viewer@ovgs.local | viewer123 | viewer |
+| Email               | Senha       | Role     |
+| ------------------- | ----------- | -------- |
+| admin@XPTO.local    | admin123    | admin    |
+| manager@XPTO.local  | manager123  | manager  |
+| operator@XPTO.local | operator123 | operator |
+| viewer@XPTO.local   | viewer123   | viewer   |
 
 Não é autenticação real — o json-server não valida senhas. O login é uma simulação de front-end para demonstrar RBAC. Ver limitações de segurança abaixo.
 
@@ -190,7 +190,7 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 
 - **`db.json`** — ficheiro JSON plano, lido/escrito pelo json-server.
 - **`idempotencyStore`** — `Map` em memória no processo `server.cjs`. Reseta ao reiniciar.
-- **`localStorage`** — role do utilizador (`ovgs:role`) e eventos de telemetria.
+- **`localStorage`** — role do utilizador (`XPTO:role`) e eventos de telemetria.
 - Sem base de dados real. `🐴` Aceitável para protótipo/desafio.
 
 ---
@@ -222,14 +222,14 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 
 Estas são **inerentes à escolha de json-server como mock API** e devem ser tratadas antes de qualquer deploy além de ambiente local:
 
-| Limitação | Por que existe | Mitigação real exigiria |
-|---|---|---|
-| Credenciais em bundle JS (`src/data/usuarios.json`) | Fake data de contas demo; não é autenticação real | Mover auth para `server.cjs`, nunca enviar `senha` ao frontend |
-| `x-user` header é trust puro | json-server é deliberadamente sem auth | JWT/cookie httpOnly + middleware de validação |
-| RBAC só no cliente | Mesma razão acima | Middleware de autorização no servidor |
-| Sem TLS no nginx | Docker local | TLS-terminating proxy (Caddy/Traefik) + certificados válidos |
-| Sem rate limiting | json-server não tem | `express-rate-limit` em `/auth/login` |
-| Sem CSRF defense | Sem cookies/sessões | Quando migrar para cookies, adicionar tokens + `SameSite=Strict` |
+| Limitação                                           | Por que existe                                    | Mitigação real exigiria                                          |
+| --------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------- |
+| Credenciais em bundle JS (`src/data/usuarios.json`) | Fake data de contas demo; não é autenticação real | Mover auth para `server.cjs`, nunca enviar `senha` ao frontend   |
+| `x-user` header é trust puro                        | json-server é deliberadamente sem auth            | JWT/cookie httpOnly + middleware de validação                    |
+| RBAC só no cliente                                  | Mesma razão acima                                 | Middleware de autorização no servidor                            |
+| Sem TLS no nginx                                    | Docker local                                      | TLS-terminating proxy (Caddy/Traefik) + certificados válidos     |
+| Sem rate limiting                                   | json-server não tem                               | `express-rate-limit` em `/auth/login`                            |
+| Sem CSRF defense                                    | Sem cookies/sessões                               | Quando migrar para cookies, adicionar tokens + `SameSite=Strict` |
 
 Em resumo: o sistema assume **ambiente controlado** (rede interna, Docker local, sem exposição à internet). Não deploy em produção sem substituir json-server por backend real.
 
@@ -237,15 +237,15 @@ Em resumo: o sistema assume **ambiente controlado** (rede interna, Docker local,
 
 ## Trade-offs e Limitações
 
-| Decisão | Trade-off |
-|---|---|
-| Fetch nativo vs TanStack Query | Sem cache, sem refetch automático, sem optimistic updates. Mas zero bundle. |
-| useState vs Zustand | Sem estado global partilhado. Cada página gere os seus dados. |
-| Validação manual vs Zod | Mais código, menos segurança de tipos runtime. Mas zero deps. |
-| json-server vs backend real | Sem persistência relacional, sem auth real. Mas prototipagem instantânea. |
+| Decisão                         | Trade-off                                                                          |
+| ------------------------------- | ---------------------------------------------------------------------------------- |
+| Fetch nativo vs TanStack Query  | Sem cache, sem refetch automático, sem optimistic updates. Mas zero bundle.        |
+| useState vs Zustand             | Sem estado global partilhado. Cada página gere os seus dados.                      |
+| Validação manual vs Zod         | Mais código, menos segurança de tipos runtime. Mas zero deps.                      |
+| json-server vs backend real     | Sem persistência relacional, sem auth real. Mas prototipagem instantânea.          |
 | Store de idempotência in-memory | Perde-se ao reiniciar o servidor. Agora bounded por TTL (1h) e tamanho máx (1000). |
-| RBAC só no frontend | Inerente ao json-server. Documentado como limitação. |
-| Playwright sem RTL | Testes de componente requerem E2E. Submissão RHF tem limitação conhecida. |
+| RBAC só no frontend             | Inerente ao json-server. Documentado como limitação.                               |
+| Playwright sem RTL              | Testes de componente requerem E2E. Submissão RHF tem limitação conhecida.          |
 
 ---
 

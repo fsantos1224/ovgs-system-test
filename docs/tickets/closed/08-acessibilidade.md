@@ -5,7 +5,7 @@
 
 ## Questão
 
-Como garantir acessibilidade (WCAG 2.1 AA) no sistema OVGS usando **apenas HTML semântico, atributos ARIA e Tailwind CSS** — sem shadcn/ui, Radix, Headless UI ou lib de componentes?
+Como garantir acessibilidade (WCAG 2.1 AA) no sistema XPTO usando **apenas HTML semântico, atributos ARIA e Tailwind CSS** — sem shadcn/ui, Radix, Headless UI ou lib de componentes?
 
 ## Restrições YAGNI
 
@@ -24,4 +24,4 @@ Como garantir acessibilidade (WCAG 2.1 AA) no sistema OVGS usando **apenas HTML 
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+_[a preencher quando resolvido]_

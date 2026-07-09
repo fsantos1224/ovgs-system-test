@@ -11,7 +11,7 @@ interface VitalRecord {
   ts: number;
 }
 
-const VITALS_KEY = "ovgs:vitals";
+const VITALS_KEY = "XPTO:vitals";
 const VITALS_MAX = 100;
 
 function recordVital(v: VitalRecord) {
@@ -60,7 +60,12 @@ export function initWebVitals() {
 
     const finalizeLCP = () => {
       if (lcpValue > 0) {
-        recordVital({ name: "LCP", value: lcpValue, id: lcpId, ts: Date.now() });
+        recordVital({
+          name: "LCP",
+          value: lcpValue,
+          id: lcpId,
+          ts: Date.now(),
+        });
       }
     };
     document.addEventListener("visibilitychange", () => {
@@ -78,7 +83,9 @@ export function initWebVitals() {
     let clsSessionValue = 0;
     let clsSessionStart = performance.now();
     new PerformanceObserver((list) => {
-      for (const entry of list.getEntries() as Array<PerformanceEntry & { value: number; hadRecentInput: boolean }>) {
+      for (const entry of list.getEntries() as Array<
+        PerformanceEntry & { value: number; hadRecentInput: boolean }
+      >) {
         if (entry.hadRecentInput) continue;
         clsSessionValue += entry.value;
       }
@@ -105,10 +112,12 @@ export function initWebVitals() {
   // recente). Reportar a maior duração de interactionId agrupado.
   try {
     new PerformanceObserver((list) => {
-      for (const entry of list.getEntries() as Array<PerformanceEntry & {
-        duration: number;
-        interactionId?: number;
-      }>) {
+      for (const entry of list.getEntries() as Array<
+        PerformanceEntry & {
+          duration: number;
+          interactionId?: number;
+        }
+      >) {
         if (entry.interactionId == null) continue;
         const prev = inpInteractions.get(entry.interactionId) ?? 0;
         if (entry.duration > prev) {
@@ -139,7 +148,7 @@ export function getVitals(): VitalRecord[] {
 
 // Eventos de negócio — persistidos em localStorage com bounded buffer.
 
-const STORAGE_KEY = "ovgs:events";
+const STORAGE_KEY = "XPTO:events";
 
 export function trackEvent(
   action: string,
@@ -150,7 +159,16 @@ export function trackEvent(
     timestamp: new Date().toISOString(),
     action,
     entity,
-    usuario: (() => { try { return JSON.parse(localStorage.getItem("ovgs:user") ?? "{}").email || "desconhecido"; } catch { return "desconhecido"; } })(),
+    usuario: (() => {
+      try {
+        return (
+          JSON.parse(localStorage.getItem("XPTO:user") ?? "{}").email ||
+          "desconhecido"
+        );
+      } catch {
+        return "desconhecido";
+      }
+    })(),
     details,
   };
 

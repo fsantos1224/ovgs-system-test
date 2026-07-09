@@ -4,7 +4,7 @@ services:
     working_dir: /app
     volumes:
       - .:/app
-      - ovgs-data:/app/data
+      - XPTO-data:/app/data
     command: node server.cjs
     environment:
       - NODE_ENV=production
@@ -19,4 +19,4 @@ services:
       - api
 
 volumes:
-  ovgs-data:
+  XPTO-data:

@@ -35,7 +35,7 @@ beforeAll(async () => {
   baseUrl = `http://127.0.0.1:${port}`;
 
   // Diretório temporário com db.json seedado a partir do repo.
-  tmpDataDir = mkdtempSync(join(tmpdir(), "ovgs-int-"));
+  tmpDataDir = mkdtempSync(join(tmpdir(), "XPTO-int-"));
   const seedSrc = join(REPO, "db.json");
   const seedDst = join(tmpDataDir, "db.json");
   copyFileSync(seedSrc, seedDst);
@@ -68,7 +68,10 @@ describe("POST /ordensVenda — regras de negócio", () => {
   it("retorna 400 quando cliente é inativo", async () => {
     const res = await fetch(`${baseUrl}/ordensVenda`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-user": "admin@ovgs.local" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-user": "admin@XPTO.local",
+      },
       body: JSON.stringify({
         clienteId: "3", // Gamma — ativo: false
         transporteId: "1",
@@ -83,7 +86,10 @@ describe("POST /ordensVenda — regras de negócio", () => {
   it("retorna 400 quando transporte não é autorizado para o cliente", async () => {
     const res = await fetch(`${baseUrl}/ordensVenda`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-user": "admin@ovgs.local" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-user": "admin@XPTO.local",
+      },
       body: JSON.stringify({
         clienteId: "2", // Beta — só autorizado [2]
         transporteId: "1", // rodoviário
@@ -99,7 +105,10 @@ describe("POST /ordensVenda — regras de negócio", () => {
   it("cria OV válida com transporte autorizado", async () => {
     const res = await fetch(`${baseUrl}/ordensVenda`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-user": "admin@ovgs.local" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-user": "admin@XPTO.local",
+      },
       body: JSON.stringify({
         clienteId: "1", // Alpha — autorizados [1, 3]
         transporteId: "1",
@@ -126,7 +135,7 @@ describe("POST /ordensVenda — idempotência", () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-user": "admin@ovgs.local",
+        "x-user": "admin@XPTO.local",
         "idempotency-key": key,
       },
       body: JSON.stringify(payload),
@@ -147,7 +156,10 @@ describe("PATCH /ordensVenda/:id — máquina de estados", () => {
   beforeAll(async () => {
     const res = await fetch(`${baseUrl}/ordensVenda`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-user": "admin@ovgs.local" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-user": "admin@XPTO.local",
+      },
       body: JSON.stringify({
         clienteId: "1",
         transporteId: "1",
@@ -160,7 +172,10 @@ describe("PATCH /ordensVenda/:id — máquina de estados", () => {
   it("rejeita transição pulando um estado (CRIADA → AGENDADA)", async () => {
     const res = await fetch(`${baseUrl}/ordensVenda/${ovId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", "x-user": "admin@ovgs.local" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-user": "admin@XPTO.local",
+      },
       body: JSON.stringify({ status: "AGENDADA" }),
     });
     expect(res.status).toBe(422);
@@ -171,7 +186,10 @@ describe("PATCH /ordensVenda/:id — máquina de estados", () => {
   it("permite transição válida CRIADA → PLANEJADA", async () => {
     const res = await fetch(`${baseUrl}/ordensVenda/${ovId}`, {
       method: "PATCH",
-      headers: { "Content-Type": "application/json", "x-user": "admin@ovgs.local" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-user": "admin@XPTO.local",
+      },
       body: JSON.stringify({ status: "PLANEJADA" }),
     });
     expect(res.status).toBe(200);
@@ -184,7 +202,10 @@ describe("Auditoria — eventos gerados automaticamente", () => {
   it("criação de OV gera evento em eventosAuditoria", async () => {
     const res = await fetch(`${baseUrl}/ordensVenda`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-user": "qa@ovgs.local" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-user": "qa@XPTO.local",
+      },
       body: JSON.stringify({
         clienteId: "1",
         transporteId: "1",
@@ -199,7 +220,7 @@ describe("Auditoria — eventos gerados automaticamente", () => {
     const eventos = await auditRes.json();
     expect(eventos.length).toBeGreaterThan(0);
     const ev = eventos[0];
-    expect(ev.usuario).toBe("qa@ovgs.local");
+    expect(ev.usuario).toBe("qa@XPTO.local");
     expect(ev.estadoAnterior).toBeNull();
     expect(ev.estadoPosterior).toBe("CRIADA");
   });

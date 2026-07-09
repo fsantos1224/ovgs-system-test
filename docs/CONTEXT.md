@@ -1,6 +1,6 @@
 ## Desafio Técnico
 
-## Sistema de Gestão de Ordens de Venda (OVGS)
+## Sistema de Gestão de Ordens de Venda (XPTO)
 
 ## Objetivo
 
@@ -42,7 +42,6 @@ A solução deverá contemplar a gestão completa das Ordens de Venda, incluindo
 
 - Auditoria das principais alterações realizadas no sistema.
 
-
 ## Perfis Avaliados
 
 ## Desenvolvedor Front-end
@@ -65,7 +64,6 @@ Implementar a interface da solução contemplando:
 
 A utilização de APIs simuladas (mockadas) é permitida.
 
-
 ## Regras de Negócio
 
 ## Cliente
@@ -73,7 +71,6 @@ A utilização de APIs simuladas (mockadas) é permitida.
 Cada cliente poderá possuir uma lista de tipos de transporte autorizados.
 
 Uma Ordem de Venda somente poderá ser criada caso o tipo de transporte informado esteja previamente autorizado para o cliente selecionado.
-
 
 ## Tipo de Transporte
 
@@ -124,7 +121,6 @@ O sistema deverá suportar os seguintes estados:
 - ENTREGUE
 
 Somente transições válidas deverão ser permitidas.
-
 
 Fluxo esperado:
 
@@ -182,7 +178,6 @@ As regras de disponibilidade poderão ser simplificadas ou simuladas.
 
 - Consultar.
 
-
 ## Tipos de Transporte
 
 - Criar;
@@ -239,7 +234,6 @@ Cada evento deverá registrar:
 
 - Docker Compose
 
-
 ## Estrutura Esperada
 
 A organização da solução deverá evidenciar separação adequada de responsabilidades, incluindo, quando aplicável:
@@ -291,7 +285,6 @@ O repositório deverá conter um README contendo:
 - Considerações sobre performance;
 
 - Trade-offs assumidos.
-
 
 ## Diferenciais
 

@@ -27,13 +27,22 @@ server.use(jsonServer.bodyParser);
 // CORS restrito ao frontend que realmente consome a API.
 // Em Docker: nginx serve frontend em :80 (interno) e :8080 (host).
 // Em dev: Vite serve em :5173 ou :4173.
-const ALLOWED_ORIGINS = (process.env.CORS_ORIGINS || "http://localhost:5173,http://localhost:4173,http://localhost:8080").split(",");
+const ALLOWED_ORIGINS = (
+  process.env.CORS_ORIGINS ||
+  "http://localhost:5173,http://localhost:4173,http://localhost:8080"
+).split(",");
 server.use((req, res, next) => {
   const origin = req.headers.origin;
   if (origin && ALLOWED_ORIGINS.includes(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
-    res.header("Access-Control-Allow-Headers", "Content-Type, x-user, idempotency-key");
-    res.header("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Content-Type, x-user, idempotency-key",
+    );
+    res.header(
+      "Access-Control-Allow-Methods",
+      "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+    );
     if (req.method === "OPTIONS") return res.sendStatus(204);
   }
   next();
@@ -53,7 +62,8 @@ function idempotencyPrune() {
   if (idempotencyStore.size > IDEMPOTENCY_MAX_ENTRIES) {
     const overflow = idempotencyStore.size - IDEMPOTENCY_MAX_ENTRIES;
     const keys = idempotencyStore.keys();
-    for (let i = 0; i < overflow; i++) idempotencyStore.delete(keys.next().value);
+    for (let i = 0; i < overflow; i++)
+      idempotencyStore.delete(keys.next().value);
   }
 }
 setInterval(idempotencyPrune, 5 * 60 * 1000).unref();
@@ -84,11 +94,9 @@ server.post("/ordensVenda", (req, res) => {
   const body = req.body;
 
   if (!body.clienteId || !body.transporteId || !body.itens?.length) {
-    return res
-      .status(400)
-      .json({
-        error: "clienteId, transporteId e ao menos 1 item são obrigatórios",
-      });
+    return res.status(400).json({
+      error: "clienteId, transporteId e ao menos 1 item são obrigatórios",
+    });
   }
 
   const cliente = router.db
@@ -155,7 +163,11 @@ server.post("/ordensVenda", (req, res) => {
   };
   router.db.get("eventosAuditoria").push(evento).write();
 
-  if (idempotencyKey) idempotencyStore.set(idempotencyKey, { value: novaOV, expiresAt: Date.now() + IDEMPOTENCY_TTL_MS });
+  if (idempotencyKey)
+    idempotencyStore.set(idempotencyKey, {
+      value: novaOV,
+      expiresAt: Date.now() + IDEMPOTENCY_TTL_MS,
+    });
 
   res.status(201).json(novaOV);
 });
@@ -198,7 +210,10 @@ server.patch("/ordensVenda/:id", (req, res) => {
       .write();
   }
 
-  if (req.body.dataEntregaPrevista && req.body.dataEntregaPrevista !== ov.dataEntregaPrevista) {
+  if (
+    req.body.dataEntregaPrevista &&
+    req.body.dataEntregaPrevista !== ov.dataEntregaPrevista
+  ) {
     router.db
       .get("eventosAuditoria")
       .push({
@@ -216,7 +231,10 @@ server.patch("/ordensVenda/:id", (req, res) => {
   }
 
   if (req.body.transporteId && req.body.transporteId !== ov.transporteId) {
-    const novoTp = router.db.get("tiposTransporte").find({ id: req.body.transporteId }).value();
+    const novoTp = router.db
+      .get("tiposTransporte")
+      .find({ id: req.body.transporteId })
+      .value();
     router.db
       .get("eventosAuditoria")
       .push({
@@ -267,7 +285,11 @@ router.render = (req, res) => {
   const method = req.method;
   const auditName = AUDIT_ENTITY[entity];
 
-  if (auditName && !AUDIT_EXCLUDE.includes(entity) && (method === "POST" || method === "PATCH")) {
+  if (
+    auditName &&
+    !AUDIT_EXCLUDE.includes(entity) &&
+    (method === "POST" || method === "PATCH")
+  ) {
     const data = res.locals.data;
     const acao = method === "POST" ? "criacao" : "alteracao";
 
@@ -280,7 +302,7 @@ router.render = (req, res) => {
     if (method === "POST") {
       detalhes = `${auditName.charAt(0).toUpperCase() + auditName.slice(1)} ${data.nome || data.id || ""} criado`;
     } else {
-      const bodyKeys = Object.keys(req.body).filter(k => k !== "id");
+      const bodyKeys = Object.keys(req.body).filter((k) => k !== "id");
       detalhes = `${auditName.charAt(0).toUpperCase() + auditName.slice(1)} ${data.nome || data.id} alterado: ${bodyKeys.join(", ")}`;
     }
 
@@ -312,5 +334,5 @@ server.use(router);
 
 const PORT = parseInt(process.env.PORT || "3001", 10);
 server.listen(PORT, () => {
-  console.log(`OVGS Mock API rodando em http://localhost:${PORT}`);
+  console.log(`XPTO Mock API rodando em http://localhost:${PORT}`);
 });
