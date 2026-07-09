@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Calendar, Clock } from "lucide-react";
 import { useFetch } from "../hooks/useFetch";
 import { usePermissao } from "../hooks/usePermission";
 import { apiPatch } from "../api/fetch";
@@ -6,14 +7,26 @@ import type { OrdemVenda } from "../domain/types";
 import { statusLabel } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 
+const STATUS_BADGE: Record<string, string> = {
+  CRIADA: "bg-zinc-900 text-zinc-400 border border-zinc-800",
+  PLANEJADA: "bg-amber-950/30 text-amber-300 border border-amber-500/20",
+  AGENDADA: "bg-blue-950/30 text-blue-300 border border-blue-500/20",
+};
+
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr);
+  if (isNaN(d.getTime())) return dateStr;
+  return d.toLocaleDateString("pt-BR");
+}
+
 export function Agendamento() {
   const { data: ordens, loading, refresh } = useFetch<OrdemVenda[]>("/ordensVenda");
   const podeAgendar = usePermissao("agendamento:criar");
   const podeVer = usePermissao("agendamento:ver");
   const [editando, setEditando] = useState<string | null>(null);
 
-  if (loading) return <p role="status" aria-live="polite" className="text-slate-500">Carregando...</p>;
-  if (!podeVer) return <p className="text-slate-500">Sem permissão para acessar esta página.</p>;
+  if (loading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
+  if (!podeVer) return <p className="text-text-muted p-6">Sem permissão para acessar esta página.</p>;
 
   const agendaveis = ordens?.filter((o) => o.status === "PLANEJADA" || o.status === "AGENDADA") ?? [];
 
@@ -37,33 +50,45 @@ export function Agendamento() {
   };
 
   return (
-    <div>
-      <h1 className="text-2xl font-bold mb-6">Central de Agendamento</h1>
+    <div className="space-y-6 animate-fade-in">
+      <div className="border-b border-border pb-6">
+        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">VOL. 03 / AGENDA E OPERAÇÃO</span>
+        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Central de Agendamento</h1>
+        <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
+          Agende e organize janelas de entrega para ordens planejadas.
+        </p>
+      </div>
 
       {agendaveis.length === 0 ? (
-        <p className="text-slate-500">Nenhuma OV pendente de agendamento.</p>
+        <div className="bg-surface rounded-xl border border-border p-12 text-center text-text-subtle italic">
+          Nenhuma ordem necessitando de agendamento no momento.
+        </div>
       ) : (
-        <div className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {agendaveis.map((ov) => {
             const editandoAgora = editando === ov.id;
+            const isScheduled = ov.status === "AGENDADA";
             return (
-              <div key={ov.id} className="bg-white rounded-lg shadow p-4">
-                <div className="flex items-center justify-between mb-3">
-                  <div>
-                    <span className="font-medium">{ov.numero}</span>
-                    <span className="text-slate-500 text-sm ml-2">{ov.nomeCliente}</span>
-                    <span className={`ml-2 inline-block px-2 py-0.5 rounded text-xs font-medium ${ov.status === "AGENDADA" ? "bg-green-100 text-green-800" : "bg-yellow-100 text-yellow-800"}`}>
+              <div key={ov.id} className="bg-surface rounded-2xl border border-border p-6 flex flex-col justify-between hover:border-border-strong transition-all duration-200 shadow-xl">
+                <div>
+                  <div className="flex justify-between items-start">
+                    <span className="text-lg font-bold text-text font-mono">{ov.numero}</span>
+                    <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}>
                       {statusLabel(ov.status)}
                     </span>
                   </div>
-                  {podeAgendar && (
-                    <button
-                      onClick={() => setEditando(editandoAgora ? null : ov.id)}
-                      className="text-sm text-blue-600 hover:underline"
-                    >
-                      {editandoAgora ? "Cancelar" : ov.status === "AGENDADA" ? "Reagendar" : "Agendar"}
-                    </button>
-                  )}
+                  <h3 className="text-sm font-bold text-text mt-3.5 truncate">{ov.nomeCliente}</h3>
+                </div>
+
+                <div className="space-y-2.5 border-t border-b border-border-subtle py-4 my-3 text-xs">
+                  <div className="flex items-center gap-2.5 text-text-muted font-mono">
+                    <Calendar className="w-4 h-4 text-text-faint" aria-hidden="true" />
+                    <span>Data prevista: <strong className="text-text font-bold">{formatDate(ov.dataEntregaPrevista)}</strong></span>
+                  </div>
+                  <div className="flex items-center gap-2.5 text-text-muted font-mono">
+                    <Clock className="w-4 h-4 text-text-faint" aria-hidden="true" />
+                    <span>Janela: <strong className={ov.janelaAtendimento ? "text-accent font-bold" : "text-text-faint"}>{ov.janelaAtendimento || "—"}</strong></span>
+                  </div>
                 </div>
 
                 {editandoAgora ? (
@@ -72,46 +97,57 @@ export function Agendamento() {
                       e.preventDefault();
                       handleSalvar(ov, e.currentTarget);
                     }}
-                    className="flex flex-wrap gap-3 items-end"
+                    className="space-y-3"
                   >
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1">Data de Entrega</label>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">Data</label>
                       <input
                         type="date"
                         name="dataEntrega"
                         defaultValue={ov.dataEntregaPrevista?.split("T")[0] ?? ""}
                         required
-                        className="border rounded px-2 py-1.5 text-sm"
+                        className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
                       />
                     </div>
-                    <div>
-                      <label className="block text-xs text-slate-500 mb-1">Janela de Atendimento</label>
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">Janela</label>
                       <input
                         type="text"
                         name="janela"
                         placeholder="ex: 08:00-12:00"
                         defaultValue={ov.janelaAtendimento ?? ""}
-                        className="border rounded px-2 py-1.5 text-sm"
+                        className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden placeholder:text-text-faint"
                       />
                     </div>
-                    <button
-                      type="submit"
-                      className="bg-slate-800 text-white px-4 py-1.5 rounded text-sm hover:bg-slate-700"
-                    >
-                      {ov.status === "AGENDADA" ? "Reagendar" : "Confirmar Agendamento"}
-                    </button>
+                    <div className="flex gap-2 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setEditando(null)}
+                        className="flex-1 px-3 py-2 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-widest font-bold text-text-muted focus-visible:outline-2 focus-visible:outline-accent"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 px-3 py-2 bg-surface-elevated hover:bg-accent hover:text-on-accent border border-border-strong text-text text-[10px] uppercase tracking-widest font-bold rounded-lg transition-all focus-visible:outline-2 focus-visible:outline-accent"
+                      >
+                        {isScheduled ? "Reagendar" : "Confirmar"}
+                      </button>
+                    </div>
                   </form>
                 ) : (
-                  <div className="text-sm text-slate-600 space-y-1">
-                    <p>
-                      <span className="text-slate-400">Data prevista:</span>{" "}
-                      {ov.dataEntregaPrevista ? new Date(ov.dataEntregaPrevista).toLocaleDateString("pt-BR") : "—"}
-                    </p>
-                    <p>
-                      <span className="text-slate-400">Janela:</span>{" "}
-                      {ov.janelaAtendimento || "—"}
-                    </p>
-                  </div>
+                  podeAgendar && (
+                    <button
+                      onClick={() => setEditando(ov.id)}
+                      className={`w-full text-[10px] uppercase tracking-widest font-bold py-2.5 rounded-lg transition-all focus-visible:outline-2 focus-visible:outline-accent ${
+                        isScheduled
+                          ? "border border-border-strong hover:bg-accent hover:text-on-accent hover:border-accent text-text"
+                          : "bg-surface-elevated hover:bg-accent hover:text-on-accent text-text border border-border-strong"
+                      }`}
+                    >
+                      {isScheduled ? "Reagendar" : "Agendar"}
+                    </button>
+                  )
                 )}
               </div>
             );
