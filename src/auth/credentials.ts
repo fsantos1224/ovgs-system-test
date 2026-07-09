@@ -1,18 +1,7 @@
-export interface Usuario {
-  email: string;
-  senha: string;
-  role: 'viewer' | 'operator' | 'manager' | 'admin';
-  nome: string;
-}
+import type { Usuario } from "../domain/types";
+import usuarios from "../data/usuarios.json";
 
-// Credenciais lidas do .env (VITE_USUARIOS), com fallback para desenvolvimento
-const RAW = import.meta.env.VITE_USUARIOS as string | undefined;
-
-export const USUARIOS: Usuario[] = RAW
-  ? (JSON.parse(RAW) as Usuario[])
-  : [
-      { email: 'admin@ovgs.com', senha: 'admin123', role: 'admin', nome: 'Administrador' },
-      { email: 'manager@ovgs.com', senha: 'manager123', role: 'manager', nome: 'Gerente' },
-      { email: 'operator@ovgs.com', senha: 'operator123', role: 'operator', nome: 'Operador' },
-      { email: 'viewer@ovgs.com', senha: 'viewer123', role: 'viewer', nome: 'Visualizador' },
-    ];
+// Credenciais fake para demonstração do mock.
+// Este arquivo (src/data/usuarios.json) é o seed de contas de teste.
+// NÃO é um mecanismo de autenticação real — o json-server não valida senhas.
+export const USUARIOS: Usuario[] = usuarios as Usuario[];

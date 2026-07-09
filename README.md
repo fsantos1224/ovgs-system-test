@@ -171,6 +171,21 @@ npm run test:e2e    # Playwright (E2E) — levanta servidores automaticamente
 
 ---
 
+## Credenciais de Demo
+
+As contas de login são **fake data** em `src/data/usuarios.json`:
+
+| Email | Senha | Role |
+|---|---|---|
+| admin@ovgs.local | admin123 | admin |
+| manager@ovgs.local | manager123 | manager |
+| operator@ovgs.local | operator123 | operator |
+| viewer@ovgs.local | viewer123 | viewer |
+
+Não é autenticação real — o json-server não valida senhas. O login é uma simulação de front-end para demonstrar RBAC. Ver limitações de segurança abaixo.
+
+---
+
 ## Estratégia de Persistência
 
 - **`db.json`** — ficheiro JSON plano, lido/escrito pelo json-server.
@@ -200,7 +215,7 @@ npm run test:e2e    # Playwright (E2E) — levanta servidores automaticamente
 - **Idempotency store com TTL** — chaves expiram em 1h; máximo 1000 entradas; evita DoS via keys arbitrárias
 - **`NODE_ENV=production` no Docker** — sem stack traces em runtime
 - **Container API como root apenas onde necessário**; nginx master/workers separados
-- **Seed sem credenciais reais** — `.env.example` usa placeholders
+- **Seed sem credenciais reais** — `src/data/usuarios.json` é fake data explícita, não `.env`
 - **CSP via meta tag + nginx add_header** — defesa em profundidade
 
 ### Limitações conhecidas (aceitáveis para mock de teste)
@@ -209,7 +224,7 @@ Estas são **inerentes à escolha de json-server como mock API** e devem ser tra
 
 | Limitação | Por que existe | Mitigação real exigiria |
 |---|---|---|
-| Credenciais em bundle JS (`VITE_USUARIOS`) | Vite inline variáveis `VITE_*` no build | Mover auth para `server.cjs`, nunca enviar `senha` ao frontend |
+| Credenciais em bundle JS (`src/data/usuarios.json`) | Fake data de contas demo; não é autenticação real | Mover auth para `server.cjs`, nunca enviar `senha` ao frontend |
 | `x-user` header é trust puro | json-server é deliberadamente sem auth | JWT/cookie httpOnly + middleware de validação |
 | RBAC só no cliente | Mesma razão acima | Middleware de autorização no servidor |
 | Sem TLS no nginx | Docker local | TLS-terminating proxy (Caddy/Traefik) + certificados válidos |

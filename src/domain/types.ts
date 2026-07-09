@@ -1,5 +1,12 @@
 // Domínio alinhado com a especificação do desafio. 5 status lineares, sem lib de state machine.
 
+export interface Usuario {
+  email: string;
+  senha: string;
+  role: "viewer" | "operator" | "manager" | "admin";
+  nome: string;
+}
+
 export type OVStatus = (typeof STATUS_FLOW)[number];
 
 export const STATUS_FLOW = [

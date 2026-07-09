@@ -1,0 +1,26 @@
+[
+  {
+    "email": "admin@ovgs.local",
+    "senha": "admin123",
+    "role": "admin",
+    "nome": "Administrador"
+  },
+  {
+    "email": "manager@ovgs.local",
+    "senha": "manager123",
+    "role": "manager",
+    "nome": "Gerente"
+  },
+  {
+    "email": "operator@ovgs.local",
+    "senha": "operator123",
+    "role": "operator",
+    "nome": "Operador"
+  },
+  {
+    "email": "viewer@ovgs.local",
+    "senha": "viewer123",
+    "role": "viewer",
+    "nome": "Visualizador"
+  }
+]

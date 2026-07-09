@@ -59,6 +59,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - Nav items no sidebar escondidos condicionalmente por role
 - `setRole()` com `window.location.reload()` para resetar o estado React (simplificação intencional)
 - Permissões usadas: `ov:listar`, `ov:criar`, `ov:alterar_status`, `clientes:listar`, `agendamento:ver`, `auditoria:ver`, etc.
+- Credenciais de demo movidas de `.env` (`VITE_USUARIOS`) para `src/data/usuarios.json` — fake data explícita, não config sensível
 
 ### Ticket 2 — Mock json-server (resolvido)
 
