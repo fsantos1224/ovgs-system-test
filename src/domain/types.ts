@@ -1,8 +1,24 @@
-// 🐴 Este ficheiro contém a definição completa do domínio. Num projeto
-// maior, as entidades estariam separadas. Num projeto com backend real,
-// os tipos seriam gerados a partir do schema da API.
+// 🐴 Domínio alinhado com a especificação do desafio. 5 status lineares, sem lib de state machine.
 
-export type OVStatus = 'rascunho' | 'pendente' | 'confirmada' | 'em_transporte' | 'entregue' | 'cancelada';
+export type OVStatus = typeof STATUS_FLOW[number];
+
+export const STATUS_FLOW = ['CRIADA', 'PLANEJADA', 'AGENDADA', 'EM_TRANSPORTE', 'ENTREGUE'] as const;
+
+export function canTransition(from: OVStatus, to: OVStatus): boolean {
+  const i = STATUS_FLOW.indexOf(from);
+  return i >= 0 && STATUS_FLOW[i + 1] === to;
+}
+
+export function statusLabel(status: OVStatus): string {
+  const labels: Record<OVStatus, string> = {
+    CRIADA: 'Criada',
+    PLANEJADA: 'Planejada',
+    AGENDADA: 'Agendada',
+    EM_TRANSPORTE: 'Em Transporte',
+    ENTREGUE: 'Entregue',
+  };
+  return labels[status];
+}
 
 export interface Cliente {
   id: string;
@@ -66,29 +82,4 @@ export interface EventoAuditoria {
 export interface UserRole {
   role: 'admin' | 'manager' | 'operator' | 'viewer';
   nome: string;
-}
-
-const TRANSITIONS: Record<OVStatus, OVStatus[]> = {
-  rascunho: ['pendente', 'cancelada'],
-  pendente: ['confirmada', 'cancelada'],
-  confirmada: ['em_transporte', 'cancelada'],
-  em_transporte: ['entregue', 'cancelada'],
-  entregue: [],
-  cancelada: [],
-};
-
-export function canTransition(from: OVStatus, to: OVStatus): boolean {
-  return TRANSITIONS[from]?.includes(to) ?? false;
-}
-
-export function statusLabel(status: OVStatus): string {
-  const labels: Record<OVStatus, string> = {
-    rascunho: 'Rascunho',
-    pendente: 'Pendente',
-    confirmada: 'Confirmada',
-    em_transporte: 'Em Transporte',
-    entregue: 'Entregue',
-    cancelada: 'Cancelada',
-  };
-  return labels[status];
 }

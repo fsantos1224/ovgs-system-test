@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useFetch } from '../hooks/useFetch';
 import type { OrdemVenda } from '../domain/types';
-import { statusLabel, canTransition } from '../domain/types';
+import { statusLabel, canTransition, STATUS_FLOW } from '../domain/types';
 import { usePermissao } from '../hooks/usePermission';
 import { apiPatch } from '../api/fetch';
 import { trackEvent } from '../lib/telemetry';
@@ -15,8 +15,7 @@ export function OVDetail() {
   if (loading) return <p className="text-gray-500">Carregando...</p>;
   if (!ov) return <p className="text-red-500">Ordem de venda não encontrada.</p>;
 
-  const transicoesPossiveis: OrdemVenda['status'][] = (['rascunho', 'pendente', 'confirmada', 'em_transporte', 'entregue', 'cancelada'] as const)
-    .filter((s) => canTransition(ov.status, s));
+  const transicoesPossiveis = STATUS_FLOW.filter((s) => canTransition(ov.status, s));
 
   const [erroStatus, setErroStatus] = useState('');
 

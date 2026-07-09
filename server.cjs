@@ -13,16 +13,12 @@ server.use(jsonServer.bodyParser);
 // 🐴 Idempotency store (in-memory, reseta ao reiniciar o servidor)
 const idempotencyStore = new Map();
 
-// 🐴 Alinhado com src/domain/types.ts. Cancelamento permitido de qualquer estado ativo.
-const TRANSITIONS = {
-  rascunho: ['pendente', 'cancelada'],
-  pendente: ['confirmada', 'cancelada'],
-  confirmada: ['em_transporte', 'cancelada'],
-  em_transporte: ['entregue', 'cancelada'],
-  entregue: [],
-  cancelada: [],
+// 🐴 Máquina de estados linear — alinhado com src/domain/types.ts e especificação do desafio.
+const STATUS_FLOW = ['CRIADA', 'PLANEJADA', 'AGENDADA', 'EM_TRANSPORTE', 'ENTREGUE'];
+const canTransition = (from, to) => {
+  const i = STATUS_FLOW.indexOf(from);
+  return i >= 0 && STATUS_FLOW[i + 1] === to;
 };
-const canTransition = (from, to) => TRANSITIONS[from]?.includes(to) ?? false;
 
 // 🐴 POST /ordensVenda — valida regras + cria auditoria + idempotência
 server.post('/ordensVenda', (req, res) => {
@@ -54,7 +50,7 @@ server.post('/ordensVenda', (req, res) => {
     dataEntregaPrevista: body.dataEntregaPrevista || null,
     transporteId: body.transporteId,
     nomeTransporte: transporte.nome,
-    status: body.status || 'rascunho',
+    status: body.status || 'CRIADA',
     itens: body.itens,
     valorTotal: body.itens.reduce((acc, i) => acc + (i.quantidade || 0) * (i.precoUnitario || 0), 0),
     observacoes: body.observacoes || null,

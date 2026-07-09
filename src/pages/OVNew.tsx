@@ -1,4 +1,4 @@
-// 🐴 Formulário minimalista sem validação avançada. Apenas cria OV no rascunho.
+// 🐴 Formulário minimalista. Cria OV com status CRIADA.
 
 import { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
@@ -65,7 +65,7 @@ export function OVNew() {
       dataEntregaPrevista: new Date(dataEntrega).toISOString(),
       transporteId,
       nomeTransporte: transporte.nome,
-      status: 'rascunho',
+      status: 'CRIADA',
       itens: itensOV,
       valorTotal,
       observacoes: observacoes || undefined,
@@ -141,7 +141,7 @@ export function OVNew() {
         </div>
 
         <button type="submit" className="bg-slate-800 text-white px-6 py-2 rounded hover:bg-slate-700 transition-colors">
-          Criar OV (Rascunho)
+          Criar OV (CRIADA)
         </button>
       </form>
     </div>

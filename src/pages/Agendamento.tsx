@@ -7,12 +7,12 @@ export function Agendamento() {
 
   if (loading) return <p className="text-gray-500">Carregando...</p>;
 
-  const paraAgendar = ordens?.filter((ov) => ov.status === 'pendente' || ov.status === 'rascunho');
+  const paraAgendar = ordens?.filter((ov) => ov.status === 'CRIADA' || ov.status === 'PLANEJADA');
 
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Agendamento de Entregas</h1>
-      <p className="text-sm text-slate-500 mb-4">Ordens pendentes ou em rascunho aguardando agendamento de transporte.</p>
+      <p className="text-sm text-slate-500 mb-4">Ordens com status CRIADA ou PLANEJADA aguardando agendamento de transporte.</p>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <table className="w-full text-sm">
