@@ -1,14 +1,15 @@
-// 🐴 Layout principal com sidebar estática. Navegação por links.
+// 🐴 Layout principal com sidebar. Navegação por links. Rotas alinhadas com a especificação.
 
 import { NavLink, Outlet } from 'react-router-dom';
 
 const navItems = [
   { to: '/', label: 'Dashboard' },
-  { to: '/ordens-venda', label: 'Ordens de Venda' },
+  { to: '/ovs', label: 'Ordens de Venda' },
   { to: '/agendamento', label: 'Agendamento' },
-  { to: '/clientes', label: 'Clientes' },
-  { to: '/transportes', label: 'Transportes' },
-  { to: '/itens', label: 'Itens' },
+  { to: '/cadastros/clientes', label: 'Clientes' },
+  { to: '/cadastros/transportes', label: 'Transportes' },
+  { to: '/cadastros/itens', label: 'Itens' },
+  { to: '/auditoria', label: 'Auditoria' },
 ];
 
 export function AppLayout() {

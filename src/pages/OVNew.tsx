@@ -71,13 +71,13 @@ export function OVNew() {
     };
 
     await apiPost('/ordensVenda', novaOV);
-    navigate('/ordens-venda');
+    navigate('/ovs');
   };
 
   return (
     <div>
       <div className="mb-4">
-        <Link to="/ordens-venda" className="text-blue-600 hover:underline text-sm">&larr; Voltar</Link>
+        <Link to="/ovs" className="text-blue-600 hover:underline text-sm">&larr; Voltar</Link>
       </div>
       <h1 className="text-2xl font-bold mb-6">Nova Ordem de Venda</h1>
 

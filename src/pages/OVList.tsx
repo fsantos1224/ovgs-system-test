@@ -16,7 +16,7 @@ export function OVList() {
         <h1 className="text-2xl font-bold">Ordens de Venda</h1>
         {podeCriar && (
           <Link
-            to="/ordens-venda/nova"
+            to="/ovs/nova"
             className="bg-slate-800 text-white px-4 py-2 rounded hover:bg-slate-700 transition-colors"
           >
             Nova OV
@@ -51,7 +51,7 @@ export function OVList() {
                 <td className="p-3">R$ {ov.valorTotal.toFixed(2)}</td>
                 <td className="p-3">{new Date(ov.dataEntregaPrevista).toLocaleDateString('pt-BR')}</td>
                 <td className="p-3">
-                  <Link to={`/ordens-venda/${ov.id}`} className="text-blue-600 hover:underline">
+                  <Link to={`/ovs/${ov.id}`} className="text-blue-600 hover:underline">
                     Detalhes
                   </Link>
                 </td>
