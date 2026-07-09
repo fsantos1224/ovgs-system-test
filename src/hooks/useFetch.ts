@@ -1,8 +1,8 @@
-// 🐴 Hook de fetch genérico. useEffect + useState. Não precisa de TanStack Query.
+// Hook de fetch genérico. useEffect + useState. Não precisa de TanStack Query.
 // Para cache e revalidação automática, usamos key + forcedRefresh pattern.
 
-import { useEffect, useState } from 'react';
-import { apiGet } from '../api/fetch';
+import { useEffect, useState } from "react";
+import { apiGet } from "../api/fetch";
 
 interface UseFetchResult<T> {
   data: T | null;
@@ -36,7 +36,7 @@ export function useFetch<T>(path: string | null): UseFetchResult<T> {
       })
       .catch((err: unknown) => {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'Erro desconhecido');
+          setError(err instanceof Error ? err.message : "Erro desconhecido");
           setLoading(false);
         }
       });

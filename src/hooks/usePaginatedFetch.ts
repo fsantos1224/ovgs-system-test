@@ -1,8 +1,8 @@
-// 🐴 Hook de fetch paginado. usa os params nativos do json-server (_page, _limit, _sort, etc.)
+// Hook de fetch paginado. usa os params nativos do json-server (_page, _limit, _sort, etc.)
 // Sem virtualização, sem TanStack Query, sem libs de lista infinita.
 
-import { useEffect, useState, useCallback } from 'react';
-import { apiGetPaginated } from '../api/fetch';
+import { useEffect, useState, useCallback } from "react";
+import { apiGetPaginated } from "../api/fetch";
 
 interface PaginatedResult<T> {
   data: T | null;
@@ -31,7 +31,10 @@ export function usePaginatedFetch<T>(
     let cancelled = false;
     setLoading(true);
 
-    const params = new URLSearchParams({ _page: String(page), _limit: String(pageSize) });
+    const params = new URLSearchParams({
+      _page: String(page),
+      _limit: String(pageSize),
+    });
     for (const [key, value] of Object.entries(filters)) {
       if (value) params.set(key, value);
     }
@@ -44,12 +47,26 @@ export function usePaginatedFetch<T>(
           setLoading(false);
         }
       })
-      .catch(() => { if (!cancelled) setLoading(false); });
+      .catch(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [basePath, page, pageSize, filters, refreshKey]);
 
   const totalPages = Math.max(1, Math.ceil(totalCount / pageSize));
 
-  return { data, loading, page, totalPages, setPage, setFilters, refresh: () => { setRefreshKey(k => k + 1); } };
+  return {
+    data,
+    loading,
+    page,
+    totalPages,
+    setPage,
+    setFilters,
+    refresh: () => {
+      setRefreshKey((k) => k + 1);
+    },
+  };
 }

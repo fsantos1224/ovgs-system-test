@@ -1,6 +1,8 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { AppLayout } from './layouts/AppLayout';
+import { getCurrentUser } from './hooks/useAuth';
+import { Login } from './pages/Login';
 
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
 const OVList = lazy(() => import('./pages/OVList').then(m => ({ default: m.OVList })));
@@ -15,11 +17,18 @@ const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.N
 
 const Loading = () => <div className="p-6 text-slate-500">Carregando...</div>;
 
+function PrivateRoute({ children }: { children: React.ReactNode }) {
+  const user = getCurrentUser();
+  if (!user) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
+
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route element={<AppLayout />}>
+        <Route path="/login" element={<Login />} />
+        <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
           <Route index element={<Suspense fallback={<Loading />}><Dashboard /></Suspense>} />
           <Route path="ovs" element={<Suspense fallback={<Loading />}><OVList /></Suspense>} />
           <Route path="ovs/nova" element={<Suspense fallback={<Loading />}><OVNew /></Suspense>} />

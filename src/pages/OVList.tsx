@@ -1,22 +1,29 @@
-import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { usePaginatedFetch } from '../hooks/usePaginatedFetch';
-import type { OrdemVenda } from '../domain/types';
-import { statusLabel } from '../domain/types';
-import { usePermissao } from '../hooks/usePermission';
-import { Pagination } from '../components/Pagination';
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { usePaginatedFetch } from "../hooks/usePaginatedFetch";
+import type { OrdemVenda } from "../domain/types";
+import { statusLabel } from "../domain/types";
+import { usePermissao } from "../hooks/usePermission";
+import { Pagination } from "../components/Pagination";
 
 export function OVList() {
-  const [search, setSearch] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
-  // 🐴 Debounce de 300ms para evitar refetch a cada tecla
+  // Debounce de 300ms para evitar refetch a cada tecla
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(id);
   }, [search]);
 
-  const { data: ordens, loading, page, totalPages, setPage, setFilters } = usePaginatedFetch<OrdemVenda[]>('/ordensVenda', 20);
+  const {
+    data: ordens,
+    loading,
+    page,
+    totalPages,
+    setPage,
+    setFilters,
+  } = usePaginatedFetch<OrdemVenda[]>("/ordensVenda", 20);
 
   useEffect(() => {
     const f: Record<string, string> = {};
@@ -25,9 +32,14 @@ export function OVList() {
     setPage(1);
   }, [debouncedSearch, setFilters, setPage]);
 
-  const podeCriar = usePermissao('ov:criar');
+  const podeCriar = usePermissao("ov:criar");
 
-  if (loading) return <p role="status" aria-live="polite" className="text-slate-500">Carregando...</p>;
+  if (loading)
+    return (
+      <p role="status" aria-live="polite" className="text-slate-500">
+        Carregando...
+      </p>
+    );
 
   return (
     <div>
@@ -67,7 +79,11 @@ export function OVList() {
           </thead>
           <tbody>
             {ordens?.length === 0 ? (
-              <tr><td colSpan={7} className="p-6 text-center text-slate-400">Nenhuma ordem encontrada.</td></tr>
+              <tr>
+                <td colSpan={7} className="p-6 text-center text-slate-400">
+                  Nenhuma ordem encontrada.
+                </td>
+              </tr>
             ) : (
               ordens?.map((ov) => (
                 <tr key={ov.id} className="border-t hover:bg-slate-50">
@@ -80,9 +96,16 @@ export function OVList() {
                     </span>
                   </td>
                   <td className="p-3">R$ {ov.valorTotal.toFixed(2)}</td>
-                  <td className="p-3">{new Date(ov.dataEntregaPrevista).toLocaleDateString('pt-BR')}</td>
                   <td className="p-3">
-                    <Link to={`/ovs/${ov.id}`} className="text-blue-600 hover:underline">
+                    {new Date(ov.dataEntregaPrevista).toLocaleDateString(
+                      "pt-BR",
+                    )}
+                  </td>
+                  <td className="p-3">
+                    <Link
+                      to={`/ovs/${ov.id}`}
+                      className="text-blue-600 hover:underline"
+                    >
                       Detalhes
                     </Link>
                   </td>
@@ -91,7 +114,11 @@ export function OVList() {
             )}
           </tbody>
         </table>
-        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+        />
       </div>
     </div>
   );

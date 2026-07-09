@@ -1,8 +1,14 @@
-// 🐴 Domínio alinhado com a especificação do desafio. 5 status lineares, sem lib de state machine.
+// Domínio alinhado com a especificação do desafio. 5 status lineares, sem lib de state machine.
 
-export type OVStatus = typeof STATUS_FLOW[number];
+export type OVStatus = (typeof STATUS_FLOW)[number];
 
-export const STATUS_FLOW = ['CRIADA', 'PLANEJADA', 'AGENDADA', 'EM_TRANSPORTE', 'ENTREGUE'] as const;
+export const STATUS_FLOW = [
+  "CRIADA",
+  "PLANEJADA",
+  "AGENDADA",
+  "EM_TRANSPORTE",
+  "ENTREGUE",
+] as const;
 
 export function canTransition(from: OVStatus, to: OVStatus): boolean {
   const i = STATUS_FLOW.indexOf(from);
@@ -11,11 +17,11 @@ export function canTransition(from: OVStatus, to: OVStatus): boolean {
 
 export function statusLabel(status: OVStatus): string {
   const labels: Record<OVStatus, string> = {
-    CRIADA: 'Criada',
-    PLANEJADA: 'Planejada',
-    AGENDADA: 'Agendada',
-    EM_TRANSPORTE: 'Em Transporte',
-    ENTREGUE: 'Entregue',
+    CRIADA: "Criada",
+    PLANEJADA: "Planejada",
+    AGENDADA: "Agendada",
+    EM_TRANSPORTE: "Em Transporte",
+    ENTREGUE: "Entregue",
   };
   return labels[status];
 }
@@ -33,7 +39,7 @@ export interface Cliente {
 export interface TipoTransporte {
   id: string;
   nome: string;
-  modal: 'rodoviario' | 'aereo' | 'maritimo' | 'ferroviario';
+  modal: "rodoviario" | "aereo" | "maritimo" | "ferroviario";
   ativo: boolean;
 }
 
@@ -80,6 +86,6 @@ export interface EventoAuditoria {
 }
 
 export interface UserRole {
-  role: 'admin' | 'manager' | 'operator' | 'viewer';
+  role: "admin" | "manager" | "operator" | "viewer";
   nome: string;
 }
