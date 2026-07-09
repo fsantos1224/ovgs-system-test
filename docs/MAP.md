@@ -64,12 +64,20 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 
 - `server.cjs` com json-server programático + middleware custom
 - `POST /ordensVenda` — valida cliente ativo, campos obrigatórios, cria auditoria automaticamente
-- `PATCH /ordensVenda/:id` — valida transição de status contra a máquina de estados (`TRANSITIONS`), retorna 422 com sugestões se inválida
+- `PATCH /ordensVenda/:id` — valida transição de status (mesma máquina de estados do `STATUS_FLOW`)
+- Retorna 422 com sugestões se transição inválida
 - Idempotência via header `Idempotency-Key` + Map em memória
 - `POST /reset` — limpa cache de idempotência
-- `src/api/fetch.ts` — `apiPost` e `apiPatch` agora parseiam o body de erro para mensagens legíveis
+- `src/api/fetch.ts` — `apiPost` e `apiPatch` parseiam o body de erro para mensagens legíveis
 - `OVDetail.tsx` — mostra `erroStatus` inline quando transição é rejeitada (422)
 - `OVNew.tsx` — envia `idempotency-key` via `crypto.randomUUID()`
+
+### Ticket 3 — Domínio (resolvido)
+
+- Status alinhados com a especificação: `CRIADA → PLANEJADA → AGENDADA → EM_TRANSPORTE → ENTREGUE`
+- `STATUS_FLOW` — array `as const` + função `canTransition()` que compara índices
+- `server.cjs` e `db.json` atualizados com os novos status
+- `OVDetail.tsx`, `OVNew.tsx`, `Agendamento.tsx` — referências de status corrigidas
 
 ## Tickets
 
@@ -80,7 +88,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 | ~~9~~ | Observabilidade | `09-observabilidade` | `wayfinder:research` | 1 | ✔
 | ~~10~~ | Performance | `10-performance` | `wayfinder:research` | 1 | ✔
 | ~~2~~ | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 | ✔
-| 3 | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 |
+| ~~3~~ | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 | ✔
 | 4 | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 |
 | ~~6~~ | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 | ✔
 | 7 | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 |
