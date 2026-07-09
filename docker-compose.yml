@@ -4,9 +4,13 @@ services:
     working_dir: /app
     volumes:
       - .:/app
+      - ovgs-data:/app/data
     command: node server.cjs
     ports:
       - "3001:3001"
+
+volumes:
+  ovgs-data:
 
   frontend:
     build: .

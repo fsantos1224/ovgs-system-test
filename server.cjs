@@ -3,9 +3,22 @@
 
 const jsonServer = require("json-server");
 const crypto = require("crypto");
+const fs = require("fs");
+const path = require("path");
 
 const server = jsonServer.create();
-const router = jsonServer.router("db.json");
+
+// Persistência do banco: data/db.json no volume nomeado.
+// Se não existir, copia do db.json original (seed) para o volume.
+const DATA_DIR = path.join(__dirname, "data");
+const DATA_FILE = path.join(DATA_DIR, "db.json");
+if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
+if (!fs.existsSync(DATA_FILE)) {
+  const seed = path.join(__dirname, "db.json");
+  if (fs.existsSync(seed)) fs.copyFileSync(seed, DATA_FILE);
+  else fs.writeFileSync(DATA_FILE, JSON.stringify({}));
+}
+const router = jsonServer.router(DATA_FILE);
 const middlewares = jsonServer.defaults();
 
 server.use(jsonServer.bodyParser);

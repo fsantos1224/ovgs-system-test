@@ -44,6 +44,15 @@
       "telefone": "(51) 4444-5555",
       "endereco": "Rua E, 2020",
       "ativo": true
+    },
+    {
+      "nome": "teste",
+      "documento": "abc-123",
+      "email": "teste@teste.com",
+      "telefone": "",
+      "endereco": "",
+      "ativo": true,
+      "id": "YQf14Vc"
     }
   ],
   "tiposTransporte": [
@@ -78,7 +87,7 @@
       "ativo": false
     }
   ],
-"itens": [
+  "itens": [
     {
       "id": "1",
       "nome": "Parafuso M10",
@@ -754,6 +763,17 @@
       "detalhes": "Item Parafuso Sextavado criado",
       "estadoAnterior": null,
       "estadoPosterior": "{\"nome\":\"Parafuso Sextavado\",\"sku\":\"PAR-SEX-006\",\"categoria\":\"Fixação\",\"precoUnitario\":1.2,\"unidadeMedida\":\"un\",\"ativo\":true,\"id\":\"xD_9pqf\"}"
+    },
+    {
+      "id": "6",
+      "entidade": "cliente",
+      "entidadeId": "YQf14Vc",
+      "acao": "criacao",
+      "usuario": "admin@ovgs.com",
+      "dataHora": "2026-07-09T03:59:08.300Z",
+      "detalhes": "Cliente teste criado",
+      "estadoAnterior": null,
+      "estadoPosterior": "{\"nome\":\"teste\",\"documento\":\"abc-123\",\"email\":\"teste@teste.com\",\"telefone\":\"\",\"endereco\":\"\",\"ativo\":true,\"id\":\"YQf14Vc\"}"
     }
   ]
 }
