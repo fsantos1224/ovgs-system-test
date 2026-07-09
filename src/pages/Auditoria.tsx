@@ -1,7 +1,4 @@
-import { useState } from "react";
 import {
-  ChevronDown,
-  ChevronUp,
   User as UserIcon,
   ShieldCheck,
 } from "lucide-react";
@@ -19,7 +16,6 @@ export function Auditoria() {
   const podeVer = usePermissao("auditoria:ver");
   const { data: eventos, loading } =
     useFetch<EventoAuditoria[]>("/eventosAuditoria");
-  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   if (!podeVer) {
     return (
@@ -82,17 +78,13 @@ export function Auditoria() {
                 <th className="px-6 py-4.5">Entidade</th>
                 <th className="px-6 py-4.5">Ação</th>
                 <th className="px-6 py-4.5">Detalhes</th>
-                <th className="px-6 py-4.5 w-12"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
-              {eventos?.map((e) => {
-                const isExpanded = expandedId === e.id;
-                return (
+              {eventos?.map((e) => (
                   <tr
                     key={e.id}
-                    onClick={() => setExpandedId(isExpanded ? null : e.id)}
-                    className="hover:bg-hover transition-colors cursor-pointer"
+                    className="hover:bg-hover transition-colors"
                   >
                     <td className="px-6 py-4.5 text-text-muted font-mono">
                       {formatDateTime(e.dataHora)}
@@ -121,20 +113,12 @@ export function Auditoria() {
                     <td className="px-6 py-4.5 text-text-muted">
                       {e.detalhes}
                     </td>
-                    <td className="px-6 py-4.5 text-center text-text-subtle">
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4" aria-hidden="true" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4" aria-hidden="true" />
-                      )}
-                    </td>
                   </tr>
-                );
-              })}
+                ))}
               {eventos?.length === 0 && (
                 <tr>
                   <td
-                    colSpan={6}
+                    colSpan={5}
                     className="px-6 py-12 text-center text-text-subtle italic"
                   >
                     Nenhum evento de auditoria registrado.

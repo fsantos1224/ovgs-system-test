@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useFetch } from "../hooks/useFetch";
 import { usePermissao } from "../hooks/usePermission";
-import { apiPost, apiPatch } from "../api/fetch";
+import { apiPost, apiPatch, apiDelete } from "../api/fetch";
 import { Modal } from "../components/Modal";
 import { itemSchema } from "../lib/validation";
 import type { Item } from "../domain/types";
@@ -19,6 +19,16 @@ export function Itens() {
   const [erro, setErro] = useState("");
 
   if (loading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Tem certeza que deseja excluir este item?")) return;
+    try {
+      await apiDelete(`/itens/${id}`);
+      refresh();
+    } catch {
+      alert("Erro ao excluir item.");
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -126,6 +136,7 @@ export function Itens() {
               <th className="px-6 py-4.5">Preço Unit.</th>
               <th className="px-6 py-4.5">Unidade</th>
               <th className="px-6 py-4.5">Ativo</th>
+              <th className="px-6 py-4.5 text-center">Ações</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border-subtle text-xs">
@@ -141,11 +152,29 @@ export function Itens() {
                     {i.ativo ? 'Disponível' : 'Indisponível'}
                   </span>
                 </td>
+                <td className="px-6 py-4 text-center">
+                  <div className="flex items-center justify-center gap-0.5">
+                    <button
+                      onClick={() => { setEditando(i); setMostrarForm(true); setErro(""); }}
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(i.id)}
+                      className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+                </td>
               </tr>
             ))}
-            {itens?.length === 0 && (
-              <tr><td colSpan={6} className="px-6 py-12 text-center text-text-subtle italic">Nenhum item cadastrado.</td></tr>
-            )}
+              {itens?.length === 0 && (
+                <tr><td colSpan={7} className="px-6 py-12 text-center text-text-subtle italic">Nenhum item cadastrado.</td></tr>
+              )}
           </tbody>
         </table>
       </div>

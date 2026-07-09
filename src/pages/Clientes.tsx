@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useFetch } from "../hooks/useFetch";
 import { usePermissao } from "../hooks/usePermission";
-import { apiPost, apiPatch } from "../api/fetch";
+import { apiPost, apiPatch, apiDelete } from "../api/fetch";
 import { Modal } from "../components/Modal";
 import { clienteSchema } from "../lib/validation";
 import type { Cliente } from "../domain/types";
@@ -56,6 +56,16 @@ export function Clientes() {
       refresh();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao salvar");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Tem certeza que deseja excluir este cliente?")) return;
+    try {
+      await apiDelete(`/clientes/${id}`);
+      refresh();
+    } catch {
+      alert("Erro ao excluir cliente.");
     }
   };
 
@@ -145,9 +155,22 @@ export function Clientes() {
                 </td>
                 {podeEditar && (
                   <td className="px-6 py-4 text-center">
-                    <button onClick={() => { setEditando(c); setMostrarForm(true); setErro(""); }} className="text-[10px] uppercase tracking-widest border border-border-strong hover:bg-accent hover:text-on-accent hover:border-accent px-3 py-1.5 transition-all font-bold inline-flex items-center gap-1 focus-visible:outline-2 focus-visible:outline-accent">
-                      <Pencil className="w-3.5 h-3.5" aria-hidden="true" /> Editar
-                    </button>
+                    <div className="flex items-center justify-center gap-0.5">
+                      <button
+                        onClick={() => { setEditando(c); setMostrarForm(true); setErro(""); }}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Editar"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(c.id)}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Excluir"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 )}
               </tr>

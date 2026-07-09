@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Plus, Truck } from "lucide-react";
+import { Plus, Truck, Pencil, Trash2 } from "lucide-react";
 import { useFetch } from "../hooks/useFetch";
 import { usePermissao } from "../hooks/usePermission";
-import { apiPost, apiPatch } from "../api/fetch";
+import { apiPost, apiPatch, apiDelete } from "../api/fetch";
 import { Modal } from "../components/Modal";
 import { transporteSchema } from "../lib/validation";
 import type { TipoTransporte } from "../domain/types";
@@ -57,6 +57,16 @@ export function Transportes() {
       refresh();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao salvar");
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Tem certeza que deseja excluir este transporte?")) return;
+    try {
+      await apiDelete(`/tiposTransporte/${id}`);
+      refresh();
+    } catch {
+      alert("Erro ao excluir transporte.");
     }
   };
 
@@ -204,16 +214,22 @@ export function Transportes() {
                 </td>
                 {podeEditar && (
                   <td className="px-6 py-4 text-center">
-                    <button
-                      onClick={() => {
-                        setEditando(t);
-                        setMostrarForm(true);
-                        setErro("");
-                      }}
-                      className="text-[10px] uppercase tracking-widest border border-border-strong hover:bg-accent hover:text-on-accent hover:border-accent px-3 py-1.5 transition-all font-bold focus-visible:outline-2 focus-visible:outline-accent"
-                    >
-                      Editar
-                    </button>
+                    <div className="flex items-center justify-center gap-0.5">
+                      <button
+                        onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Editar"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(t.id)}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Excluir"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </td>
                 )}
               </tr>

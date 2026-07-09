@@ -1,8 +1,9 @@
 import { useState, useEffect, useCallback } from "react";
-import { Link } from "react-router-dom";
-import { Plus, Calendar } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Plus, Calendar, Eye, Pencil, Trash2 } from "lucide-react";
 import { usePaginatedFetch } from "../hooks/usePaginatedFetch";
 import { useFetch } from "../hooks/useFetch";
+import { apiDelete } from "../api/fetch";
 import type {
   OrdemVenda,
   Cliente,
@@ -60,6 +61,7 @@ export function OVList() {
     totalPages,
     setPage,
     setFilters,
+    refresh,
   } = usePaginatedFetch<OrdemVenda[]>("/ordensVenda", 10);
 
   useEffect(() => {
@@ -80,6 +82,18 @@ export function OVList() {
     inicio.setDate(hoje.getDate() - (dias - 1));
     setDataDe(toInputDate(inicio));
     setDataAte(toInputDate(hoje));
+  };
+
+  const navigate = useNavigate();
+
+  const handleDelete = async (id: string) => {
+    if (!window.confirm("Tem certeza que deseja excluir esta ordem de venda?")) return;
+    try {
+      await apiDelete(`/ordensVenda/${id}`);
+      refresh();
+    } catch {
+      alert("Erro ao excluir ordem de venda.");
+    }
   };
 
   const montarFiltros = useCallback(() => {
@@ -344,12 +358,29 @@ export function OVList() {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-center">
-                      <Link
-                        to={`/ovs/${ov.id}`}
-                        className="text-[10px] uppercase tracking-widest border border-border-strong hover:bg-accent hover:text-on-accent hover:border-accent px-3 py-1.5 transition-all font-bold focus-visible:outline-2 focus-visible:outline-accent"
-                      >
-                        Detalhes
-                      </Link>
+                      <div className="flex items-center justify-center gap-0.5">
+                        <Link
+                          to={`/ovs/${ov.id}`}
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                          title="Visualizar"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Link>
+                        <button
+                          onClick={() => navigate(`/ovs/${ov.id}/editar`)}
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(ov.id)}
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                          title="Excluir"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
