@@ -13,7 +13,6 @@ function formatCurrency(val: number) {
 export function Itens() {
   const { data: itens, loading, refresh } = useFetch<Item[]>("/itens");
   const podeCriar = usePermissao("itens:criar");
-  const podeEditar = usePermissao("itens:editar");
   const [editando, setEditando] = useState<Item | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [erro, setErro] = useState("");
