@@ -79,7 +79,11 @@ export function Clientes() {
   const abrirForm = (cliente?: Cliente) => {
     setEditando(cliente ?? null);
     setErro('');
-    reset(cliente ?? undefined);
+    reset(
+      cliente
+        ? { ...cliente, documento: cliente.documento.replace(/\D/g, ''), telefone: cliente.telefone.replace(/\D/g, '') }
+        : undefined,
+    );
     setMostrarForm(true);
   };
 
