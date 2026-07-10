@@ -1,40 +1,85 @@
-import { useState, useEffect } from "react";
-import { Plus, Truck, Pencil, Search, Eye } from "lucide-react";
-import { useTransportes, useCriarTransporte, useAtualizarTransporte } from "../queries";
-import { usePermissao } from "../hooks/usePermission";
-import { Modal } from "../components/Modal";
-import { Pagination } from "../components/Pagination";
-import { transporteSchema } from "../lib/validation";
-import type { TipoTransporte } from "../domain/types";
-import { Breadcrumbs } from "../components/Breadcrumbs";
+import { useState, useEffect } from 'react';
+import { Plus, Truck, Pencil, Search, Eye } from 'lucide-react';
+import { useTransportes, useCriarTransporte, useAtualizarTransporte } from '../queries';
+import { usePermissao } from '../hooks/usePermission';
+import { Modal } from '../components/Modal';
+import { Pagination } from '../components/Pagination';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { transporteFormSchema } from '../schemas';
+import type { TransporteInput } from '../lib/validation';
+import type { TipoTransporte } from '../domain/types';
+import { FormField } from '../components/FormField';
+import { Breadcrumbs } from '../components/Breadcrumbs';
 
 const MODAL_LABEL: Record<string, string> = {
-  rodoviario: "Rodoviário",
-  aereo: "Aéreo",
-  maritimo: "Marítimo",
-  ferroviario: "Ferroviário",
+  rodoviario: 'Rodoviário',
+  aereo: 'Aéreo',
+  maritimo: 'Marítimo',
+  ferroviario: 'Ferroviário',
 };
 
 export function Transportes() {
   const { data: transportes, isLoading } = useTransportes();
   const criarTransporte = useCriarTransporte();
   const atualizarTransporte = useAtualizarTransporte();
-  const podeCriar = usePermissao("transportes:criar");
-  const podeEditar = usePermissao("transportes:editar");
+  const podeCriar = usePermissao('transportes:criar');
+  const podeEditar = usePermissao('transportes:editar');
   const [editando, setEditando] = useState<TipoTransporte | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [consultando, setConsultando] = useState<TipoTransporte | null>(null);
-  const [erro, setErro] = useState("");
-  const [search, setSearch] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [erro, setErro] = useState('');
+  const [search, setSearch] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const PAGE_SIZE = 10;
 
   useEffect(() => {
-    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    const id = setTimeout(() => {
+      setDebouncedSearch(search);
+      setPage(1);
+    }, 300);
     return () => clearTimeout(id);
   }, [search]);
-  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<TransporteInput>({
+    resolver: zodResolver(transporteFormSchema),
+    defaultValues: { nome: '', modal: 'rodoviario', ativo: true },
+  });
+
+  const abrirForm = (transporte?: TipoTransporte) => {
+    setEditando(transporte ?? null);
+    setErro('');
+    reset(transporte ?? undefined);
+    setMostrarForm(true);
+  };
+
+  const fecharForm = () => {
+    setMostrarForm(false);
+    setEditando(null);
+    setErro('');
+    reset();
+  };
+
+  const onSubmit = async (data: TransporteInput) => {
+    setErro('');
+    try {
+      if (editando) {
+        await atualizarTransporte.mutateAsync({ id: editando.id, data });
+      } else {
+        await criarTransporte.mutateAsync(data);
+      }
+      setEditando(null);
+      setMostrarForm(false);
+    } catch (err) {
+      setErro(err instanceof Error ? err.message : 'Erro ao salvar');
+    }
+  };
 
   const filtrados = (transportes ?? []).filter((t) => {
     if (!debouncedSearch) return true;
@@ -51,51 +96,19 @@ export function Transportes() {
       </p>
     );
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setErro("");
-    const fd = new FormData(e.currentTarget);
-    const raw = {
-      nome: (fd.get("nome") as string) || "",
-      modal: (fd.get("modal") as string) || "",
-      ativo: fd.get("ativo") === "true",
-    };
-
-    const parsed = transporteSchema.safeParse(raw);
-    if (!parsed.success) { setErro(parsed.error.issues[0].message); return; }
-
-    try {
-      if (editando) {
-        await atualizarTransporte.mutateAsync({ id: editando.id, data: parsed.data });
-      } else {
-        await criarTransporte.mutateAsync(parsed.data);
-      }
-      setEditando(null);
-      setMostrarForm(false);
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao salvar");
-    }
-  };
-
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
         <div>
           <Breadcrumbs />
-          <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
-            Tipos de Transporte
-          </h1>
+          <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">Tipos de Transporte</h1>
           <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
             Cadastre e gerencie os modais de transporte disponíveis.
           </p>
         </div>
         {podeCriar && (
           <button
-            onClick={() => {
-              setMostrarForm(true);
-              setEditando(null);
-              setErro("");
-            }}
+            onClick={() => abrirForm()}
             className="inline-flex items-center gap-2 border border-border-strong text-[10px] uppercase tracking-widest hover:bg-accent hover:text-on-accent hover:border-accent text-text font-bold px-5 py-3 transition-all focus-visible:outline-2 focus-visible:outline-accent"
           >
             <Plus className="w-4 h-4" aria-hidden="true" />
@@ -104,16 +117,35 @@ export function Transportes() {
         )}
       </div>
 
-      <Modal open={!!consultando} title={`Transporte: ${consultando?.nome ?? ""}`} onClose={() => setConsultando(null)}>
+      <Modal open={!!consultando} title={`Transporte: ${consultando?.nome ?? ''}`} onClose={() => setConsultando(null)}>
         {consultando && (
           <div className="space-y-4 text-xs">
             <div className="grid grid-cols-2 gap-4">
-              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Nome</span><p className="text-text font-medium">{consultando.nome}</p></div>
-              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Modal</span><p className="text-text font-medium">{MODAL_LABEL[consultando.modal] ?? consultando.modal}</p></div>
-              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Ativo</span><span className={`text-[10px] font-bold uppercase tracking-wider ${consultando.ativo ? "text-emerald-500" : "text-text-faint"}`}>{consultando.ativo ? "Sim" : "Não"}</span></div>
+              <div>
+                <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Nome</span>
+                <p className="text-text font-medium">{consultando.nome}</p>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Modal</span>
+                <p className="text-text font-medium">{MODAL_LABEL[consultando.modal] ?? consultando.modal}</p>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Ativo</span>
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider ${consultando.ativo ? 'text-emerald-500' : 'text-text-faint'}`}
+                >
+                  {consultando.ativo ? 'Sim' : 'Não'}
+                </span>
+              </div>
             </div>
             <div className="flex justify-end pt-4 border-t border-border">
-              <button type="button" onClick={() => setConsultando(null)} className="px-5 py-2.5 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted">Fechar</button>
+              <button
+                type="button"
+                onClick={() => setConsultando(null)}
+                className="px-5 py-2.5 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted"
+              >
+                Fechar
+              </button>
             </div>
           </div>
         )}
@@ -121,34 +153,19 @@ export function Transportes() {
 
       <Modal
         open={mostrarForm}
-        title={
-          editando ? `Editar Transporte: ${editando.nome}` : "Novo Transporte"
-        }
-        onClose={() => {
-          setMostrarForm(false);
-          setEditando(null);
-          setErro("");
-        }}
+        title={editando ? `Editar Transporte: ${editando.nome}` : 'Novo Transporte'}
+        onClose={fecharForm}
       >
-        <form key={editando?.id ?? "new"} onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div>
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">
-              Nome
-            </label>
+        <form key={editando?.id ?? 'new'} onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+          <FormField label="Nome" required error={errors.nome}>
             <input
-              name="nome"
-              defaultValue={editando?.nome ?? ""}
-              required
+              {...register('nome')}
               className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
             />
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">
-              Modal
-            </label>
+          </FormField>
+          <FormField label="Modal" required error={errors.modal}>
             <select
-              name="modal"
-              defaultValue={editando?.modal ?? "rodoviario"}
+              {...register('modal')}
               className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden cursor-pointer"
             >
               <option value="rodoviario">Rodoviário</option>
@@ -156,20 +173,16 @@ export function Transportes() {
               <option value="maritimo">Marítimo</option>
               <option value="ferroviario">Ferroviário</option>
             </select>
-          </div>
-          <div>
-            <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">
-              Ativo
-            </label>
+          </FormField>
+          <FormField label="Ativo" error={errors.ativo}>
             <select
-              name="ativo"
-              defaultValue={editando?.ativo ? "true" : "false"}
+              {...register('ativo', { setValueAs: (v: string) => v === 'true' })}
               className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden cursor-pointer"
             >
               <option value="true">Sim</option>
               <option value="false">Não</option>
             </select>
-          </div>
+          </FormField>
           {erro && (
             <p role="alert" className="text-rose-400 text-xs">
               {erro}
@@ -178,11 +191,7 @@ export function Transportes() {
           <div className="flex gap-3 justify-end pt-4 border-t border-border">
             <button
               type="button"
-              onClick={() => {
-                setMostrarForm(false);
-                setEditando(null);
-                setErro("");
-              }}
+              onClick={fecharForm}
               className="px-5 py-2.5 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted focus-visible:outline-2 focus-visible:outline-accent"
             >
               Cancelar
@@ -191,7 +200,7 @@ export function Transportes() {
               type="submit"
               className="px-6 py-2.5 bg-surface-elevated hover:bg-accent text-text hover:text-on-accent font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-lg transition-all border border-border-strong focus-visible:outline-2 focus-visible:outline-accent"
             >
-              {editando ? "Salvar Alterações" : "Criar Transporte"}
+              {editando ? 'Salvar Alterações' : 'Criar Transporte'}
             </button>
           </div>
         </form>
@@ -199,7 +208,10 @@ export function Transportes() {
 
       {/* Busca */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-faint pointer-events-none" aria-hidden="true" />
+        <Search
+          className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-faint pointer-events-none"
+          aria-hidden="true"
+        />
         <input
           type="text"
           placeholder="Buscar transportes..."
@@ -230,20 +242,15 @@ export function Transportes() {
               {paginados.map((t) => (
                 <tr key={t.id} className="hover:bg-hover transition-colors">
                   <td className="px-4 py-4 font-bold text-text text-sm inline-flex items-center gap-2">
-                    <Truck
-                      className="w-3.5 h-3.5 text-text-faint shrink-0"
-                      aria-hidden="true"
-                    />
+                    <Truck className="w-3.5 h-3.5 text-text-faint shrink-0" aria-hidden="true" />
                     <span className="truncate">{t.nome}</span>
                   </td>
-                  <td className="px-4 py-4 text-text-muted truncate">
-                    {MODAL_LABEL[t.modal] ?? t.modal}
-                  </td>
+                  <td className="px-4 py-4 text-text-muted truncate">{MODAL_LABEL[t.modal] ?? t.modal}</td>
                   <td className="px-4 py-4">
                     <span
-                      className={`text-[10px] font-bold uppercase tracking-wider ${t.ativo ? "text-emerald-500" : "text-text-faint"}`}
+                      className={`text-[10px] font-bold uppercase tracking-wider ${t.ativo ? 'text-emerald-500' : 'text-text-faint'}`}
                     >
-                      {t.ativo ? "Ativo" : "Inativo"}
+                      {t.ativo ? 'Ativo' : 'Inativo'}
                     </span>
                   </td>
                   <td className="px-4 py-4 text-center">
@@ -257,7 +264,7 @@ export function Transportes() {
                       </button>
                       {podeEditar && (
                         <button
-                          onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
+                          onClick={() => abrirForm(t)}
                           className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
                           title="Editar"
                         >
@@ -270,11 +277,8 @@ export function Transportes() {
               ))}
               {filtrados.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={4}
-                    className="px-4 py-12 text-center text-text-subtle italic"
-                  >
-                    {debouncedSearch ? "Nenhum resultado encontrado." : "Nenhum transporte cadastrado."}
+                  <td colSpan={4} className="px-4 py-12 text-center text-text-subtle italic">
+                    {debouncedSearch ? 'Nenhum resultado encontrado.' : 'Nenhum transporte cadastrado.'}
                   </td>
                 </tr>
               )}
@@ -286,7 +290,7 @@ export function Transportes() {
         <div className="md:hidden divide-y divide-border-subtle">
           {filtrados.length === 0 ? (
             <div className="px-6 py-12 text-center text-text-subtle italic">
-              {debouncedSearch ? "Nenhum resultado encontrado." : "Nenhum transporte cadastrado."}
+              {debouncedSearch ? 'Nenhum resultado encontrado.' : 'Nenhum transporte cadastrado.'}
             </div>
           ) : (
             paginados.map((t) => (
@@ -296,8 +300,10 @@ export function Transportes() {
                     <Truck className="w-4 h-4 text-text-faint shrink-0" aria-hidden="true" />
                     <p className="font-bold text-text text-sm truncate">{t.nome}</p>
                   </div>
-                  <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${t.ativo ? "text-emerald-500" : "text-text-faint"}`}>
-                    {t.ativo ? "Ativo" : "Inativo"}
+                  <span
+                    className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${t.ativo ? 'text-emerald-500' : 'text-text-faint'}`}
+                  >
+                    {t.ativo ? 'Ativo' : 'Inativo'}
                   </span>
                 </div>
                 <div>
@@ -314,7 +320,11 @@ export function Transportes() {
                   </button>
                   {podeEditar && (
                     <button
-                      onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
+                      onClick={() => {
+                        setEditando(t);
+                        setMostrarForm(true);
+                        setErro('');
+                      }}
                       className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
                       title="Editar"
                     >
