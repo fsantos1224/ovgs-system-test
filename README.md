@@ -1,6 +1,6 @@
 # XPTO — Sistema de Gestão de Ordens de Venda
 
-> Sistema de backoffice para gestão do ciclo de vida de ordens de venda, com controlo de acessos baseado em papéis (RBAC), auditoria e suporte a contentores Docker.
+> Sistema de gestão do ciclo de vida de ordens de venda, com controle de acessos baseado em papéis (RBAC) e auditoria.
 
 ---
 
@@ -39,7 +39,7 @@
 
 **Contexto:** Auth (user/role), toasts e tema UI precisam de estado global acessível em toda árvore de componentes.
 
-**Decisão:** Zustand para 3 stores atómicas (`authStore`, `toastStore`, `uiStore`). Sem Context, sem Provider. Auth persistida em `localStorage` para sobreviver a reload (ponytail: sem persist middleware, 5 linhas manuais).
+**Decisão:** Zustand para 3 stores atómicas (`authStore`, `toastStore`, `uiStore`). Sem Context, sem Provider. Auth persistida em `localStorage` para sobreviver a reload.
 
 **Consequências:** Zero re-renders em cascata (Zustand faz selects finos). Stores independentes — auth não depende de UI. Role switcher no sidebar com reload para resetar estado React.
 
@@ -49,15 +49,15 @@
 
 **Decisão:** `src/schemas/` define schemas Zod reutilizados no frontend (`validation.ts`) e na camada de API (`queries/api.ts`). Schemas validam tanto input de formulário quanto respostas do servidor.
 
-**Consequências:** Mesmo schema serve para form + response validation. Erros de tipagem capturados em runtime próximo ao servidor (mau sinal de json-server fora de sync).
+**Consequências:** Mesmo schema serve para form + response validation.
 
 ### ADR-04: Máquina de estados linear
 
 **Contexto:** Status de OV precisa de transições válidas.
 
-**Decisão:** `STATUS_FLOW = ['CRIADA','PLANEJADA','AGENDADA','EM_TRANSPORTE','ENTREGUE']`. `canTransition(a,b)` compara índices adjacentes. Linear — sem bifurcações, sem cancelamento. Regra validada tanto no frontend (UI condicional) quanto no servidor (middleware).
+**Decisão:** `STATUS_FLOW = ['CRIADA','PLANEJADA','AGENDADA','EM_TRANSPORTE','ENTREGUE']`. `canTransition(a,b)` compara índices adjacentes. Regra validada tanto no frontend (UI condicional) quanto no servidor.
 
-**Consequências:** Lógica de transição em O(1) e imutável. Frontend só exibe botões de transição válida. Servidor rejeita 422 se algo passar. Se um dia o domínio exigir cancelamento ou reabertura, a máquina passa a grafo.
+**Consequências:** Lógica de transição em O(1) e imutável. Frontend só exibe botões de transição válida. Servidor rejeita 422 se algo passar.
 
 ### ADR-05: RBAC cumulativo por hierarquia
 
@@ -65,7 +65,7 @@
 
 **Decisão:** `PERMISSOES_POR_ROLE` mapeia permissões literais por role. `getPermissoes()` acumula permissões baseado na hierarquia. `usePermissao()` verifica se a role do utilizador ou qualquer role superior tem a permissão. Role lida do Zustand `authStore` (em memória, sem `localStorage`).
 
-**Consequências:** Admin herda todas as permissões automaticamente. UI condicional esconde elementos que o utilizador não pode usar. Auth persiste ao recarregar (`localStorage`). Sem CASL.
+**Consequências:** Admin herda todas as permissões automaticamente. UI condicional esconde elementos que o utilizador não pode usar. Auth persiste ao recarregar (`localStorage`).
 
 ### ADR-06: json-server com middleware custom
 
@@ -79,17 +79,17 @@
 
 **Contexto:** Precisamos de métricas de performance e eventos de negócio.
 
-**Decisão:** `PerformanceObserver` para LCP/CLS/INP (3 observers com try/catch). `trackEvent()` escreve para `localStorage` (últimos 100 eventos) e `console.table`. Sem PostHog, Sem Sentry.
+**Decisão:** `PerformanceObserver` para LCP/CLS/INP (3 observers com try/catch). `trackEvent()` escreve para `localStorage` (últimos 100 eventos) e `console.table`.
 
-**Consequências:** Dados disponíveis para debug sem dependências externas. Eventos rastreados: criação de OV, alteração de status. Sem telemetria remota.
+**Consequências:** Dados disponíveis para debug sem dependências externas. Eventos rastreados sem telemetria remota.
 
 ### ADR-08: Testes em 3 camadas
 
 **Contexto:** O mínimo do desafio são 2 testes unitários + 1 de integração. Buscamos cobertura relevante.
 
-**Decisão:** 3 camadas de teste: (1) **unitários** (Vitest) — lógica de domínio pura (`canTransition`, `canUseTransporte`, `parseBRLtoCents`) + 3 use cases (`CriarOrdemVendaUseCase`, `AlterarStatusOVUseCase`, `AgendarEntregaUseCase`) + hook `useConfirm` (RTL); (2) **integração** (Vitest + `node:http`) — servidor mock `server.cjs` end-to-end (regras de negócio, idempotência, auditoria, allowlist PATCH, identity gate, eventos de auditoria em DELETE); (3) **E2E** (Playwright) — fluxos completos (RBAC, criar OV, detalhe, listagem) + auditoria de CWV em 9 rotas.
+**Decisão:** 3 camadas de teste: (1) **unitários** (Vitest) — lógica de domínio pura (`canTransition`, `canUseTransporte`, `parseBRLtoCents`) + 3 use cases (`CriarOrdemVendaUseCase`, `AlterarStatusOVUseCase`, `AgendarEntregaUseCase`) + hook `useConfirm` (RTL); (2) **integração** (Vitest + `node:http`) — servidor mock `server.cjs` end-to-end (regras de negócio, idempotência, auditoria, allowlist PATCH, identity gate, eventos de auditoria em DELETE); (3) **E2E** (Playwright) — fluxos completos (RBAC, criar OV, detalhe, listagem).
 
-**Consequências:** 30 testes unitários (9 domínio + 10 use cases + 8 money + 3 useConfirm), 19 de integração (server.cjs end-to-end), 10 E2E (RBAC, OV-create, OV-detail, OV-list-filters, CWV-audit). Cobertura de UI via Playwright `getByRole` nativo. Submissão RHF via Playwright tem limitação conhecida (handleSubmit não reconhece eventos sintéticos).
+**Consequências:** 30 testes unitários (9 domínio + 10 use cases + 8 money + 3 useConfirm), 19 de integração (server.cjs end-to-end), 10 E2E (RBAC, OV-create, OV-detail, OV-list-filters, CWV-audit).
 
 ---
 
@@ -254,11 +254,20 @@ open http://localhost:5173
 ### Docker
 
 ```bash
-docker compose up --build
+docker compose up -d
 open http://localhost:8080
 ```
 
-O Docker levanta dois contentores: `api` (json-server em `:3001`) e `frontend` (nginx servindo o build de produção em `:8080`, com proxy reverso para `/api/`).
+O Docker levanta dois containers: `api` (json-server em `:3001`) e `frontend` (nginx servindo o build de produção em `:8080`, com proxy reverso para `/api/`).
+
+#### Quando rebuild é necessário
+
+O `--build` só é necessário quando se altera `server.cjs`, `db.seed.json`, `package.json` ou outro arquivo copiado pelo `Dockerfile`. Depois do primeiro build bem-sucedido, a imagem em cache fica correta e não precisa de `--build` em starts subsequentes.
+
+- Subir / parar (uso diário): `docker compose up -d` / `docker compose down`
+- Após editar código-fonte do backend ou frontend: `docker compose up -d --build`
+
+> Sintoma típico de imagem em cache desatualizada com `server.cjs` vazio: o container `api` arranca e sai em ~0.4 s com exit code `0`, e o nginx devolve `502 Bad Gateway` em qualquer pedido via `/api/`. Solução: `docker compose down && docker compose up -d --build`.
 
 ### Testes
 
@@ -280,7 +289,7 @@ As contas de login são **fake data** em `src/data/usuarios.json`:
 | operator@XPTO.local | operator123 | operator |
 | viewer@XPTO.local   | viewer123   | viewer   |
 
-Não é autenticação real — o json-server não valida senhas. O login é uma simulação de front-end para demonstrar RBAC. Ver limitações de segurança abaixo.
+Não é autenticação real — o json-server não valida senhas. O login é uma simulação de front-end para demonstrar RBAC.
 
 ---
 
