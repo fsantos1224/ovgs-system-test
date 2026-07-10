@@ -280,7 +280,8 @@ server.patch("/ordensVenda/:id", (req, res) => {
   if (!isUUID(id)) {
     return res.status(400).json({ error: "id deve ser UUID" });
   }
-  const ov = router.db.get("ordensVenda").find({ id }).value();
+  // ponytail: clone antes de ler — find() retorna referência mutável; assign() abaixo altera o objeto in-place e quebraria o estadoAnterior da auditoria
+  const ov = JSON.parse(JSON.stringify(router.db.get("ordensVenda").find({ id }).value()));
   if (!ov) return res.status(404).json({ error: "OV não encontrada" });
 
   // F3: restringe body ao allowlist
@@ -295,6 +296,15 @@ server.patch("/ordensVenda/:id", (req, res) => {
       statusSolicitado: novoStatus,
       transicoesValidas: STATUS_FLOW.filter((s) => canTransition(ov.status, s)),
     });
+  }
+
+  // janelaAtendimento, se informada, precisa ser HH:MM-HH:MM válido
+  if (req.body.janelaAtendimento) {
+    const m = req.body.janelaAtendimento.match(/^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/);
+    if (!m) return res.status(400).json({ error: "janelaAtendimento inválida. Formato esperado: HH:MM-HH:MM" });
+    const [h1, m1, h2, m2] = [parseInt(m[1],10), parseInt(m[2],10), parseInt(m[3],10), parseInt(m[4],10)];
+    if (h1 > 23 || m1 > 59 || h2 > 23 || m2 > 59 || h2 * 60 + m2 <= h1 * 60 + m1)
+      return res.status(400).json({ error: "janelaAtendimento inválida: horários fora do range ou fim antes do início." });
   }
 
   // transporteId, se informado, precisa ser UUID válido
