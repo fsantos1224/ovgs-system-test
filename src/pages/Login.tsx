@@ -1,22 +1,33 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuthStore } from "../stores/authStore";
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '../lib/validation';
+import type { LoginInput } from '../schemas';
+import { useNavigate } from 'react-router-dom';
+import { useAuthStore } from '../stores/authStore';
 
 export function Login() {
-  const [email, setEmail] = useState("");
-  const [senha, setSenha] = useState("");
-  const [erro, setErro] = useState("");
+  const [erro, setErro] = useState('');
   const { login } = useAuthStore();
   const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setErro("");
-    const msg = login(email, senha);
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors },
+  } = useForm<LoginInput>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', senha: '' },
+  });
+
+  const onSubmit = (data: LoginInput) => {
+    setErro('');
+    const msg = login(data.email, data.senha);
     if (msg) {
       setErro(msg);
     } else {
-      navigate("/");
+      navigate('/');
     }
   };
 
@@ -25,12 +36,8 @@ export function Login() {
       <div className="w-full max-w-md bg-surface rounded-2xl shadow-2xl border border-border p-10 space-y-8 animate-fade-in">
         {/* Brand */}
         <div className="text-center space-y-3">
-          <span className="text-[10px] tracking-[0.3em] font-bold uppercase text-text-faint">
-            XPTO
-          </span>
-          <h1 className="text-4xl font-serif italic tracking-tight text-text">
-            Gestão
-          </h1>
+          <span className="text-[10px] tracking-[0.3em] font-bold uppercase text-text-faint">XPTO</span>
+          <h1 className="text-4xl font-serif italic tracking-tight text-text">Gestão</h1>
           <div className="h-px bg-gradient-to-r from-transparent via-border-strong to-transparent w-full" />
           <p className="text-[10px] text-accent font-bold tracking-[0.18em] uppercase">
             Sistema de Gestão de Ordens de Venda
@@ -38,7 +45,7 @@ export function Login() {
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           {erro && (
             <div
               role="alert"
@@ -49,40 +56,40 @@ export function Login() {
           )}
 
           <div className="space-y-2">
-            <label
-              htmlFor="email"
-              className="text-[10px] font-bold text-text-faint uppercase tracking-widest block"
-            >
+            <label htmlFor="email" className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
               E-mail
             </label>
             <input
               id="email"
               type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              {...register('email')}
               autoFocus
               placeholder="admin@XPTO.local"
               className="w-full bg-canvas border border-border text-text text-sm font-medium rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden transition-all placeholder:text-text-faint"
             />
+            {errors.email && (
+              <p role="alert" className="text-rose-400 text-xs mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <label
-              htmlFor="senha"
-              className="text-[10px] font-bold text-text-faint uppercase tracking-widest block"
-            >
+            <label htmlFor="senha" className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
               Senha
             </label>
             <input
               id="senha"
               type="password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              required
+              {...register('senha')}
               placeholder="••••••••"
               className="w-full bg-canvas border border-border text-text text-sm font-medium rounded-lg px-4 py-3 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden transition-all placeholder:text-text-faint"
             />
+            {errors.senha && (
+              <p role="alert" className="text-rose-400 text-xs mt-1">
+                {errors.senha.message}
+              </p>
+            )}
           </div>
 
           <button
@@ -95,16 +102,14 @@ export function Login() {
 
         {/* Test accounts */}
         <div className="bg-canvas rounded-xl p-5 border border-dashed border-border-strong text-center">
-          <p className="text-[9px] font-bold text-text-faint uppercase tracking-widest mb-3">
-            Credenciais de Acesso
-          </p>
+          <p className="text-[9px] font-bold text-text-faint uppercase tracking-widest mb-3">Credenciais de Acesso</p>
           <div className="flex flex-col gap-2">
             <button
               type="button"
               onClick={() => {
-                setEmail("admin@XPTO.local");
-                setSenha("admin123");
-                setErro("");
+                setValue('email', 'admin@XPTO.local');
+                setValue('senha', 'admin123');
+                setErro('');
               }}
               className="text-xs font-semibold font-mono text-text-muted hover:text-accent hover:bg-hover px-2.5 py-2 border border-border rounded-md transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
             >
@@ -113,9 +118,9 @@ export function Login() {
             <button
               type="button"
               onClick={() => {
-                setEmail("viewer@XPTO.local");
-                setSenha("viewer123");
-                setErro("");
+                setValue('email', 'viewer@XPTO.local');
+                setValue('senha', 'viewer123');
+                setErro('');
               }}
               className="text-xs font-semibold font-mono text-text-muted hover:text-accent hover:bg-hover px-2.5 py-2 border border-border rounded-md transition-all cursor-pointer focus-visible:outline-2 focus-visible:outline-accent"
             >
