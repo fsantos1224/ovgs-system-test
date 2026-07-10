@@ -8,7 +8,7 @@ RUN npm run build
 FROM node:22-alpine AS api
 WORKDIR /app
 COPY package.json package-lock.json ./
-RUN npm ci --omit=dev
+RUN npm ci --omit=dev --ignore-scripts
 COPY server.cjs db.seed.json ./
 RUN mkdir -p data
 EXPOSE 3001
