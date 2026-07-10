@@ -1,15 +1,27 @@
-import { useToastStore, type ToastVariant } from "../stores/toastStore";
+import { useToastStore, type ToastVariant } from '../stores/toastStore';
 
 const variantStyles: Record<ToastVariant, React.CSSProperties> = {
-  success: { backgroundColor: "var(--toast-success-bg)", borderColor: "var(--toast-success-border)", color: "var(--toast-success-text)" },
-  error: { backgroundColor: "var(--toast-error-bg)", borderColor: "var(--toast-error-border)", color: "var(--toast-error-text)" },
-  warning: { backgroundColor: "var(--toast-warning-bg)", borderColor: "var(--toast-warning-border)", color: "var(--toast-warning-text)" },
+  success: {
+    backgroundColor: 'var(--toast-success-bg)',
+    borderColor: 'var(--toast-success-border)',
+    color: 'var(--toast-success-text)',
+  },
+  error: {
+    backgroundColor: 'var(--toast-error-bg)',
+    borderColor: 'var(--toast-error-border)',
+    color: 'var(--toast-error-text)',
+  },
+  warning: {
+    backgroundColor: 'var(--toast-warning-bg)',
+    borderColor: 'var(--toast-warning-border)',
+    color: 'var(--toast-warning-text)',
+  },
 };
 
 const variantIcons: Record<ToastVariant, string> = {
-  success: "✓",
-  error: "✕",
-  warning: "⚠",
+  success: '✓',
+  error: '✕',
+  warning: '⚠',
 };
 
 export function Toaster() {

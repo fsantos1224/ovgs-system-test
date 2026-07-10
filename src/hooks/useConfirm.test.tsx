@@ -1,5 +1,6 @@
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
-import { ConfirmProvider, useConfirm } from './useConfirm';
+import { ConfirmProvider } from './ConfirmContext';
+import { useConfirm } from './useConfirm';
 import { describe, it, expect, afterEach } from 'vitest';
 import * as React from 'react';
 import '@testing-library/jest-dom/vitest';

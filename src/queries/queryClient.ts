@@ -1,5 +1,5 @@
-import { QueryClient } from "@tanstack/react-query";
-import { useToastStore } from "../stores/toastStore";
+import { QueryClient } from '@tanstack/react-query';
+import { useToastStore } from '../stores/toastStore';
 
 export const queryClient = new QueryClient({
   defaultOptions: {
@@ -11,8 +11,8 @@ export const queryClient = new QueryClient({
     },
     mutations: {
       onError: (error) => {
-        const msg = error instanceof Error ? error.message : "Erro desconhecido";
-        useToastStore.getState().addToast(msg, "error");
+        const msg = error instanceof Error ? error.message : 'Erro desconhecido';
+        useToastStore.getState().addToast(msg, 'error');
       },
     },
   },

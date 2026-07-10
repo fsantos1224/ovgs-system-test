@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "mock:api": "node server.cjs",
     "test": "vitest run",
+    "test:details": "vitest run --reporter=verbose --includeTaskLocation",
     "test:e2e": "npx playwright test",
     "dev:full": "concurrently \"npm run dev\" \"npm run mock:api\"",
     "lint": "eslint .",
@@ -16,6 +17,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
+    "quality-gate": "npm run format && npm run lint:fix && npm run typecheck",
     "prepare": "husky"
   },
   "lint-staged": {

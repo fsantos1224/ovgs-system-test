@@ -1,6 +1,6 @@
-import { create } from "zustand";
+import { create } from 'zustand';
 
-type Theme = "dark" | "light";
+type Theme = 'dark' | 'light';
 
 interface UIState {
   theme: Theme;
@@ -15,12 +15,12 @@ interface UIState {
 }
 
 function isMobile(): boolean {
-  if (typeof window === "undefined") return false;
+  if (typeof window === 'undefined') return false;
   return window.innerWidth < 1024;
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  theme: "dark",
+  theme: 'dark',
   sidebarOpen: !isMobile(),
   mobileMenuOpen: false,
   setTheme: (theme) => {

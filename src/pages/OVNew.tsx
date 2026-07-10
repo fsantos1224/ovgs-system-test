@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { useFieldArray, useForm } from 'react-hook-form';
+import { useFieldArray, useForm, useWatch } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { ArrowLeft, Plus, Trash2 } from 'lucide-react';
 import { useClientes, useTransportes, useItens, useCriarOV } from '../queries';
@@ -23,6 +23,28 @@ function formatCurrency(val: number) {
   return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(val / 100);
 }
 
+function buildNovaOV(
+  data: FormData,
+  cliente: { nome: string } | undefined,
+  transporte: { nome: string } | undefined,
+  itensOV: ItemOV[],
+) {
+  return {
+    numero: `OV-${Date.now()}`,
+    clienteId: data.clienteId,
+    nomeCliente: cliente?.nome ?? '',
+    dataEmissao: new Date().toISOString(),
+    dataEntregaPrevista: new Date(data.dataEntregaPrevista).toISOString(),
+    transporteId: data.transporteId,
+    nomeTransporte: transporte?.nome ?? '',
+    status: 'CRIADA' as const,
+    itens: itensOV,
+    valorTotal: itensOV.reduce((acc, i) => acc + i.quantidade * i.precoUnitario, 0),
+    observacoes: data.observacoes || undefined,
+    janelaAtendimento: undefined,
+  };
+}
+
 export function OVNew() {
   const navigate = useNavigate();
   const { data: clientes } = useClientes();
@@ -38,7 +60,6 @@ export function OVNew() {
     register,
     handleSubmit,
     control,
-    watch,
     setError,
     clearErrors,
     setValue,
@@ -48,8 +69,8 @@ export function OVNew() {
     defaultValues: { itens: [{ itemId: '', quantidade: 1 }] },
   });
 
-  const clienteSelecionadoId = watch('clienteId');
-  const transporteSelecionadoId = watch('transporteId');
+  const clienteSelecionadoId = useWatch({ control, name: 'clienteId' });
+  const transporteSelecionadoId = useWatch({ control, name: 'transporteId' });
 
   const clienteSelecionado = useMemo(
     () => clientes?.find((c) => c.id === clienteSelecionadoId),
@@ -66,7 +87,7 @@ export function OVNew() {
 
   const { fields, append, remove } = useFieldArray({ control, name: 'itens' });
 
-  const watchedItens = watch('itens');
+  const watchedItens = useWatch({ control, name: 'itens' });
   const valorEstimado = (watchedItens ?? []).reduce((acc, it) => {
     const item = itensMap.get(it.itemId);
     return acc + (item?.precoUnitario ?? 0) * (it.quantidade || 0);
@@ -99,20 +120,7 @@ export function OVNew() {
     const cliente = clientes?.find((c) => c.id === data.clienteId);
     const transporte = transportes?.find((t) => t.id === data.transporteId);
 
-    const novaOV = {
-      numero: `OV-${Date.now()}`,
-      clienteId: data.clienteId,
-      nomeCliente: cliente?.nome ?? '',
-      dataEmissao: new Date().toISOString(),
-      dataEntregaPrevista: new Date(data.dataEntregaPrevista).toISOString(),
-      transporteId: data.transporteId,
-      nomeTransporte: transporte?.nome ?? '',
-      status: 'CRIADA' as const,
-      itens: itensOV,
-      valorTotal: itensOV.reduce((acc, i) => acc + i.quantidade * i.precoUnitario, 0),
-      observacoes: data.observacoes || undefined,
-      janelaAtendimento: undefined,
-    };
+    const novaOV = buildNovaOV(data, cliente, transporte, itensOV);
 
     try {
       await criarOV.mutateAsync({ data: novaOV, headers: { 'idempotency-key': idempotencyKey } });

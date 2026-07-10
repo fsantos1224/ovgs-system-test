@@ -1,58 +1,51 @@
-import { useNavigate } from "react-router-dom";
-import { useOrdensVenda } from "../queries";
-import type { OrdemVendaResponse } from "../schemas/ordemVenda";
-import type { OVStatus } from "../domain/types";
-import { statusLabel } from "../domain/types";
-import { ArrowRight } from "lucide-react";
-import { Breadcrumbs } from "../components/Breadcrumbs";
+import { useNavigate } from 'react-router-dom';
+import { useOrdensVenda } from '../queries';
+import type { OrdemVendaResponse } from '../schemas/ordemVenda';
+import type { OVStatus } from '../domain/types';
+import { statusLabel } from '../domain/types';
+import { ArrowRight } from 'lucide-react';
+import { Breadcrumbs } from '../components/Breadcrumbs';
 
 const STATUS_BADGE: Record<OVStatus, string> = {
-  CRIADA:
-    "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
+  CRIADA: 'dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300',
   PLANEJADA:
-    "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
-  AGENDADA:
-    "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
+    'dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200',
+  AGENDADA: 'dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200',
   EM_TRANSPORTE:
-    "dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-500/20 bg-purple-50 text-purple-700 border-purple-200",
+    'dark:bg-purple-950/30 dark:text-purple-300 dark:border-purple-500/20 bg-purple-50 text-purple-700 border-purple-200',
   ENTREGUE:
-    "dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-500/20 bg-emerald-50 text-emerald-700 border-emerald-200",
+    'dark:bg-emerald-950/30 dark:text-emerald-300 dark:border-emerald-500/20 bg-emerald-50 text-emerald-700 border-emerald-200',
 };
 
 const STATUS_ACCENT: Record<string, string> = {
-  CRIADA: "text-amber-500",
-  PLANEJADA: "text-amber-500",
-  AGENDADA: "text-blue-500",
-  EM_TRANSPORTE: "text-purple-500",
-  ENTREGUE: "text-emerald-500",
+  CRIADA: 'text-amber-500',
+  PLANEJADA: 'text-amber-500',
+  AGENDADA: 'text-blue-500',
+  EM_TRANSPORTE: 'text-purple-500',
+  ENTREGUE: 'text-emerald-500',
 };
 
 const STATUS_BAR: Record<string, string> = {
-  CRIADA: "bg-amber-500",
-  PLANEJADA: "bg-amber-500",
-  AGENDADA: "bg-blue-500",
-  EM_TRANSPORTE: "bg-purple-500",
-  ENTREGUE: "bg-emerald-500",
+  CRIADA: 'bg-amber-500',
+  PLANEJADA: 'bg-amber-500',
+  AGENDADA: 'bg-blue-500',
+  EM_TRANSPORTE: 'bg-purple-500',
+  ENTREGUE: 'bg-emerald-500',
 };
 
-const STATUS_ORDER: OVStatus[] = [
-  "AGENDADA",
-  "CRIADA",
-  "EM_TRANSPORTE",
-  "ENTREGUE",
-];
+const STATUS_ORDER: OVStatus[] = ['AGENDADA', 'CRIADA', 'EM_TRANSPORTE', 'ENTREGUE'];
 
 function formatCurrency(val: number) {
-  return new Intl.NumberFormat("pt-BR", {
-    style: "currency",
-    currency: "BRL",
+  return new Intl.NumberFormat('pt-BR', {
+    style: 'currency',
+    currency: 'BRL',
   }).format(val / 100);
 }
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr);
   if (isNaN(d.getTime())) return dateStr;
-  return d.toLocaleDateString("pt-BR");
+  return d.toLocaleDateString('pt-BR');
 }
 
 export function Dashboard() {
@@ -79,9 +72,7 @@ export function Dashboard() {
       {/* Editorial Header */}
       <div className="border-b border-border pb-4 md:pb-6">
         <Breadcrumbs />
-        <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
-          Dashboard
-        </h1>
+        <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">Dashboard</h1>
         <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
           Visão analítica das suas operações, ordens e fluxo logístico.
         </p>
@@ -97,18 +88,12 @@ export function Dashboard() {
               className="bg-surface rounded-xl border border-border p-4 md:p-6 relative overflow-hidden flex flex-col justify-between h-28 md:h-32 transition-all duration-200 hover:border-border-strong"
             >
               <div>
-                <span
-                  className={`text-2xl md:text-4xl font-serif italic ${STATUS_ACCENT[status]}`}
-                >
-                  {count}
-                </span>
+                <span className={`text-2xl md:text-4xl font-serif italic ${STATUS_ACCENT[status]}`}>{count}</span>
                 <p className="text-[10px] uppercase tracking-widest text-text-faint font-bold mt-2 md:mt-2.5">
                   {statusLabel(status)}
                 </p>
               </div>
-              <div
-                className={`absolute bottom-0 left-0 right-0 h-[3px] ${STATUS_BAR[status]}`}
-              />
+              <div className={`absolute bottom-0 left-0 right-0 h-[3px] ${STATUS_BAR[status]}`} />
             </div>
           );
         })}
@@ -120,9 +105,7 @@ export function Dashboard() {
           <h2 className="text-[11px] md:text-sm uppercase tracking-widest font-bold text-text">
             Últimas Ordens de Venda
           </h2>
-          <span className="text-[10px] uppercase tracking-widest text-text-faint">
-            {ordens?.length ?? 0} registros
-          </span>
+          <span className="text-[10px] uppercase tracking-widest text-text-faint">{ordens?.length ?? 0} registros</span>
         </div>
 
         {/* Desktop table */}
@@ -144,12 +127,8 @@ export function Dashboard() {
                   onClick={() => navigate(`/ovs/${ov.id}`)}
                   className="hover:bg-hover transition-colors duration-150 cursor-pointer"
                 >
-                  <td className="px-5 py-4 font-bold text-text font-mono truncate">
-                    {ov.numero}
-                  </td>
-                  <td className="px-5 py-4 text-text-muted font-medium truncate">
-                    {ov.nomeCliente}
-                  </td>
+                  <td className="px-5 py-4 font-bold text-text font-mono truncate">{ov.numero}</td>
+                  <td className="px-5 py-4 text-text-muted font-medium truncate">{ov.nomeCliente}</td>
                   <td className="px-5 py-4">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${STATUS_BADGE[ov.status]}`}
@@ -167,10 +146,7 @@ export function Dashboard() {
               ))}
               {ordens?.length === 0 && (
                 <tr>
-                  <td
-                    colSpan={5}
-                    className="px-6 py-12 text-center text-text-subtle italic"
-                  >
+                  <td colSpan={5} className="px-6 py-12 text-center text-text-subtle italic">
                     Nenhuma ordem de venda registrada.
                   </td>
                 </tr>
@@ -189,12 +165,8 @@ export function Dashboard() {
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <span className="text-sm font-bold text-text font-mono">
-                    {ov.numero}
-                  </span>
-                  <p className="text-xs text-text-muted font-medium mt-0.5">
-                    {ov.nomeCliente}
-                  </p>
+                  <span className="text-sm font-bold text-text font-mono">{ov.numero}</span>
+                  <p className="text-xs text-text-muted font-medium mt-0.5">{ov.nomeCliente}</p>
                 </div>
                 <span
                   className={`inline-block px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 ${STATUS_BADGE[ov.status]}`}
@@ -204,28 +176,18 @@ export function Dashboard() {
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
-                  <span className="text-[9px] uppercase tracking-wider text-text-faint">
-                    Valor
-                  </span>
-                  <p className="font-bold text-accent font-mono mt-0.5">
-                    {formatCurrency(ov.valorTotal)}
-                  </p>
+                  <span className="text-[9px] uppercase tracking-wider text-text-faint">Valor</span>
+                  <p className="font-bold text-accent font-mono mt-0.5">{formatCurrency(ov.valorTotal)}</p>
                 </div>
                 <div>
-                  <span className="text-[9px] uppercase tracking-wider text-text-faint">
-                    Previsão
-                  </span>
-                  <p className="text-text-subtle font-mono mt-0.5">
-                    {formatDate(ov.dataEmissao)}
-                  </p>
+                  <span className="text-[9px] uppercase tracking-wider text-text-faint">Previsão</span>
+                  <p className="text-text-subtle font-mono mt-0.5">{formatDate(ov.dataEmissao)}</p>
                 </div>
               </div>
             </div>
           ))}
           {ordens?.length === 0 && (
-            <div className="px-6 py-12 text-center text-text-subtle italic">
-              Nenhuma ordem de venda registrada.
-            </div>
+            <div className="px-6 py-12 text-center text-text-subtle italic">Nenhuma ordem de venda registrada.</div>
           )}
         </div>
 
@@ -235,7 +197,7 @@ export function Dashboard() {
           </span>
           <button
             type="button"
-            onClick={() => navigate("/ovs")}
+            onClick={() => navigate('/ovs')}
             className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-accent hover:text-on-accent hover:bg-accent px-3 py-1.5 rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-accent"
           >
             Ver todas as ordens

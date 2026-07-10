@@ -172,22 +172,22 @@ This spec has **two seams** with different heights:
 
 The primary seam for all 7 increments. Justification: every increment is UI-layer (toaster, modal, bulk select, breadcrumb, color). The Playwright suite already runs against the full stack (`webServer` in `playwright.config.ts`). One E2E per increment covers the visible behavior end-to-end.
 
-| Increment | E2E coverage |
-|---|---|
-| Toaster | Click "Criar" → assert `[role="status"]` toast text appears |
+| Increment   | E2E coverage                                                                                             |
+| ----------- | -------------------------------------------------------------------------------------------------------- |
+| Toaster     | Click "Criar" → assert `[role="status"]` toast text appears                                              |
 | Confirmação | Click "Excluir" → assert modal opens, click Cancel → assert no row gone, click Confirm → assert row gone |
-| Ações | Click Edit/Delete buttons → assert correct navigation/modal |
-| Bulk delete | Tick 2 checkboxes + "Excluir selecionados" → confirm → assert two rows gone + toast with count=2 |
-| Breadcrumbs | Navigate to `/ovs/:id` → assert breadcrumb has 3 items with correct labels |
-| Dark accent | `npm run build` + `page.screenshot()` of dark theme → visual review (manual check on PR) |
+| Ações       | Click Edit/Delete buttons → assert correct navigation/modal                                              |
+| Bulk delete | Tick 2 checkboxes + "Excluir selecionados" → confirm → assert two rows gone + toast with count=2         |
+| Breadcrumbs | Navigate to `/ovs/:id` → assert breadcrumb has 3 items with correct labels                               |
+| Dark accent | `npm run build` + `page.screenshot()` of dark theme → visual review (manual check on PR)                 |
 
 #### Seam 2 (lower, focused): Unit tests for new hooks
 
 Only `useConfirm` and `useBreadcrumbs` get unit tests, because they are the only logic-bearing artifacts introduced that are testable in isolation without spinning up a full server.
 
-| Hook | Test |
-|---|---|
-| `useConfirm()` | Returns a function. Calling it resolves to `true` on confirm, `false` on cancel. (Tested via `renderHook` + provider wrapper.) |
+| Hook               | Test                                                                                                                                                                |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `useConfirm()`     | Returns a function. Calling it resolves to `true` on confirm, `false` on cancel. (Tested via `renderHook` + provider wrapper.)                                      |
 | `useBreadcrumbs()` | Given mocked `useMatches()` returning [{handle: {crumb: () => "A"}}, {handle: {crumb: () => "B"}}], returns `[{label: "A", href: "/a"}, {label: "B", href: "/b"}]`. |
 
 #### What is NOT tested at any seam
@@ -251,6 +251,7 @@ If this coupling becomes a problem in the future (e.g. background sync), the wra
 ### Visual review at PR time
 
 Two PR-level visual checks are out of scope for automation:
+
 - Confirm dark theme's Blue accent is "on-brand" (reviewer judgment)
 - Confirm light theme is unaffected
 

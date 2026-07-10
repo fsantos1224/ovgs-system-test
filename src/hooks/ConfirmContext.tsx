@@ -1,7 +1,7 @@
-import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from "react";
-import { Modal } from "../components/Modal";
+import { createContext, useCallback, useMemo, useState, type ReactNode } from 'react';
+import { Modal } from '../components/Modal';
 
-export type ConfirmVariant = "default" | "danger";
+export type ConfirmVariant = 'default' | 'danger';
 
 export interface ConfirmOptions {
   title: string;
@@ -32,27 +32,19 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const close = useCallback(
-    (result: boolean) => {
-      setPending((current) => {
-        current?.resolve(result);
-        return null;
-      });
-    },
-    [],
-  );
+  const close = useCallback((result: boolean) => {
+    setPending((current) => {
+      current?.resolve(result);
+      return null;
+    });
+  }, []);
 
   const value = useMemo(() => ({ confirm }), [confirm]);
 
   return (
     <ConfirmContext.Provider value={value}>
       {children}
-      <Modal
-        open={pending !== null}
-        title={pending?.title ?? ""}
-        onClose={() => close(false)}
-        role="alertdialog"
-      >
+      <Modal open={pending !== null} title={pending?.title ?? ''} onClose={() => close(false)} role="alertdialog">
         {pending && (
           <div className="space-y-5">
             <div className="text-sm text-text-muted">{pending.body}</div>
@@ -62,18 +54,18 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 onClick={() => close(false)}
                 className="px-4 py-2 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted focus-visible:outline-2 focus-visible:outline-accent"
               >
-                {pending.cancelLabel ?? "Cancelar"}
+                {pending.cancelLabel ?? 'Cancelar'}
               </button>
               <button
                 type="button"
                 onClick={() => close(true)}
                 className={
-                  pending.variant === "danger"
-                    ? "px-4 py-2 bg-rose-600 text-white border border-rose-600 hover:bg-rose-700 hover:border-rose-700 rounded-lg text-[10px] uppercase tracking-wider font-bold focus-visible:outline-2 focus-visible:outline-rose-400 transition-colors"
-                    : "px-4 py-2 bg-accent text-on-accent hover:opacity-90 rounded-lg text-[10px] uppercase tracking-wider font-bold focus-visible:outline-2 focus-visible:outline-accent transition-opacity"
+                  pending.variant === 'danger'
+                    ? 'px-4 py-2 bg-rose-600 text-white border border-rose-600 hover:bg-rose-700 hover:border-rose-700 rounded-lg text-[10px] uppercase tracking-wider font-bold focus-visible:outline-2 focus-visible:outline-rose-400 transition-colors'
+                    : 'px-4 py-2 bg-accent text-on-accent hover:opacity-90 rounded-lg text-[10px] uppercase tracking-wider font-bold focus-visible:outline-2 focus-visible:outline-accent transition-opacity'
                 }
               >
-                {pending.confirmLabel ?? "Confirmar"}
+                {pending.confirmLabel ?? 'Confirmar'}
               </button>
             </div>
           </div>
@@ -83,10 +75,5 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
   );
 }
 
-export function useConfirm(): ConfirmContextValue["confirm"] {
-  const ctx = useContext(ConfirmContext);
-  if (!ctx) {
-    throw new Error("useConfirm deve ser usado dentro de <ConfirmProvider>");
-  }
-  return ctx.confirm;
-}
+export { ConfirmContext };
+export type { ConfirmContextValue };

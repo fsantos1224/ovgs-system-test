@@ -338,7 +338,7 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 | Playwright + RTL                            | Testes de componente com RTL + E2E com Playwright. Submissão RHF tem limitação conhecida.                    |
 | Autenticação fake (localStorage)            | Simulada para demonstrar RBAC. Sem JWT, sem OAuth. Persistência via localStorage (5 linhas, sem middleware). |
 | Web Vitals nativos vs PostHog/Sentry        | Dados apenas no console em dev. Sem telemetria remota.                                                       |
-| Docker com `npm install` em vez de `npm ci` | Lockfile incompatível com esbuild linux.                                          |
+| Docker com `npm install` em vez de `npm ci` | Lockfile incompatível com esbuild linux.                                                                     |
 
 ---
 

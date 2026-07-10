@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { X } from "lucide-react";
+import { useEffect, useRef } from 'react';
+import { X } from 'lucide-react';
 
 interface ModalProps {
   open: boolean;
@@ -10,7 +10,7 @@ interface ModalProps {
 }
 
 export function Modal({ open, title, onClose, children, role: roleProp }: ModalProps) {
-  const role = roleProp || "dialog";
+  const role = roleProp || 'dialog';
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closingRef = useRef(false);
 
@@ -19,20 +19,20 @@ export function Modal({ open, title, onClose, children, role: roleProp }: ModalP
     if (!el) return;
     if (open && !el.open) {
       closingRef.current = false;
-      el.classList.remove("modal-closing");
+      el.classList.remove('modal-closing');
       el.showModal();
     }
     if (!open && el.open && !closingRef.current) {
       closingRef.current = true;
-      el.classList.add("modal-closing");
+      el.classList.add('modal-closing');
       el.close();
       const onAnimEnd = () => {
-        el.classList.remove("modal-closing");
-        el.style.display = "";
+        el.classList.remove('modal-closing');
+        el.style.display = '';
         closingRef.current = false;
-        el.removeEventListener("animationend", onAnimEnd);
+        el.removeEventListener('animationend', onAnimEnd);
       };
-      el.addEventListener("animationend", onAnimEnd);
+      el.addEventListener('animationend', onAnimEnd);
     }
   }, [open]);
 
@@ -42,8 +42,8 @@ export function Modal({ open, title, onClose, children, role: roleProp }: ModalP
     const handler = () => {
       if (!closingRef.current) onClose();
     };
-    el.addEventListener("close", handler);
-    return () => el.removeEventListener("close", handler);
+    el.addEventListener('close', handler);
+    return () => el.removeEventListener('close', handler);
   }, [onClose]);
 
   return (
@@ -55,7 +55,9 @@ export function Modal({ open, title, onClose, children, role: roleProp }: ModalP
       aria-labelledby="modal-title"
     >
       <div className="p-5 md:p-6 border-b border-border bg-surface-elevated flex justify-between items-center sticky top-0 z-10">
-        <h2 id="modal-title" className="text-base md:text-lg font-serif italic text-text">{title}</h2>
+        <h2 id="modal-title" className="text-base md:text-lg font-serif italic text-text">
+          {title}
+        </h2>
         <button
           onClick={onClose}
           aria-label="Fechar"

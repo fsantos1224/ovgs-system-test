@@ -1,7 +1,7 @@
 # Ticket 1 — Stack Frontend
 
 - **Tipo:** `wayfinder:grilling`
-- **Bloqueado por:** *(nenhum — raiz)*
+- **Bloqueado por:** _(nenhum — raiz)_
 
 ## Questão
 
@@ -24,6 +24,7 @@ Stack confirmada e implementada:
 - **concurrently** — `dev:full` roda Vite + json-server em paralelo
 
 Estrutura de pastas criada:
+
 ```
 src/
 ├── domain/types.ts
@@ -39,6 +40,7 @@ src/
 Dados mock: 3 clientes, 3 transportes, 5 itens, 3 OVs (rascunho, confirmada, em_transporte), 3 eventos de auditoria.
 
 ### Decisões
+
 - `as const` no array de transições para evitar widening de string literal no TypeScript strict
 - RBAC hardcoded como objeto — sem Context/Provider (YAGNI até vir da API)
 - fetch wrapper minimalista sem axios — `apiGet`, `apiPost`, `apiPut`, `apiPatch`, `apiDelete`

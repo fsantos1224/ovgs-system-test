@@ -1,9 +1,9 @@
-import pino from "pino";
+import pino from 'pino';
 
-const isBrowser = typeof window !== "undefined";
+const isBrowser = typeof window !== 'undefined';
 
 export const logger = pino({
-  level: import.meta.env.DEV ? "debug" : "info",
+  level: import.meta.env.DEV ? 'debug' : 'info',
   browser: isBrowser
     ? {
         asObject: true,

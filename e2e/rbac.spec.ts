@@ -1,68 +1,69 @@
 // E2E: RBAC — viewer não vê botão "Nova OV", admin vê
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from '@playwright/test';
 
-async function login(page: any, email: string) {
+async function login(page: Page, email: string) {
   const senhas: Record<string, string> = {
-    "admin@XPTO.local": "admin123",
-    "viewer@XPTO.local": "viewer123",
+    'admin@XPTO.local': 'admin123',
+    'viewer@XPTO.local': 'viewer123',
   };
-  await page.goto("/");
-  await page.evaluate(({ e, s }: { e: string; s: string }) => {
-    (window as any).__login(e, s);
-  }, { e: email, s: senhas[email] });
+  await page.goto('/');
+  await page.evaluate(
+    ({ e, s }: { e: string; s: string }) => {
+      (window as unknown as { __login: (email: string, password: string) => void }).__login(e, s);
+    },
+    { e: email, s: senhas[email] },
+  );
   await page.reload();
 }
 
-test.describe("RBAC — autorização por role", () => {
-  test("viewer não vê botão de criar OV", async ({ page }) => {
-    await login(page, "viewer@XPTO.local");
+test.describe('RBAC — autorização por role', () => {
+  test('viewer não vê botão de criar OV', async ({ page }) => {
+    await login(page, 'viewer@XPTO.local');
 
-    await page.goto("/ovs");
-    await page.waitForLoadState("domcontentloaded").catch(() => {});
+    await page.goto('/ovs');
+    await page.waitForLoadState('domcontentloaded').catch(() => {});
 
-    const btn = page.getByRole("link", { name: /nova ordem/i });
+    const btn = page.getByRole('link', { name: /nova ordem/i });
     await expect(btn).toHaveCount(0);
   });
 
-  test("admin vê botão de criar OV", async ({ page }) => {
-    await login(page, "admin@XPTO.local");
+  test('admin vê botão de criar OV', async ({ page }) => {
+    await login(page, 'admin@XPTO.local');
 
-    await page.goto("/ovs");
-    await page.waitForLoadState("domcontentloaded", { timeout: 15000 }).catch(() => {});
+    await page.goto('/ovs');
+    await page.waitForLoadState('domcontentloaded', { timeout: 15000 }).catch(() => {});
     await page.waitForTimeout(5000);
 
     const html = await page.content();
-    console.log("=== PAGE URL ===", page.url());
-    if (html.includes("Carregando")) console.log("^^^ STILL LOADING");
-    if (html.includes("Login")) console.log("^^^ ON LOGIN PAGE");
-    if (html.includes("Nova OV")) console.log("^^^ BUTTON FOUND IN HTML");
+    console.log('=== PAGE URL ===', page.url());
+    if (html.includes('Carregando')) console.log('^^^ STILL LOADING');
+    if (html.includes('Login')) console.log('^^^ ON LOGIN PAGE');
+    if (html.includes('Nova OV')) console.log('^^^ BUTTON FOUND IN HTML');
 
-    const btn = page.getByRole("link", { name: /nova ordem/i });
+    const btn = page.getByRole('link', { name: /nova ordem/i });
     await expect(btn).toBeVisible({ timeout: 10000 });
   });
 
-  test("admin pode criar OV e ver na listagem", async ({ page }) => {
+  test('admin pode criar OV e ver na listagem', async ({ page }) => {
     const errors: string[] = [];
-    page.on("pageerror", (e) => errors.push(e.message));
-    page.on("console", (msg) => {
-      if (msg.type() === "error") errors.push(msg.text());
+    page.on('pageerror', (e) => errors.push(e.message));
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text());
     });
 
-    await login(page, "admin@XPTO.local");
-    await page.waitForLoadState("domcontentloaded").catch(() => {});
+    await login(page, 'admin@XPTO.local');
+    await page.waitForLoadState('domcontentloaded').catch(() => {});
 
-    await page.goto("/ovs/nova");
-    await page.waitForLoadState("domcontentloaded").catch(() => {});
+    await page.goto('/ovs/nova');
+    await page.waitForLoadState('domcontentloaded').catch(() => {});
 
     const selectLoaded = await page.waitForFunction(() => {
-      const sel = document.querySelector<HTMLSelectElement>(
-        'select[name="clienteId"]',
-      );
+      const sel = document.querySelector<HTMLSelectElement>('select[name="clienteId"]');
       return sel && sel.options.length > 1;
     });
-    console.log("Select loaded:", !!selectLoaded);
+    console.log('Select loaded:', !!selectLoaded);
 
     await page.waitForTimeout(500);
-    console.log("JS errors:", JSON.stringify(errors));
+    console.log('JS errors:', JSON.stringify(errors));
   });
 });

@@ -1,9 +1,9 @@
-import { z } from "zod";
+import { z } from 'zod';
 
-export const modalEnum = z.enum(["rodoviario", "aereo", "maritimo", "ferroviario"]);
+export const modalEnum = z.enum(['rodoviario', 'aereo', 'maritimo', 'ferroviario']);
 
 const transporteBaseSchema = z.object({
-  nome: z.string().min(2, "Nome deve ter no mínimo 2 caracteres").max(100, "Nome muito longo"),
+  nome: z.string().min(2, 'Nome deve ter no mínimo 2 caracteres').max(100, 'Nome muito longo'),
   modal: modalEnum,
   ativo: z.boolean(),
 });
