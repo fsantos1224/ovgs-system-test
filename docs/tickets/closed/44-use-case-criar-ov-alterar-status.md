@@ -43,9 +43,18 @@ Side-effects de toast e invalidação de cache ficam nos hooks (não nos use cas
 
 ## Critérios de aceitação
 
-- [ ] `CriarOrdemVendaUseCase` em `application/use-cases/`
-- [ ] `AlterarStatusOVUseCase` em `application/use-cases/`
-- [ ] Hooks de UI consomem use cases
-- [ ] Testes unitários com mock — sucesso + 2 cenários de erro cada
-- [ ] Fluxo E2E (criar OV + alterar status) continua funcionando
-- [ ] `tsc --noEmit` + `vitest run` verdes
+- [x] `CriarOrdemVendaUseCase` em `application/use-cases/`
+- [x] `AlterarStatusOVUseCase` em `application/use-cases/`
+- [x] Hooks de UI consomem use cases
+- [x] Testes unitários com mock — sucesso + 2 cenários de erro cada
+- [x] Fluxo E2E (criar OV + alterar status) continua funcionando
+- [x] `tsc --noEmit` + `vitest run` (45/45) + `build` verdes
+
+## Resolução
+
+- `CriarOrdemVendaUseCase` e `AlterarStatusOVUseCase` criados em `application/use-cases/`
+- `useOrdensVenda.ts` migrado para instanciar os use cases no módulo (singleton) e chamá-los nas mutations
+- `AlterarStatusOVUseCase` valida `canTransition` antes de chamar o repositório
+- CriarOrdemVendaUseCase repassa chamada ao repositório com suporte a headers extras (idempotência)
+- 6 testes unitários (3 por use case): sucesso, erro de negócio, propagação de erro
+- tsc, vitest (45/45), build verificados

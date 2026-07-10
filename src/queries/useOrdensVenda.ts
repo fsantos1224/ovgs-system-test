@@ -1,6 +1,8 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { keepPreviousData } from '@tanstack/react-query';
 import { OrdemVendaRepository } from '../infrastructure/repositories/OrdemVendaRepository';
+import { CriarOrdemVendaUseCase } from '../application/use-cases/CriarOrdemVendaUseCase';
+import { AlterarStatusOVUseCase } from '../application/use-cases/AlterarStatusOVUseCase';
 import type { IOrdemVendaRepository, CriarOVPayload } from '../application/ports/IOrdemVendaRepository';
 import type { ListarOVParams } from '../application/ports/DTOs';
 import type { OVStatus } from '../domain/entities/OrdemVenda';
@@ -9,6 +11,8 @@ import { useToast } from '../stores/toastStore';
 const KEY = 'ordensVenda';
 
 const repo: IOrdemVendaRepository = new OrdemVendaRepository();
+const criarOV = new CriarOrdemVendaUseCase(repo);
+const alterarStatusOV = new AlterarStatusOVUseCase(repo);
 
 export { type CriarOVPayload };
 
@@ -33,7 +37,7 @@ export function useCriarOV() {
   const toast = useToast();
   return useMutation({
     mutationFn: ({ data, headers }: { data: CriarOVPayload; headers?: Record<string, string> }) =>
-      repo.criar(data, headers),
+      criarOV.executar(data, headers),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('OV criada.');
@@ -73,7 +77,7 @@ export function useAlterarStatusOV() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: OVStatus }) => repo.alterarStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: OVStatus }) => alterarStatusOV.executar(id, status),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('OV status alterado.');
