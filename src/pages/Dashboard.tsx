@@ -3,6 +3,7 @@ import { useOrdensVenda } from "../queries";
 import type { OrdemVendaResponse } from "../schemas/ordemVenda";
 import type { OVStatus } from "../domain/types";
 import { statusLabel } from "../domain/types";
+import { ArrowRight } from "lucide-react";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
   CRIADA:
@@ -130,11 +131,11 @@ export function Dashboard() {
           <table className="w-full text-left border-collapse table-fixed">
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                <th className="px-4 py-4 w-[18%]">Número</th>
-                <th className="px-4 py-4 w-[28%]">Cliente</th>
-                <th className="px-4 py-4 w-[18%]">Status</th>
-                <th className="px-4 py-4 w-[18%] text-right">Valor</th>
-                <th className="px-4 py-4 w-[18%]">Previsão</th>
+                <th className="px-5 py-4 w-[18%]">Número</th>
+                <th className="px-5 py-4 w-[30%]">Cliente</th>
+                <th className="px-5 py-4 w-[20%]">Status</th>
+                <th className="px-5 py-4 w-[16%] text-right">Valor</th>
+                <th className="px-5 py-4 w-[16%] text-right">Previsão</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
@@ -144,23 +145,23 @@ export function Dashboard() {
                   onClick={() => navigate(`/ovs/${ov.id}`)}
                   className="hover:bg-hover transition-colors duration-150 cursor-pointer"
                 >
-                  <td className="px-4 py-4 font-bold text-text font-mono truncate">
+                  <td className="px-5 py-4 font-bold text-text font-mono truncate">
                     {ov.numero}
                   </td>
-                  <td className="px-4 py-4 text-text-muted font-medium truncate">
+                  <td className="px-5 py-4 text-text-muted font-medium truncate">
                     {ov.nomeCliente}
                   </td>
-                  <td className="px-4 py-4">
+                  <td className="px-5 py-4">
                     <span
-                      className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider whitespace-nowrap ${STATUS_BADGE[ov.status]}`}
                     >
                       {statusLabel(ov.status)}
                     </span>
                   </td>
-                  <td className="px-4 py-4 text-right font-bold text-accent font-mono truncate">
+                  <td className="px-5 py-4 text-right font-bold text-accent font-mono tabular-nums truncate">
                     {formatCurrency(ov.valorTotal)}
                   </td>
-                  <td className="px-4 py-4 text-text-subtle font-mono truncate">
+                  <td className="px-5 py-4 text-right text-text-subtle font-mono tabular-nums truncate">
                     {formatDate(ov.dataEmissao)}
                   </td>
                 </tr>
@@ -227,6 +228,20 @@ export function Dashboard() {
               Nenhuma ordem de venda registrada.
             </div>
           )}
+        </div>
+
+        <div className="border-t border-border bg-surface-elevated/20 px-4 md:px-6 py-3 flex items-center justify-between">
+          <span className="text-[10px] uppercase tracking-widest text-text-faint font-bold">
+            Mostrando {Math.min(5, ordens?.length ?? 0)} de {ordens?.length ?? 0}
+          </span>
+          <button
+            type="button"
+            onClick={() => navigate("/ovs")}
+            className="inline-flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-accent hover:text-on-accent hover:bg-accent px-3 py-1.5 rounded-md transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+          >
+            Ver todas as ordens
+            <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+          </button>
         </div>
       </div>
     </div>
