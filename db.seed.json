@@ -3,9 +3,9 @@
     {
       "id": "3807a2e0-a50c-44eb-996c-137a66208bb4",
       "nome": "Empresa Alpha Ltda",
-      "documento": "12.345.678/0001-90",
+      "documento": "12345678000190",
       "email": "contato@alpha.com",
-      "telefone": "(11) 9999-8888",
+      "telefone": "1199998888",
       "endereco": "Rua A, 123",
       "ativo": true,
       "transportesAutorizados": ["5d0ba737-ca73-4b17-85ba-fb2b5c88aaa5", "d7d43ad0-0800-44c7-abe5-4b1912a510d6"]
@@ -13,9 +13,9 @@
     {
       "id": "23f952b1-4a80-4c7f-8711-a4460bcc823d",
       "nome": "Beta Comércio S.A.",
-      "documento": "98.765.432/0001-10",
+      "documento": "98765432000110",
       "email": "vendas@beta.com",
-      "telefone": "(21) 7777-6666",
+      "telefone": "2177776666",
       "endereco": "Av. B, 456",
       "ativo": true,
       "transportesAutorizados": ["348e50db-e7cf-4df4-9485-35a14977dda2"]
@@ -23,9 +23,9 @@
     {
       "id": "54e93cf2-0565-4f57-ba1a-cf475f3f8929",
       "nome": "Gamma Distribuidora",
-      "documento": "55.555.555/0001-55",
+      "documento": "55555555000155",
       "email": "admin@gamma.com",
-      "telefone": "(31) 5555-4444",
+      "telefone": "3155554444",
       "endereco": "Rua C, 789",
       "ativo": false,
       "transportesAutorizados": ["d7d43ad0-0800-44c7-abe5-4b1912a510d6"]
@@ -33,9 +33,9 @@
     {
       "id": "45b427ac-7e4b-48f8-9830-ac23d0e9beff",
       "nome": "Delta Logística ME",
-      "documento": "11.222.333/0001-44",
+      "documento": "11222333000144",
       "email": "delta@log.com",
-      "telefone": "(41) 3333-2222",
+      "telefone": "4133332222",
       "endereco": "Av. D, 1010",
       "ativo": true,
       "transportesAutorizados": [
@@ -47,9 +47,9 @@
     {
       "id": "17949959-66d5-441a-b790-feac1190414e",
       "nome": "Epsilon Materiais Elétricos",
-      "documento": "66.777.888/0001-99",
+      "documento": "66777888000199",
       "email": "vendas@epsilon.com",
-      "telefone": "(51) 4444-5555",
+      "telefone": "5144445555",
       "endereco": "Rua E, 2020",
       "ativo": true,
       "transportesAutorizados": [
@@ -61,9 +61,9 @@
     {
       "id": "11eb2a8d-a8fa-4243-9cfb-268e7cccdd8f",
       "nome": "Zeta Alimentos Ltda",
-      "documento": "11.223.344/0001-55",
+      "documento": "11223344000155",
       "email": "zeta@alimentos.com",
-      "telefone": "(61) 3333-1111",
+      "telefone": "6133331111",
       "endereco": "Rua das Indústrias, 500",
       "ativo": true,
       "transportesAutorizados": ["c6188d4b-33f3-4cd5-add2-eb10a64798e2"]
@@ -71,9 +71,9 @@
     {
       "id": "6f75ecec-2aee-499d-b60c-7df310e074ff",
       "nome": "Eta Transportes Ltda",
-      "documento": "22.334.455/0001-66",
+      "documento": "22334455000166",
       "email": "frota@eta.com",
-      "telefone": "(71) 2222-3333",
+      "telefone": "7122223333",
       "endereco": "Av. Logística, 1500",
       "ativo": true,
       "transportesAutorizados": [
@@ -85,9 +85,9 @@
     {
       "id": "1ccff193-9cd1-41dc-9f85-34a5714a989c",
       "nome": "Theta Comércio Atacadista",
-      "documento": "33.445.566/0001-77",
+      "documento": "33445566000177",
       "email": "compras@theta.com",
-      "telefone": "(81) 4444-5555",
+      "telefone": "8144445555",
       "endereco": "Rua do Comércio, 800",
       "ativo": true,
       "transportesAutorizados": [
@@ -99,9 +99,9 @@
     {
       "id": "a1fe4bc9-2a1e-4f8f-a45d-a2050c16460a",
       "nome": "Iota Materiais de Construção",
-      "documento": "44.556.677/0001-88",
+      "documento": "44556677000188",
       "email": "obras@iota.com",
-      "telefone": "(91) 6666-7777",
+      "telefone": "9166667777",
       "endereco": "Av. das Obras, 320",
       "ativo": true,
       "transportesAutorizados": [
@@ -113,9 +113,9 @@
     {
       "id": "139ef6ad-d59b-45bd-ac97-d17f55770d23",
       "nome": "Kappa Tecnologia Industrial",
-      "documento": "55.667.788/0001-99",
+      "documento": "55667788000199",
       "email": "tech@kappa.ind.br",
-      "telefone": "(12) 3456-7890",
+      "telefone": "1234567890",
       "endereco": "Rua Inovação, 77",
       "ativo": true,
       "transportesAutorizados": ["c6188d4b-33f3-4cd5-add2-eb10a64798e2", "5d0ba737-ca73-4b17-85ba-fb2b5c88aaa5"]
@@ -123,9 +123,9 @@
     {
       "id": "601d24a5-ad43-4528-a508-0a0a0b0519ff",
       "nome": "Lambda Agronegócios S.A.",
-      "documento": "66.778.899/0001-10",
+      "documento": "66778899000110",
       "email": "agro@lambda.com",
-      "telefone": "(16) 9999-0000",
+      "telefone": "1699990000",
       "endereco": "Rodovia Rural, Km 45",
       "ativo": false,
       "transportesAutorizados": ["348e50db-e7cf-4df4-9485-35a14977dda2"]
@@ -133,9 +133,9 @@
     {
       "id": "5361ad90-701f-4ac0-bac2-2af5006ea878",
       "nome": "Mu Química Fina",
-      "documento": "77.889.900/0001-21",
+      "documento": "77889900000121",
       "email": "lab@muquimica.com",
-      "telefone": "(19) 8888-7777",
+      "telefone": "1988887777",
       "endereco": "Parque Industrial Sul, 2000",
       "ativo": true,
       "transportesAutorizados": ["d7d43ad0-0800-44c7-abe5-4b1912a510d6"]

@@ -275,6 +275,27 @@ Depois: 14b (depende de 14a) → 19 (depende de 13 + 14b).
 - Botões de preenchimento rápido migrados para `setValue()`
 - Validação reativa de email e senha
 
+### Tickets 40-46 — Clean Architecture + DTOs + ports/repositories + use cases
+
+| #      | Título                                             | Slug                                                   | Tipo                 | Bloqueado por | Status |
+| ------ | -------------------------------------------------- | ------------------------------------------------------ | -------------------- | ------------- | ------ |
+| ~~40~~ | Prefactor: inverter dependência do domínio         | `40-inverter-dependencia-dominio`                      | `wayfinder:refactor` | —             | ✔      |
+| 41     | DTOs base + API Client interface                   | `41-dtos-api-client-interface`                         | `wayfinder:feature`  | 40            | 🔲     |
+| 42     | OrdemVenda: repository ports + concreto + migração | `42-ordemvenda-repository-migracao`                    | `wayfinder:feature`  | 40, 41        | 🔲     |
+| 43     | Clientes/Transportes/Itens/Auditoria: repositories | `43-clientes-transportes-itens-auditoria-repositories` | `wayfinder:feature`  | 40, 41        | 🔲     |
+| 44     | Use case: CriarOrdemVenda + AlterarStatusOV        | `44-use-case-criar-ov-alterar-status`                  | `wayfinder:feature`  | 42            | 🔲     |
+| 45     | Use case: AgendarEntrega                           | `45-use-case-agendar-entrega`                          | `wayfinder:feature`  | 42            | 🔲     |
+| 46     | Limpeza pós-expand-contract + doc drift            | `46-limpeza-pos-expand-contract`                       | `wayfinder:refactor` | 40, 42, 43    | 🔲     |
+
+### Ticket 40 — Prefactor: inverter dependência do domínio (resolvido)
+
+- Criados `src/domain/entities/` com 5 arquivos de interfaces TypeScript puras: `OrdemVenda.ts`, `Cliente.ts`, `Item.ts`, `TipoTransporte.ts`, `EventoAuditoria.ts`
+- `domain/types.ts` reescrito para reexportar de `domain/entities/` em vez de `schemas/`
+- Zod schemas em `schemas/` permanecem independentes — domínio não depende mais de detalhe de infraestrutura
+- Nenhuma mudança de comportamento: `tsc --noEmit`, `vitest run` (39/39), `npm run build` verificados
+
+Fronteira: ticket 41 (bloqueado por 40 → 40 resolvido, pode começar).
+
 ## Not yet specified
 
 - PWA / Offline-first para operadores de campo

@@ -13,9 +13,10 @@ import { FormField } from '../components/FormField';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 
 function formatDocumento(val: string): string {
-  const d = val.replace(/\D/g, '');
-  if (d.length <= 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4').slice(0, 14);
-  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5').slice(0, 18);
+  const cleaned = val.replace(/[/.-]/g, '');
+  if (/^\d{11}$/.test(cleaned)) return cleaned.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  if (/^\d{14}$/.test(cleaned)) return cleaned.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+  return cleaned;
 }
 
 function formatTelefone(val: string): string {
@@ -198,7 +199,7 @@ export function Clientes() {
               <input
                 value={formatDocumento(docField.value)}
                 onChange={(e) => {
-                  docField.onChange(e.target.value.replace(/\D/g, ''));
+                  docField.onChange(e.target.value.replace(/[/.-]/g, ''));
                 }}
                 className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
               />
