@@ -7,6 +7,7 @@ import { statusLabel, canTransition, STATUS_FLOW } from "../domain/types";
 import { usePermissao } from "../hooks/usePermission";
 import { trackEvent } from "../lib/telemetry";
 import { useToast } from "../stores/toastStore";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
   CRIADA:
@@ -88,9 +89,7 @@ export function OVDetail() {
 
       {/* Editorial Header */}
       <div className="border-b border-border pb-4 md:pb-6">
-        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-          Ordem de Venda / REGISTRO DE TRANSAÇÃO
-        </span>
+        <Breadcrumbs />
         <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1 font-mono">
           {ov.numero}
         </h1>

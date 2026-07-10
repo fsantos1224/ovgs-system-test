@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { AppLayout } from './layouts/AppLayout';
 import { getCurrentUser } from './stores/authStore';
@@ -18,30 +18,35 @@ const NotFound = lazy(() => import('./pages/NotFound').then(m => ({ default: m.N
 
 const Loading = () => <div className="p-6 text-slate-500">Carregando...</div>;
 
-function PrivateRoute({ children }: { children: React.ReactNode }) {
+function PrivateOutlet() {
   const user = getCurrentUser();
   if (!user) return <Navigate to="/login" replace />;
-  return <>{children}</>;
+  return (
+    <ConfirmProvider>
+      <AppLayout />
+    </ConfirmProvider>
+  );
 }
 
+const router = createBrowserRouter([
+  { path: "/login", element: <Login /> },
+  {
+    element: <PrivateOutlet />,
+    children: [
+      { index: true, element: <Suspense fallback={<Loading />}><Dashboard /></Suspense>, handle: { crumb: () => "Dashboard" } },
+      { path: "ovs", element: <Suspense fallback={<Loading />}><OVList /></Suspense>, handle: { crumb: () => "Ordens de Venda" } },
+      { path: "ovs/nova", element: <Suspense fallback={<Loading />}><OVNew /></Suspense>, handle: { crumb: () => "Nova" } },
+      { path: "ovs/:id", element: <Suspense fallback={<Loading />}><OVDetail /></Suspense>, handle: { crumb: () => "Detalhes" } },
+      { path: "agendamento", element: <Suspense fallback={<Loading />}><Agendamento /></Suspense>, handle: { crumb: () => "Agendamento" } },
+      { path: "cadastros/clientes", element: <Suspense fallback={<Loading />}><Clientes /></Suspense>, handle: { crumb: () => "Clientes" } },
+      { path: "cadastros/transportes", element: <Suspense fallback={<Loading />}><Transportes /></Suspense>, handle: { crumb: () => "Transportes" } },
+      { path: "cadastros/itens", element: <Suspense fallback={<Loading />}><Itens /></Suspense>, handle: { crumb: () => "Itens" } },
+      { path: "auditoria", element: <Suspense fallback={<Loading />}><Auditoria /></Suspense>, handle: { crumb: () => "Auditoria" } },
+      { path: "*", element: <Suspense fallback={<Loading />}><NotFound /></Suspense>, handle: { crumb: () => "404" } },
+    ],
+  },
+]);
+
 export default function App() {
-  return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route element={<PrivateRoute><ConfirmProvider><AppLayout /></ConfirmProvider></PrivateRoute>}>
-          <Route index element={<Suspense fallback={<Loading />}><Dashboard /></Suspense>} />
-          <Route path="ovs" element={<Suspense fallback={<Loading />}><OVList /></Suspense>} />
-          <Route path="ovs/nova" element={<Suspense fallback={<Loading />}><OVNew /></Suspense>} />
-          <Route path="ovs/:id" element={<Suspense fallback={<Loading />}><OVDetail /></Suspense>} />
-          <Route path="agendamento" element={<Suspense fallback={<Loading />}><Agendamento /></Suspense>} />
-          <Route path="cadastros/clientes" element={<Suspense fallback={<Loading />}><Clientes /></Suspense>} />
-          <Route path="cadastros/transportes" element={<Suspense fallback={<Loading />}><Transportes /></Suspense>} />
-          <Route path="cadastros/itens" element={<Suspense fallback={<Loading />}><Itens /></Suspense>} />
-          <Route path="auditoria" element={<Suspense fallback={<Loading />}><Auditoria /></Suspense>} />
-          <Route path="*" element={<Suspense fallback={<Loading />}><NotFound /></Suspense>} />
-        </Route>
-      </Routes>
-    </BrowserRouter>
-  );
+  return <RouterProvider router={router} />;
 }

@@ -6,6 +6,7 @@ import { Modal } from "../components/Modal";
 import { Pagination } from "../components/Pagination";
 import { clienteSchema } from "../lib/validation";
 import type { Cliente } from "../domain/types";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 function formatDocumento(val: string): string {
   const d = val.replace(/\D/g, "");
@@ -83,7 +84,7 @@ export function Clientes() {
     <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
         <div>
-          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">Clientes / CARTEIRA DE LOGÍSTICA</span>
+          <Breadcrumbs />
           <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">Clientes</h1>
           <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Cadastre, edite e consulte a base de clientes.</p>
         </div>

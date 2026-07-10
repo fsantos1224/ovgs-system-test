@@ -6,6 +6,7 @@ import { usePermissao } from "../hooks/usePermission";
 import { Modal } from "../components/Modal";
 import { Pagination } from "../components/Pagination";
 import { itemSchema } from "../lib/validation";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 function formatCurrency(val: number) {
   return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val / 100);
@@ -67,7 +68,7 @@ export function Itens() {
     <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
         <div>
-          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">Itens / CATÁLOGO DE ATIVOS</span>
+          <Breadcrumbs />
           <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">Itens</h1>
           <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Consulte o catálogo de produtos comercializáveis.</p>
         </div>

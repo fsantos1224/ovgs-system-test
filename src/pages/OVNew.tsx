@@ -12,6 +12,7 @@ import { useMemo, useState } from "react";
 import { ovSchema } from "../lib/validation";
 import { newId } from "../lib/id";
 import { useToast } from "../stores/toastStore";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 type FormData = {
   clienteId: string;
@@ -150,7 +151,7 @@ export function OVNew() {
 
       {/* Editorial Header */}
       <div className="border-b border-border pb-6">
-        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">Ordens de Venda / NOVA TRANSAÇÃO</span>
+        <Breadcrumbs />
         <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Nova Ordem de Venda</h1>
         <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Cadastre uma nova ordem de venda no sistema.</p>
       </div>

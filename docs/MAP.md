@@ -176,6 +176,26 @@ Code review contra `CONTEXT.md` + senior-level criteria identificou 9 tickets ad
 - Itens não tem Editar (conforme CONTEXT.md).
 - Excluir (Trash2) + useConfirm + bulk delete ficaram para futura iteração.
 
+### Ticket 29 — Modal de confirmação (useConfirm) (resolvido)
+
+- Hook `useConfirm()` já implementado com Context + Provider. Variant danger com rose styling.
+- Modal passou a aceitar `role` prop — confirm usa `role="alertdialog"` + `aria-modal="true"`.
+- `Modal` atualizado com `aria-labelledby` para acessibilidade.
+- Botões de excluir (que usariam o confirm) não foram implementados — dependem do ticket 27.
+
+### Ticket 30 — Toaster (resolvido)
+
+- Toaster custom (Zustand) já existente com auto-dismiss 4s, success/error/warning.
+- Toast integrado nas mutations de `useClientes`, `useTransportes`, `useItens`, `useOrdensVenda`.
+- Desvio de spec: manteve-se toaster custom em vez de sonner (zero deps nova, funcionalidade equivalente).
+
+### Ticket 31 — Breadcrumbs dinâmicos (resolvido)
+
+- `useBreadcrumbs` hook + `Breadcrumbs` componente criados.
+- `App.tsx` migrado de `<BrowserRouter>` para `createBrowserRouter` (data router).
+- Kickers hardcoded substituídos por `<Breadcrumbs />` em 9 páginas.
+- Rota `/ovs/:id` usa crumb estático "Detalhes" (não dinâmico).
+
 ### Ordem de execução sugerida (fronteira)
 
 Tickets 13, 14a, 15a, 15b, 16, 17, 18 podem ser atacados em paralelo (todos sem dependência).

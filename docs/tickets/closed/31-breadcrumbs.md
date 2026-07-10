@@ -44,3 +44,17 @@ Substituir por breadcrumbs calculados a partir de `useMatches()` do react-router
 - Para OV detail, o crumb pode mostrar `OV-2025-0042` (o número, não o UUID). Hook separado resolve.
 - Breadcrumb do Dashboard (rota raiz) deve começar com `"Dashboard"` ou ser omitido — decidir pela consistência visual.
 - Componente `<Breadcrumbs />` renderiza imediatamente acima do `<h1>` da página; mantém o "kicker" visual mas agora dinâmico.
+
+---
+
+## Decision record
+
+**Implementado:**
+- `src/hooks/useBreadcrumbs.ts` — hook que usa `useMatches()` do `createBrowserRouter` para derivar trilha dos `handle.crumb` das rotas.
+- `src/components/Breadcrumbs.tsx` — `<nav aria-label="Breadcrumb">` com `<ol>`, separador `/`, último item com `aria-current="page"`.
+- `App.tsx` migrado de `<BrowserRouter>` para `createBrowserRouter` (data router necessário para `useMatches()`).
+- Cada rota declarou `handle: { crumb: () => "Nome" }`.
+- Kickers hardcoded substituídos por `<Breadcrumbs />` em 9 páginas (Dashboard, OVList, OVNew, OVDetail, Agendamento, Clientes, Transportes, Itens, Auditoria).
+
+**Desvio de spec:**
+- A rota `/ovs/:id` (Detalhes) usa crumb estático "Detalhes" em vez de dinâmico `"OV-2025-0042"`. O hook suporta funções assíncronas, mas o crumb dinâmico exigiria um hook separado com `useParams` + `useQuery` dentro do `handle.crumb`. Adiado para simplificação.

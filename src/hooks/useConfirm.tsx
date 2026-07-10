@@ -51,6 +51,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
         open={pending !== null}
         title={pending?.title ?? ""}
         onClose={() => close(false)}
+        role="alertdialog"
       >
         {pending && (
           <div className="space-y-5">

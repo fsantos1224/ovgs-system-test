@@ -38,3 +38,19 @@ Adicionar toaster global. Decisão arquitetural: `toast.*` é chamado **dentro d
 - Impacto: nenhuma página precisa chamar `toast.*` explicitamente. Toaster é **side-effect** dos wrappers. Páginas que mutam hoje ganham toaster de graça.
 - Teste E2E valida o caminho completo: click → fetch → toast visível (`await expect(page.locator('[role="status"]').filter({hasText: 'criada'})).toBeVisible()`).
 - Bulk delete (ticket 28) chama `apiDelete` em paralelo — cada um gera seu próprio toast (N toasts agrupados). Alternativa: contar sucessos e mostrar 1 toast consolidado — preferir manter simples e confiar no agrupamento visual do sonner.
+
+---
+
+## Decision record
+
+**Implementado (pré-existente):**
+- `src/components/Toaster.tsx` — toaster custom (Zustand) com `role="alert"`, auto-dismiss 4s, success/error/warning, bottom-right.
+- `<Toaster />` montado em `AppLayout`.
+- `src/stores/toastStore.ts` com `useToast()` hook expondo `success()`, `error()`, `warning()`.
+
+**Adicionado neste ticket:**
+- Toast integrado nas mutations de `useClientes.ts`, `useTransportes.ts`, `useItens.ts`, `useOrdensVenda.ts` — cada `onSuccess`/`onError` dispara `toast.success`/`toast.error` com mensagem específica da entidade.
+
+**Desvio de spec:**
+- Ticket sugeria `sonner` como lib de toasts. Optou-se por manter o toaster custom (Zustand) existente — zero dependências adicionais, funcionalidade equivalente, bundle menor.
+- Ticket sugeria injetar toast nos wrappers `api.ts`. Optou-se por injetar nos `onSuccess`/`onError` de cada mutation do TanStack Query — mais contexto disponível (nome da entidade, resposta) e sem acoplar o fetch layer a UI.

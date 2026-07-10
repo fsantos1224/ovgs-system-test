@@ -6,6 +6,7 @@ import { Modal } from "../components/Modal";
 import { Pagination } from "../components/Pagination";
 import { transporteSchema } from "../lib/validation";
 import type { TipoTransporte } from "../domain/types";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 const MODAL_LABEL: Record<string, string> = {
   rodoviario: "Rodoviário",
@@ -80,9 +81,7 @@ export function Transportes() {
     <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
         <div>
-          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-            Transportes / MODAIS LOGÍSTICOS
-          </span>
+          <Breadcrumbs />
           <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
             Tipos de Transporte
           </h1>

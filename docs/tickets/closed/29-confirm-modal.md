@@ -41,3 +41,17 @@ Adicionar hook `useConfirm()` que retorna `Promise<boolean>` e reusa o `<Modal>`
   await apiDelete(`/clientes/${id}`);
   ```
 - Combina naturalmente com toaster (ticket 30) — depois do `apiDelete`, o wrapper dispara `toast.success` automaticamente.
+
+---
+
+## Decision record
+
+**Implementado:**
+- `useConfirm()` hook com Context + Provider, `ConfirmOptions` (title, body, confirmLabel, cancelLabel, variant).
+- Variant `danger` com rose styling; Cancel/Esc resolve false; Confirm resolve true.
+- Modal passou a aceitar `role` prop — confirm usa `role="alertdialog"` + `aria-modal="true"`.
+- Unit test existente em `src/hooks/useConfirm.test.tsx`.
+- Componente `Modal` atualizado com `aria-labelledby` e `aria-modal` para acessibilidade.
+
+**Não implementado (fora do escopo original):**
+- Integração com botões de excluir nas páginas (requer ticket 27 como pré-requisito).

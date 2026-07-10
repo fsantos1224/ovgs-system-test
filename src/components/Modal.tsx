@@ -6,9 +6,11 @@ interface ModalProps {
   title: string;
   onClose: () => void;
   children: React.ReactNode;
+  role?: string;
 }
 
-export function Modal({ open, title, onClose, children }: ModalProps) {
+export function Modal({ open, title, onClose, children, role: roleProp }: ModalProps) {
+  const role = roleProp || "dialog";
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closingRef = useRef(false);
 
@@ -48,6 +50,8 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
     <dialog
       ref={dialogRef}
       className="rounded-2xl border border-border w-full max-w-lg bg-surface text-text shadow-2xl backdrop:bg-overlay p-0 fixed inset-0 m-auto h-fit max-h-[90vh] overflow-y-auto modal-bottom-sheet"
+      role={role}
+      aria-modal="true"
       aria-labelledby="modal-title"
     >
       <div className="p-5 md:p-6 border-b border-border bg-surface-elevated flex justify-between items-center sticky top-0 z-10">

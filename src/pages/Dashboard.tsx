@@ -4,6 +4,7 @@ import type { OrdemVendaResponse } from "../schemas/ordemVenda";
 import type { OVStatus } from "../domain/types";
 import { statusLabel } from "../domain/types";
 import { ArrowRight } from "lucide-react";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
   CRIADA:
@@ -77,9 +78,7 @@ export function Dashboard() {
     <div className="space-y-6 md:space-y-8 animate-fade-in">
       {/* Editorial Header */}
       <div className="border-b border-border pb-4 md:pb-6">
-        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-          Dashboard / MÓDULO PRINCIPAL
-        </span>
+        <Breadcrumbs />
         <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
           Dashboard
         </h1>

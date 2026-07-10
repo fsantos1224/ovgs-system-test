@@ -6,6 +6,7 @@ import type { OVStatus } from "../domain/types";
 import { statusLabel, STATUS_FLOW } from "../domain/types";
 import { usePermissao } from "../hooks/usePermission";
 import { Pagination } from "../components/Pagination";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
   CRIADA:
@@ -90,9 +91,7 @@ export function OVList() {
       {/* Editorial Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
         <div>
-          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-            Ordens de Venda / FLUXO DE TRANSAÇÕES
-          </span>
+          <Breadcrumbs />
           <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
             Ordens de Venda
           </h1>

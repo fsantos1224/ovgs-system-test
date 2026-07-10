@@ -5,6 +5,7 @@ import { usePermissao } from "../hooks/usePermission";
 import { statusLabel } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 import { useToast } from "../stores/toastStore";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 function parseJanela(val: string): { inicio: number; fim: number } | null {
   const match = val.match(/^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/);
@@ -99,9 +100,7 @@ export function Agendamento() {
   return (
     <div className="space-y-6 animate-fade-in">
       <div className="border-b border-border pb-6">
-        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-          Agendamento / AGENDA E OPERAÇÃO
-        </span>
+        <Breadcrumbs />
         <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
           Central de Agendamento
         </h1>

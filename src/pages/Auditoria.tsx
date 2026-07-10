@@ -4,6 +4,7 @@ import {
 } from "lucide-react";
 import { useEventosAuditoria } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
+import { Breadcrumbs } from "../components/Breadcrumbs";
 
 function formatDateTime(dateStr: string) {
   const d = new Date(dateStr);
@@ -19,9 +20,7 @@ export function Auditoria() {
     return (
       <div className="space-y-6 animate-fade-in">
         <div className="border-b border-border pb-6">
-          <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-            Auditoria / TRANSAÇÕES E AUDITORIA
-          </span>
+          <Breadcrumbs />
           <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
             Auditoria
           </h1>
@@ -52,9 +51,7 @@ export function Auditoria() {
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div className="border-b border-border pb-4 md:pb-6">
-        <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
-          Auditoria / TRANSAÇÕES E AUDITORIA
-        </span>
+        <Breadcrumbs />
         <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
           Auditoria
         </h1>
