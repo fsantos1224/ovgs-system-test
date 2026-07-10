@@ -66,17 +66,17 @@ export function Auditoria() {
       <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
         {/* Desktop table */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-fixed">
             <caption className="sr-only">
               Eventos de auditoria do sistema
             </caption>
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                <th className="px-6 py-4.5">Data/Hora</th>
-                <th className="px-6 py-4.5">Usuário</th>
-                <th className="px-6 py-4.5">Entidade</th>
-                <th className="px-6 py-4.5">Ação</th>
-                <th className="px-6 py-4.5">Detalhes</th>
+                <th className="px-4 py-4 w-[18%]">Data/Hora</th>
+                <th className="px-4 py-4 w-[14%]">Usuário</th>
+                <th className="px-4 py-4 w-[12%]">Entidade</th>
+                <th className="px-4 py-4 w-[10%]">Ação</th>
+                <th className="px-4 py-4 w-[46%]">Detalhes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
@@ -85,10 +85,10 @@ export function Auditoria() {
                     key={e.id}
                     className="hover:bg-hover transition-colors"
                   >
-                    <td className="px-6 py-4.5 text-text-muted font-mono">
+                    <td className="px-4 py-4 text-text-muted font-mono truncate">
                       {formatDateTime(e.dataHora)}
                     </td>
-                    <td className="px-6 py-4.5">
+                    <td className="px-4 py-4">
                       <div className="flex items-center gap-2.5">
                         <div className="w-6 h-6 rounded-full bg-hover border border-border flex items-center justify-center shrink-0">
                           <UserIcon
@@ -96,20 +96,20 @@ export function Auditoria() {
                             aria-hidden="true"
                           />
                         </div>
-                        <span className="text-text font-mono text-[11px]">
+                        <span className="text-text font-mono text-[11px] truncate">
                           {e.usuario}
                         </span>
                       </div>
                     </td>
-                    <td className="px-6 py-4.5">
+                    <td className="px-4 py-4">
                       <span className="font-bold text-text-muted bg-hover border border-border px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-wider">
                         {e.entidade}
                       </span>
                     </td>
-                    <td className="px-6 py-4.5 font-mono text-[11px] text-text font-bold">
+                    <td className="px-4 py-4 font-mono text-[11px] text-text font-bold truncate">
                       {e.acao}
                     </td>
-                    <td className="px-6 py-4.5 text-text-muted">
+                    <td className="px-4 py-4 text-text-muted truncate">
                       {e.detalhes}
                     </td>
                   </tr>
@@ -118,7 +118,7 @@ export function Auditoria() {
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-6 py-12 text-center text-text-subtle italic"
+                    className="px-4 py-12 text-center text-text-subtle italic"
                   >
                     Nenhum evento de auditoria registrado.
                   </td>

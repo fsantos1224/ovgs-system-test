@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useItens, useCriarItem, useAtualizarItem, useExcluirItem } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
+import { useConfirm } from "../hooks/useConfirm";
 import { Modal } from "../components/Modal";
 import { itemSchema } from "../lib/validation";
 import type { Item } from "../domain/types";
@@ -15,6 +16,7 @@ export function Itens() {
   const criarItem = useCriarItem();
   const atualizarItem = useAtualizarItem();
   const excluirItem = useExcluirItem();
+  const confirm = useConfirm();
   const podeCriar = usePermissao("itens:criar");
   const [editando, setEditando] = useState<Item | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
@@ -23,7 +25,8 @@ export function Itens() {
   if (isLoading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Tem certeza que deseja excluir este item?")) return;
+    const ok = await confirm({ title: "Excluir Item", body: "Tem certeza que deseja excluir este item?", confirmLabel: "Excluir", cancelLabel: "Cancelar", variant: "danger" });
+    if (!ok) return;
     try {
       await excluirItem.mutateAsync(id);
     } catch {
@@ -128,33 +131,33 @@ export function Itens() {
       {/* Desktop table */}
       <div role="region" aria-label="Lista de itens" className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-fixed">
             <caption className="sr-only">Lista de itens</caption>
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                <th className="px-6 py-4.5">Nome</th>
-                <th className="px-6 py-4.5">SKU</th>
-                <th className="px-6 py-4.5">Categoria</th>
-                <th className="px-6 py-4.5">Preço Unit.</th>
-                <th className="px-6 py-4.5">Unidade</th>
-                <th className="px-6 py-4.5">Ativo</th>
-                <th className="px-6 py-4.5 text-center">Ações</th>
+                <th className="px-4 py-4 w-[24%]">Nome</th>
+                <th className="px-4 py-4 w-[14%]">SKU</th>
+                <th className="px-4 py-4 w-[18%]">Categoria</th>
+                <th className="px-4 py-4 w-[16%]">Preço Unit.</th>
+                <th className="px-4 py-4 w-[10%]">Unidade</th>
+                <th className="px-4 py-4 w-[10%]">Ativo</th>
+                <th className="px-4 py-4 w-[8%] text-center">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
               {itens?.map((i) => (
                 <tr key={i.id} className="hover:bg-hover transition-colors">
-                  <td className="px-6 py-4 font-bold text-text text-sm">{i.nome}</td>
-                  <td className="px-6 py-4 text-text-muted font-mono font-medium">{i.sku}</td>
-                  <td className="px-6 py-4 text-text-subtle font-medium">{i.categoria}</td>
-                  <td className="px-6 py-4 font-bold text-accent font-mono">{formatCurrency(i.precoUnitario)}</td>
-                  <td className="px-6 py-4 font-mono text-text-muted font-medium">{i.unidadeMedida}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 font-bold text-text text-sm truncate">{i.nome}</td>
+                  <td className="px-4 py-4 text-text-muted font-mono font-medium truncate">{i.sku}</td>
+                  <td className="px-4 py-4 text-text-subtle font-medium truncate">{i.categoria}</td>
+                  <td className="px-4 py-4 font-bold text-accent font-mono truncate">{formatCurrency(i.precoUnitario)}</td>
+                  <td className="px-4 py-4 font-mono text-text-muted font-medium">{i.unidadeMedida}</td>
+                  <td className="px-4 py-4">
                     <span className={`text-[10px] font-bold uppercase tracking-wider ${i.ativo ? 'text-emerald-500' : 'text-text-faint'}`}>
                       {i.ativo ? 'Disponível' : 'Indisponível'}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-center">
+                  <td className="px-4 py-4 text-center">
                     <div className="flex items-center justify-center gap-0.5">
                       <button
                         onClick={() => { setEditando(i); setMostrarForm(true); setErro(""); }}
@@ -175,7 +178,7 @@ export function Itens() {
                 </tr>
               ))}
                 {itens?.length === 0 && (
-                  <tr><td colSpan={7} className="px-6 py-12 text-center text-text-subtle italic">Nenhum item cadastrado.</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-12 text-center text-text-subtle italic">Nenhum item cadastrado.</td></tr>
                 )}
             </tbody>
           </table>

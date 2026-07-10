@@ -6,6 +6,7 @@ import type { OVStatus } from "../domain/types";
 import { statusLabel, canTransition, STATUS_FLOW } from "../domain/types";
 import { usePermissao } from "../hooks/usePermission";
 import { trackEvent } from "../lib/telemetry";
+import { useToast } from "../stores/toastStore";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
   CRIADA:
@@ -35,16 +36,13 @@ function formatDate(dateStr: string) {
 
 export function OVDetail() {
   const { id } = useParams<{ id: string }>();
-  const {
-    data: ov,
-    loading,
-    refresh,
   const { data: ov, isLoading } = useOrdemVenda(id ?? "");
   const podeAlterarStatus = usePermissao("ov:alterar_status");
   const [erroStatus, setErroStatus] = useState("");
   const alterarStatus = useAlterarStatusOV();
+  const toast = useToast();
 
-  if (loading)
+  if (isLoading)
     return (
       <p role="status" aria-live="polite" className="text-text-muted p-6">
         Carregando...
@@ -57,22 +55,23 @@ export function OVDetail() {
     canTransition(ov.status, s),
   );
 
-  const handleStatusChange = async (novoStatus: OrdemVenda["status"]) => {
+  const handleStatusChange = async (novoStatus: string) => {
     const statusAnterior = ov.status;
     try {
       setErroStatus("");
-      await apiPatch(`/ordensVenda/${ov.id}`, { status: novoStatus });
+      await alterarStatus.mutateAsync({ id: ov.id, data: { status: novoStatus } });
       trackEvent("ov:status:alterar", "ordem_venda", {
         ovId: ov.id,
         numero: ov.numero,
         de: statusAnterior,
         para: novoStatus,
       });
-      refresh();
+      toast.success(`Status alterado para ${statusLabel(novoStatus as OVStatus)}`);
     } catch (err) {
       setErroStatus(
         err instanceof Error ? err.message : "Erro ao alterar status",
       );
+      toast.error("Erro ao alterar status.");
     }
   };
 
@@ -214,28 +213,28 @@ export function OVDetail() {
 
           {/* Desktop table */}
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+            <table className="w-full text-left border-collapse table-fixed">
               <thead>
                 <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                  <th className="px-6 py-4">Item</th>
-                  <th className="px-6 py-4 text-center">Qtd</th>
-                  <th className="px-6 py-4 text-right">Valor Unit.</th>
-                  <th className="px-6 py-4 text-right">Subtotal</th>
+                  <th className="px-4 py-4 w-[40%]">Item</th>
+                  <th className="px-4 py-4 w-[20%] text-center">Qtd</th>
+                  <th className="px-4 py-4 w-[20%] text-right">Valor Unit.</th>
+                  <th className="px-4 py-4 w-[20%] text-right">Subtotal</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border-subtle text-xs">
                 {ov.itens.map((item, i) => (
                   <tr key={i} className="hover:bg-hover transition-colors">
-                    <td className="px-6 py-4 font-bold text-text">
+                    <td className="px-4 py-4 font-bold text-text truncate">
                       {item.nomeItem}
                     </td>
-                    <td className="px-6 py-4 text-center font-mono text-text-muted">
+                    <td className="px-4 py-4 text-center font-mono text-text-muted">
                       {item.quantidade}
                     </td>
-                    <td className="px-6 py-4 text-right font-mono text-text-muted">
+                    <td className="px-4 py-4 text-right font-mono text-text-muted truncate">
                       {formatCurrency(item.precoUnitario)}
                     </td>
-                    <td className="px-6 py-4 text-right font-bold text-accent font-mono">
+                    <td className="px-4 py-4 text-right font-bold text-accent font-mono truncate">
                       {formatCurrency(item.quantidade * item.precoUnitario)}
                     </td>
                   </tr>

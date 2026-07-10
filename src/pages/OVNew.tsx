@@ -4,14 +4,14 @@
 import { useNavigate, Link } from "react-router-dom";
 import { useFieldArray, useForm } from "react-hook-form";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
-import { useFetch } from "../hooks/useFetch";
-import { apiPost } from "../api/fetch";
-import type { Cliente, Item, TipoTransporte, ItemOV } from "../domain/types";
+import { useClientes, useTransportes, useItens, useCriarOV } from "../queries";
+import type { ItemOV } from "../domain/types";
 import { canUseTransporte } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 import { useMemo, useState } from "react";
 import { ovSchema } from "../lib/validation";
 import { newId } from "../lib/id";
+import { useToast } from "../stores/toastStore";
 
 type FormData = {
   clienteId: string;
@@ -27,9 +27,11 @@ function formatCurrency(val: number) {
 
 export function OVNew() {
   const navigate = useNavigate();
-  const { data: clientes } = useFetch<Cliente[]>("/clientes");
-  const { data: transportes } = useFetch<TipoTransporte[]>("/tiposTransporte");
-  const { data: itens } = useFetch<Item[]>("/itens");
+  const { data: clientes } = useClientes();
+  const { data: transportes } = useTransportes();
+  const { data: itens } = useItens();
+  const criarOV = useCriarOV();
+  const toast = useToast();
   const [serverError, setServerError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -124,13 +126,12 @@ export function OVNew() {
     };
 
     try {
-      await apiPost("/ordensVenda", novaOV, {
-        "idempotency-key": idempotencyKey,
-      });
+      await criarOV.mutateAsync({ data: novaOV, headers: { "idempotency-key": idempotencyKey } });
       trackEvent("ov:criar", "ordem_venda", {
         numero: novaOV.numero,
         clienteId: data.clienteId,
       });
+      toast.success(`OV ${novaOV.numero} criada com sucesso.`);
       navigate("/ovs");
     } catch (err) {
       setServerError(err instanceof Error ? err.message : "Erro ao criar OV");

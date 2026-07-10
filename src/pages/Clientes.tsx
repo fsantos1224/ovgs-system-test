@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { useClientes, useCriarCliente, useAtualizarCliente, useExcluirCliente } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
+import { useConfirm } from "../hooks/useConfirm";
 import { Modal } from "../components/Modal";
 import { clienteSchema } from "../lib/validation";
 import type { Cliente } from "../domain/types";
@@ -23,6 +24,7 @@ export function Clientes() {
   const criarCliente = useCriarCliente();
   const atualizarCliente = useAtualizarCliente();
   const excluirCliente = useExcluirCliente();
+  const confirm = useConfirm();
   const podeCriar = usePermissao("clientes:criar");
   const podeEditar = usePermissao("clientes:editar");
   const [editando, setEditando] = useState<Cliente | null>(null);
@@ -61,7 +63,8 @@ export function Clientes() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Tem certeza que deseja excluir este cliente?")) return;
+    const ok = await confirm({ title: "Excluir Cliente", body: "Tem certeza que deseja excluir este cliente?", confirmLabel: "Excluir", cancelLabel: "Cancelar", variant: "danger" });
+    if (!ok) return;
     try {
       await excluirCliente.mutateAsync(id);
     } catch {
@@ -128,35 +131,35 @@ export function Clientes() {
       {/* Desktop table */}
       <div role="region" aria-label="Lista de clientes" className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-fixed">
             <caption className="sr-only">Lista de clientes</caption>
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                <th className="px-6 py-4.5">Nome</th>
-                <th className="px-6 py-4.5">Documento</th>
-                <th className="px-6 py-4.5">Email</th>
-                <th className="px-6 py-4.5">Telefone</th>
-                <th className="px-6 py-4.5">Ativo</th>
-                {podeEditar && <th className="px-6 py-4.5 text-center">Ações</th>}
+                <th className="px-4 py-4 w-[28%]">Nome</th>
+                <th className="px-4 py-4 w-[18%]">Documento</th>
+                <th className="px-4 py-4 w-[22%]">Email</th>
+                <th className="px-4 py-4 w-[16%]">Telefone</th>
+                <th className="px-4 py-4 w-[8%]">Ativo</th>
+                {podeEditar && <th className="px-4 py-4 w-[8%] text-center">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
               {clientes?.map((c) => (
                 <tr key={c.id} className="hover:bg-hover transition-colors">
-                  <td className="px-6 py-4">
-                    <div className="font-bold text-text text-sm">{c.nome}</div>
+                  <td className="px-4 py-4">
+                    <div className="font-bold text-text text-sm truncate">{c.nome}</div>
                     {c.endereco && <div className="text-[11px] text-text-faint mt-0.5 truncate max-w-[200px]">{c.endereco}</div>}
                   </td>
-                  <td className="px-6 py-4 text-text-muted font-mono font-medium">{c.documento ? formatDocumento(c.documento) : "—"}</td>
-                  <td className="px-6 py-4 text-text-muted font-medium">{c.email || "—"}</td>
-                  <td className="px-6 py-4 text-text-subtle font-mono">{c.telefone ? formatTelefone(c.telefone) : "—"}</td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4 text-text-muted font-mono font-medium truncate">{c.documento ? formatDocumento(c.documento) : "—"}</td>
+                  <td className="px-4 py-4 text-text-muted font-medium truncate">{c.email || "—"}</td>
+                  <td className="px-4 py-4 text-text-subtle font-mono truncate">{c.telefone ? formatTelefone(c.telefone) : "—"}</td>
+                  <td className="px-4 py-4">
                     <span className={`text-[10px] font-bold uppercase tracking-wider ${c.ativo ? "text-emerald-500" : "text-text-faint"}`}>
                       {c.ativo ? "Ativo" : "Inativo"}
                     </span>
                   </td>
                   {podeEditar && (
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-4 text-center">
                       <div className="flex items-center justify-center gap-0.5">
                         <button
                           onClick={() => { setEditando(c); setMostrarForm(true); setErro(""); }}
@@ -177,7 +180,7 @@ export function Clientes() {
                   )}
                 </tr>
               ))}
-              {clientes?.length === 0 && <tr><td colSpan={6} className="px-6 py-12 text-center text-text-subtle italic">Nenhum cliente cadastrado.</td></tr>}
+              {clientes?.length === 0 && <tr><td colSpan={podeEditar ? 6 : 5} className="px-4 py-12 text-center text-text-subtle italic">Nenhum cliente cadastrado.</td></tr>}
             </tbody>
           </table>
         </div>

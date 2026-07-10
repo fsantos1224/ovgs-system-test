@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { Calendar, Clock } from "lucide-react";
-import { useFetch } from "../hooks/useFetch";
+import { useOrdensVenda, useAtualizarOV } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
-import { apiPatch } from "../api/fetch";
-import type { OrdemVenda } from "../domain/types";
 import { statusLabel } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
+import { useToast } from "../stores/toastStore";
 
 const STATUS_BADGE: Record<string, string> = {
   CRIADA:
@@ -23,16 +22,15 @@ function formatDate(dateStr: string) {
 }
 
 export function Agendamento() {
-  const {
-    data: ordens,
-    loading,
-    refresh,
-  } = useFetch<OrdemVenda[]>("/ordensVenda");
+  const { data: ordensData, isLoading } = useOrdensVenda({ page: 1, pageSize: 100 });
+  const ordens = ordensData?.data;
   const podeAgendar = usePermissao("agendamento:criar");
   const podeVer = usePermissao("agendamento:ver");
   const [editando, setEditando] = useState<string | null>(null);
+  const atualizarOV = useAtualizarOV();
+  const toast = useToast();
 
-  if (loading)
+  if (isLoading)
     return (
       <p role="status" aria-live="polite" className="text-text-muted p-6">
         Carregando...
@@ -50,7 +48,7 @@ export function Agendamento() {
       (o) => o.status === "PLANEJADA" || o.status === "AGENDADA",
     ) ?? [];
 
-  const handleSalvar = async (ov: OrdemVenda, form: HTMLFormElement) => {
+  const handleSalvar = async (ov: { id: string; status: string }, form: HTMLFormElement) => {
     const fd = new FormData(form);
     const dataEntregaPrevista = fd.get("dataEntrega") as string;
     const janelaAtendimento = fd.get("janela") as string;
@@ -61,16 +59,16 @@ export function Agendamento() {
     if (ov.status === "PLANEJADA") body.status = "AGENDADA";
 
     try {
-      await apiPatch(`/ordensVenda/${ov.id}`, body);
+      await atualizarOV.mutateAsync({ id: ov.id, data: body });
       trackEvent("ov:agendar", "ordem_venda", {
         ovId: ov.id,
         dataEntregaPrevista,
         janelaAtendimento,
       });
       setEditando(null);
-      refresh();
+      toast.success("Agendamento salvo com sucesso.");
     } catch (err) {
-      alert(err instanceof Error ? err.message : "Erro ao salvar agendamento");
+      toast.error(err instanceof Error ? err.message : "Erro ao salvar agendamento");
     }
   };
 

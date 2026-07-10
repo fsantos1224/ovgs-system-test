@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Plus, Truck, Pencil, Trash2 } from "lucide-react";
 import { useTransportes, useCriarTransporte, useAtualizarTransporte, useExcluirTransporte } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
+import { useConfirm } from "../hooks/useConfirm";
 import { Modal } from "../components/Modal";
 import { transporteSchema } from "../lib/validation";
 import type { TipoTransporte } from "../domain/types";
@@ -18,6 +19,7 @@ export function Transportes() {
   const criarTransporte = useCriarTransporte();
   const atualizarTransporte = useAtualizarTransporte();
   const excluirTransporte = useExcluirTransporte();
+  const confirm = useConfirm();
   const podeCriar = usePermissao("transportes:criar");
   const podeEditar = usePermissao("transportes:editar");
   const [editando, setEditando] = useState<TipoTransporte | null>(null);
@@ -58,7 +60,8 @@ export function Transportes() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!window.confirm("Tem certeza que deseja excluir este transporte?")) return;
+    const ok = await confirm({ title: "Excluir Transporte", body: "Tem certeza que deseja excluir este transporte?", confirmLabel: "Excluir", cancelLabel: "Cancelar", variant: "danger" });
+    if (!ok) return;
     try {
       await excluirTransporte.mutateAsync(id);
     } catch {
@@ -180,30 +183,30 @@ export function Transportes() {
         className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl"
       >
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-fixed">
             <caption className="sr-only">Lista de tipos de transporte</caption>
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                <th className="px-6 py-4.5">Nome</th>
-                <th className="px-6 py-4.5">Modal</th>
-                <th className="px-6 py-4.5">Ativo</th>
-                {podeEditar && <th className="px-6 py-4.5 text-center">Ações</th>}
+                <th className="px-4 py-4 w-[50%]">Nome</th>
+                <th className="px-4 py-4 w-[30%]">Modal</th>
+                <th className="px-4 py-4 w-[10%]">Ativo</th>
+                {podeEditar && <th className="px-4 py-4 w-[10%] text-center">Ações</th>}
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
               {transportes?.map((t) => (
                 <tr key={t.id} className="hover:bg-hover transition-colors">
-                  <td className="px-6 py-4 font-bold text-text text-sm inline-flex items-center gap-2">
+                  <td className="px-4 py-4 font-bold text-text text-sm inline-flex items-center gap-2">
                     <Truck
                       className="w-3.5 h-3.5 text-text-faint shrink-0"
                       aria-hidden="true"
                     />
-                    {t.nome}
+                    <span className="truncate">{t.nome}</span>
                   </td>
-                  <td className="px-6 py-4 text-text-muted">
+                  <td className="px-4 py-4 text-text-muted truncate">
                     {MODAL_LABEL[t.modal] ?? t.modal}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-4 py-4">
                     <span
                       className={`text-[10px] font-bold uppercase tracking-wider ${t.ativo ? "text-emerald-500" : "text-text-faint"}`}
                     >
@@ -211,7 +214,7 @@ export function Transportes() {
                     </span>
                   </td>
                   {podeEditar && (
-                    <td className="px-6 py-4 text-center">
+                    <td className="px-4 py-4 text-center">
                       <div className="flex items-center justify-center gap-0.5">
                         <button
                           onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
@@ -235,8 +238,8 @@ export function Transportes() {
               {transportes?.length === 0 && (
                 <tr>
                   <td
-                    colSpan={4}
-                    className="px-6 py-12 text-center text-text-subtle italic"
+                    colSpan={podeEditar ? 4 : 3}
+                    className="px-4 py-12 text-center text-text-subtle italic"
                   >
                     Nenhum transporte cadastrado.
                   </td>

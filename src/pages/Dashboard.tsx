@@ -127,14 +127,14 @@ export function Dashboard() {
 
         {/* Desktop table */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full text-left border-collapse table-fixed">
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                <th className="px-6 py-4.5">Número</th>
-                <th className="px-6 py-4.5">Cliente</th>
-                <th className="px-6 py-4.5">Status</th>
-                <th className="px-6 py-4.5 text-right">Valor</th>
-                <th className="px-6 py-4.5">Previsão</th>
+                <th className="px-4 py-4 w-[18%]">Número</th>
+                <th className="px-4 py-4 w-[28%]">Cliente</th>
+                <th className="px-4 py-4 w-[18%]">Status</th>
+                <th className="px-4 py-4 w-[18%] text-right">Valor</th>
+                <th className="px-4 py-4 w-[18%]">Previsão</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
@@ -144,23 +144,23 @@ export function Dashboard() {
                   onClick={() => navigate(`/ovs/${ov.id}`)}
                   className="hover:bg-hover transition-colors duration-150 cursor-pointer"
                 >
-                  <td className="px-6 py-4.5 font-bold text-text font-mono">
+                  <td className="px-4 py-4 font-bold text-text font-mono truncate">
                     {ov.numero}
                   </td>
-                  <td className="px-6 py-4.5 text-text-muted font-medium">
+                  <td className="px-4 py-4 text-text-muted font-medium truncate">
                     {ov.nomeCliente}
                   </td>
-                  <td className="px-6 py-4.5">
+                  <td className="px-4 py-4">
                     <span
                       className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider ${STATUS_BADGE[ov.status]}`}
                     >
                       {statusLabel(ov.status)}
                     </span>
                   </td>
-                  <td className="px-6 py-4.5 text-right font-bold text-accent font-mono">
+                  <td className="px-4 py-4 text-right font-bold text-accent font-mono truncate">
                     {formatCurrency(ov.valorTotal)}
                   </td>
-                  <td className="px-6 py-4.5 text-text-subtle font-mono">
+                  <td className="px-4 py-4 text-text-subtle font-mono truncate">
                     {formatDate(ov.dataEmissao)}
                   </td>
                 </tr>
