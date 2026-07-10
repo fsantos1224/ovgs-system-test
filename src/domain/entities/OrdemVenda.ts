@@ -22,8 +22,8 @@ export interface OrdemVenda {
   status: OVStatus;
   itens: ItemOV[];
   valorTotal: number;
-  observacoes: string | null | undefined;
-  janelaAtendimento: string | null | undefined;
+  observacoes?: string | null;
+  janelaAtendimento?: string | null;
 }
 
 export function canTransition(from: OVStatus, to: OVStatus): boolean {
