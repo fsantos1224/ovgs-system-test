@@ -147,7 +147,7 @@ export function OVNew() {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="max-w-2xl space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="max-w-4xl space-y-6">
         <div className="bg-surface rounded-xl border border-border p-6 space-y-5 shadow-2xl">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
