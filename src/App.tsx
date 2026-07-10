@@ -1,7 +1,7 @@
 import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { AppLayout } from './layouts/AppLayout';
-import { getCurrentUser } from './stores/authStore';
+import { useAuthStore } from './stores/authStore';
 import { ConfirmProvider } from './hooks/ConfirmContext';
 import { Login } from './pages/Login';
 
@@ -19,7 +19,7 @@ const NotFound = lazy(() => import('./pages/NotFound').then((m) => ({ default: m
 const Loading = () => <div className="p-6 text-slate-500">Carregando...</div>;
 
 function PrivateOutlet() {
-  const user = getCurrentUser();
+  const user = useAuthStore((s) => s.user);
   if (!user) return <Navigate to="/login" replace />;
   return (
     <ConfirmProvider>

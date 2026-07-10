@@ -20,7 +20,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
-import { usePermissao } from '../hooks/usePermission';
+import { usePermissao, useRole } from '../hooks/usePermission';
 import { Toaster } from '../components/Toaster';
 import { useAuthStore } from '../stores/authStore';
 import { useUIStore } from '../stores/uiStore';
@@ -48,7 +48,7 @@ function getPageTitle(pathname: string): string {
 export function AppLayout() {
   const location = useLocation();
   const { user, logout } = useAuthStore();
-  const role = user!.role;
+  const role = useRole();
   const { sidebarOpen, mobileMenuOpen, toggleSidebar, setMobileMenuOpen, theme, setTheme } = useUIStore();
 
   // Hooks no topo do componente — nunca dentro de callback (Rules of Hooks).
@@ -207,7 +207,7 @@ export function AppLayout() {
       <div className="p-4 border-t border-border space-y-2 shrink-0">
         {(sidebarOpen || inDrawer) && (
           <div className="text-xs text-text-muted truncate">
-            {user?.nome} ({role})
+            {user?.nome} {role && `(${role})`}
           </div>
         )}
         <button
