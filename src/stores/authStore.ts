@@ -13,34 +13,34 @@ interface AuthState {
   logout: () => void;
 }
 
-const USER_KEY = "XPTO:user";
-const ROLE_KEY = "XPTO:role";
+const AUTH_KEY = "xpto:auth:user"; // ponytail: stub de auth — guardamos só o perfil, não token (json-server não valida nada)
 
-function getStoredUser(): UserInfo | null {
+function loadStoredUser(): UserInfo | null {
+  // ponytail: try/catch pq localStorage pode estar bloqueado (modo privado, quota); falhar = voltar pro login, comportamento aceitável
   try {
-    const raw = localStorage.getItem(USER_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch { return null; }
+    const raw = localStorage.getItem(AUTH_KEY);
+    return raw ? (JSON.parse(raw) as UserInfo) : null;
+  } catch {
+    return null;
+  }
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  user: getStoredUser(),
+  user: loadStoredUser(),
   login: (email, senha) => {
     const encontrado = USUARIOS.find((u) => u.email === email && u.senha === senha);
     if (!encontrado) return "Credenciais inválidas";
-    const info: UserInfo = { email: encontrado.email, nome: encontrado.nome, role: encontrado.role };
-    localStorage.setItem(USER_KEY, JSON.stringify(info));
-    localStorage.setItem(ROLE_KEY, info.role);
-    set({ user: info });
+    const user = { email: encontrado.email, nome: encontrado.nome, role: encontrado.role };
+    localStorage.setItem(AUTH_KEY, JSON.stringify(user));
+    set({ user });
     return null;
   },
   logout: () => {
-    localStorage.removeItem(USER_KEY);
-    localStorage.removeItem(ROLE_KEY);
+    localStorage.removeItem(AUTH_KEY);
     set({ user: null });
   },
 }));
 
 export function getCurrentUser(): UserInfo | null {
-  return getStoredUser();
+  return useAuthStore.getState().user;
 }
