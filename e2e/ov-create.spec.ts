@@ -6,6 +6,14 @@ let alphaTransporteId: string;
 let itemId: string;
 let betaId: string;
 
+async function loginAdmin(page: any) {
+  await page.goto("/");
+  await page.evaluate(() => {
+    (window as any).__login("admin@XPTO.local", "admin123");
+  });
+  await page.reload();
+}
+
 test.describe("OV Creation — happy path", () => {
   test.beforeAll(async ({ request }) => {
     const [clientes, transportes, itens] = await Promise.all([
@@ -26,18 +34,7 @@ test.describe("OV Creation — happy path", () => {
   });
 
   test("admin pode criar OV end-to-end", async ({ page }) => {
-    await page.goto("/");
-    await page.evaluate(() => {
-      localStorage.setItem("XPTO:role", "admin");
-      localStorage.setItem(
-        "XPTO:user",
-        JSON.stringify({
-          email: "admin@XPTO.local",
-          role: "admin",
-          nome: "Administrador",
-        }),
-      );
-    });
+    await loginAdmin(page);
 
     await page.goto("/ovs/nova");
     await expect(
@@ -49,7 +46,7 @@ test.describe("OV Creation — happy path", () => {
     await expect(page.locator('select[name="transporteId"]')).toBeEnabled();
     await page.locator('select[name="transporteId"]').selectOption(alphaTransporteId);
 
-    await page.locator('input[name="dataEntrega"]').fill("2026-12-31");
+    await page.locator('input[name="dataEntregaPrevista"]').fill("2026-12-31");
 
     await page.locator('select[name="itens.0.itemId"]').selectOption(itemId);
     await page.locator('input[name="itens.0.quantidade"]').fill("100");
@@ -63,18 +60,7 @@ test.describe("OV Creation — happy path", () => {
   test("transporte não autorizado para cliente aparece bloqueado", async ({
     page,
   }) => {
-    await page.goto("/");
-    await page.evaluate(() => {
-      localStorage.setItem("XPTO:role", "admin");
-      localStorage.setItem(
-        "XPTO:user",
-        JSON.stringify({
-          email: "admin@XPTO.local",
-          role: "admin",
-          nome: "Administrador",
-        }),
-      );
-    });
+    await loginAdmin(page);
 
     await page.goto("/ovs/nova");
     await page.locator('select[name="clienteId"]').selectOption(betaId);
