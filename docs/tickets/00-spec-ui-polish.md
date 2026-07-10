@@ -1,6 +1,6 @@
 ---
 id: spec-ui-polish
-status: ready-for-agent
+status: in-progress
 priority: medium
 area: frontend
 blocked_by: []

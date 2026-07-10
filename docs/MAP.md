@@ -166,6 +166,15 @@ Code review contra `CONTEXT.md` + senior-level criteria identificou 9 tickets ad
 | ~~22~~  | DELETE auditado (F5)                          | `22-audit-delete`                   | `wayfinder:bugfix`      | —             | ✔   |
 | ~~23~~  | Hardening de idempotência (F4+F7)              | `23-idempotency-hardening`          | `wayfinder:bugfix`      | —             | ✔   |
 | ~~24~~  | Migração de IDs para UUID                      | `24-uuid-migration`                 | `wayfinder:refactor`    | —             | ✔   |
+| ~~27~~  | Coluna "Ações" nas tabelas de listagem         | `27-acoes-coluna`                   | `wayfinder:feature`     | —             | ✔   |
+
+### Ticket 27 — Coluna "Ações" nas tabelas de listagem (resolvido)
+
+- Adicionada coluna "Ações" com botão Consultar (Eye) e Editar (Pencil) em Clientes, Transportes, Itens.
+- Consultar abre modal read-only com todos os campos do registro.
+- Busca textual com debounce 300ms + paginação client-side (10/página) nas 3 tabelas de cadastro.
+- Itens não tem Editar (conforme CONTEXT.md).
+- Excluir (Trash2) + useConfirm + bulk delete ficaram para futura iteração.
 
 ### Ordem de execução sugerida (fronteira)
 
