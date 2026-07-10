@@ -6,13 +6,31 @@ import { statusLabel } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 import { useToast } from "../stores/toastStore";
 
+function parseJanela(val: string): { inicio: number; fim: number } | null {
+  const match = val.match(/^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/);
+  if (!match) return null;
+  const h1 = parseInt(match[1], 10), m1 = parseInt(match[2], 10);
+  const h2 = parseInt(match[3], 10), m2 = parseInt(match[4], 10);
+  if (h1 > 23 || m1 > 59 || h2 > 23 || m2 > 59) return null;
+  const inicio = h1 * 60 + m1;
+  const fim = h2 * 60 + m2;
+  if (fim <= inicio) return null;
+  return { inicio, fim };
+}
+
+function validarJanela(val: string): string | null {
+  if (!val) return null;
+  if (!parseJanela(val)) return "Formato inválido. Use HH:MM-HH:MM (ex: 08:00-12:00).";
+  return null;
+}
+
 const STATUS_BADGE: Record<string, string> = {
   CRIADA:
     "dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800 bg-zinc-100 text-zinc-700 border-zinc-300",
   PLANEJADA:
     "dark:bg-amber-950/30 dark:text-amber-300 dark:border-amber-500/20 bg-amber-50 text-amber-700 border-amber-200",
   AGENDADA:
-    "dark:bg-blue-950/30 dark:text-blue-300 dark:border-blue-500/20 bg-sky-50 text-sky-700 border-sky-200",
+    "dark:bg-blue-950/30 dark:text-blue-300 dark:border-amber-500/20 bg-sky-50 text-sky-700 border-sky-200",
 };
 
 function formatDate(dateStr: string) {
@@ -27,6 +45,7 @@ export function Agendamento() {
   const podeAgendar = usePermissao("agendamento:criar");
   const podeVer = usePermissao("agendamento:ver");
   const [editando, setEditando] = useState<string | null>(null);
+  const [janelaErro, setJanelaErro] = useState("");
   const atualizarOV = useAtualizarOV();
   const toast = useToast();
 
@@ -52,6 +71,11 @@ export function Agendamento() {
     const fd = new FormData(form);
     const dataEntregaPrevista = fd.get("dataEntrega") as string;
     const janelaAtendimento = fd.get("janela") as string;
+
+    const erro = validarJanela(janelaAtendimento);
+    if (erro) { setJanelaErro(erro); return; }
+    setJanelaErro("");
+
     const body: Record<string, string> = {};
     if (dataEntregaPrevista)
       body.dataEntregaPrevista = new Date(dataEntregaPrevista).toISOString();
@@ -180,13 +204,20 @@ export function Agendamento() {
                         name="janela"
                         placeholder="ex: 08:00-12:00"
                         defaultValue={ov.janelaAtendimento ?? ""}
+                        onInput={(e) => {
+                          const val = (e.target as HTMLInputElement).value;
+                          setJanelaErro(validarJanela(val) ?? "");
+                        }}
                         className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden placeholder:text-text-faint"
                       />
+                      {janelaErro && (
+                        <p role="alert" className="text-rose-400 text-xs mt-1">{janelaErro}</p>
+                      )}
                     </div>
                     <div className="flex gap-2 pt-2">
                       <button
                         type="button"
-                        onClick={() => setEditando(null)}
+                        onClick={() => { setEditando(null); setJanelaErro(""); }}
                         className="flex-1 px-3 py-2 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-widest font-bold text-text-muted focus-visible:outline-2 focus-visible:outline-accent"
                       >
                         Cancelar
@@ -202,7 +233,7 @@ export function Agendamento() {
                 ) : (
                   podeAgendar && (
                     <button
-                      onClick={() => setEditando(ov.id)}
+                      onClick={() => { setEditando(ov.id); setJanelaErro(""); }}
                       className={`w-full text-[10px] uppercase tracking-widest font-bold py-2.5 rounded-lg transition-all focus-visible:outline-2 focus-visible:outline-accent ${
                         isScheduled
                           ? "border border-border-strong hover:bg-accent hover:text-on-accent hover:border-accent text-text"
