@@ -220,21 +220,6 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 - **Seed sem credenciais reais** — `src/data/usuarios.json` é fake data explícita, não `.env`
 - **CSP via meta tag + nginx add_header** — defesa em profundidade
 
-### Limitações conhecidas (aceitáveis para mock de teste)
-
-Estas são **inerentes à escolha de json-server como mock API** e devem ser tratadas antes de qualquer deploy além de ambiente local:
-
-| Limitação                                           | Por que existe                                    | Mitigação real exigiria                                          |
-| --------------------------------------------------- | ------------------------------------------------- | ---------------------------------------------------------------- |
-| Credenciais em bundle JS (`src/data/usuarios.json`) | Fake data de contas demo; não é autenticação real | Mover auth para `server.cjs`, nunca enviar `senha` ao frontend   |
-| `x-user` header é trust puro                        | json-server é deliberadamente sem auth            | JWT/cookie httpOnly + middleware de validação                    |
-| RBAC só no cliente                                  | Mesma razão acima                                 | Middleware de autorização no servidor                            |
-| Sem TLS no nginx                                    | Docker local                                      | TLS-terminating proxy (Caddy/Traefik) + certificados válidos     |
-| Sem rate limiting                                   | json-server não tem                               | `express-rate-limit` em `/auth/login`                            |
-| Sem CSRF defense                                    | Sem cookies/sessões                               | Quando migrar para cookies, adicionar tokens + `SameSite=Strict` |
-
-Em resumo: o sistema assume **ambiente controlado** (rede interna, Docker local, sem exposição à internet). Não deploy em produção sem substituir json-server por backend real.
-
 ---
 
 ## Trade-offs e Limitações

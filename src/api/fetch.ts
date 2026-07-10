@@ -1,7 +1,7 @@
 // 🐴 fetch wrapper minimalista. Sem axios, sem TanStack Query.
 // Para um projeto maior, usaríamos um cliente HTTP com interceptors.
 
-import { getCurrentUser } from "../hooks/useAuth";
+import { getCurrentUser } from "../stores/authStore";
 
 const API_BASE = "/api";
 

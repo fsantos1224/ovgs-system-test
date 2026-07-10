@@ -1,7 +1,8 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import { AppLayout } from './layouts/AppLayout';
-import { getCurrentUser } from './hooks/useAuth';
+import { getCurrentUser } from './stores/authStore';
+import { ConfirmProvider } from './hooks/useConfirm';
 import { Login } from './pages/Login';
 
 const Dashboard = lazy(() => import('./pages/Dashboard').then(m => ({ default: m.Dashboard })));
@@ -28,7 +29,7 @@ export default function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
-        <Route element={<PrivateRoute><AppLayout /></PrivateRoute>}>
+        <Route element={<PrivateRoute><ConfirmProvider><AppLayout /></ConfirmProvider></PrivateRoute>}>
           <Route index element={<Suspense fallback={<Loading />}><Dashboard /></Suspense>} />
           <Route path="ovs" element={<Suspense fallback={<Loading />}><OVList /></Suspense>} />
           <Route path="ovs/nova" element={<Suspense fallback={<Loading />}><OVNew /></Suspense>} />

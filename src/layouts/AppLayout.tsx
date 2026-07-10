@@ -21,6 +21,7 @@ import {
   X,
 } from "lucide-react";
 import { usePermissao, useRole } from "../hooks/usePermission";
+import { Toaster } from "../components/Toaster";
 import { useAuthStore } from "../stores/authStore";
 import { useUIStore } from "../stores/uiStore";
 
@@ -347,6 +348,7 @@ export function AppLayout() {
           <Outlet />
         </main>
       </div>
+      <Toaster />
     </div>
   );
 }
