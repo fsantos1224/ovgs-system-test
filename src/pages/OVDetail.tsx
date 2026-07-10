@@ -1,11 +1,10 @@
 import { useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { ArrowLeft, Calendar, Package } from "lucide-react";
-import { useFetch } from "../hooks/useFetch";
-import type { OrdemVenda, OVStatus } from "../domain/types";
+import { useOrdemVenda, useAlterarStatusOV } from "../queries";
+import type { OVStatus } from "../domain/types";
 import { statusLabel, canTransition, STATUS_FLOW } from "../domain/types";
 import { usePermissao } from "../hooks/usePermission";
-import { apiPatch } from "../api/fetch";
 import { trackEvent } from "../lib/telemetry";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
@@ -40,9 +39,10 @@ export function OVDetail() {
     data: ov,
     loading,
     refresh,
-  } = useFetch<OrdemVenda>(id ? `/ordensVenda/${id}` : null);
+  const { data: ov, isLoading } = useOrdemVenda(id ?? "");
   const podeAlterarStatus = usePermissao("ov:alterar_status");
   const [erroStatus, setErroStatus] = useState("");
+  const alterarStatus = useAlterarStatusOV();
 
   if (loading)
     return (
@@ -77,7 +77,7 @@ export function OVDetail() {
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div>
         <Link
           to="/ovs"
@@ -89,11 +89,11 @@ export function OVDetail() {
       </div>
 
       {/* Editorial Header */}
-      <div className="border-b border-border pb-6">
+      <div className="border-b border-border pb-4 md:pb-6">
         <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
           Ordem de Venda / REGISTRO DE TRANSAÇÃO
         </span>
-        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1 font-mono">
+        <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1 font-mono">
           {ov.numero}
         </h1>
         <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
@@ -101,15 +101,15 @@ export function OVDetail() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6">
         {/* Card: Dados da Ordem */}
         <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
-          <div className="p-6 border-b border-border bg-surface-elevated/40">
-            <h2 className="text-sm uppercase tracking-widest font-bold text-text">
+          <div className="p-4 md:p-6 border-b border-border bg-surface-elevated/40">
+            <h2 className="text-[11px] md:text-sm uppercase tracking-widest font-bold text-text">
               Dados da Ordem
             </h2>
           </div>
-          <div className="p-6 space-y-4 text-xs">
+          <div className="p-4 md:p-6 space-y-4 text-xs">
             <div>
               <h4 className="text-[9px] font-bold text-text-faint uppercase tracking-widest">
                 Cliente
@@ -202,8 +202,8 @@ export function OVDetail() {
 
         {/* Card: Itens */}
         <div className="lg:col-span-2 bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
-          <div className="p-6 border-b border-border bg-surface-elevated/40 flex justify-between items-center">
-            <h2 className="text-sm uppercase tracking-widest font-bold text-text inline-flex items-center gap-2">
+          <div className="p-4 md:p-6 border-b border-border bg-surface-elevated/40 flex justify-between items-center">
+            <h2 className="text-[11px] md:text-sm uppercase tracking-widest font-bold text-text inline-flex items-center gap-2">
               <Package className="w-4 h-4 text-accent" aria-hidden="true" />
               Itens Registrados
             </h2>
@@ -211,7 +211,9 @@ export function OVDetail() {
               {ov.itens.length} {ov.itens.length === 1 ? "item" : "itens"}
             </span>
           </div>
-          <div className="overflow-x-auto">
+
+          {/* Desktop table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
@@ -241,11 +243,37 @@ export function OVDetail() {
               </tbody>
             </table>
           </div>
-          <div className="px-6 py-4 border-t border-border flex justify-between items-center bg-surface-elevated/20">
+
+          {/* Mobile cards */}
+          <div className="md:hidden divide-y divide-border-subtle">
+            {ov.itens.map((item, i) => (
+              <div key={i} className="p-4 space-y-2 hover:bg-hover transition-colors">
+                <p className="font-bold text-text text-sm">{item.nomeItem}</p>
+                <div className="grid grid-cols-3 gap-2 text-xs">
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">Qtd</span>
+                    <p className="font-mono text-text-muted mt-0.5">{item.quantidade}</p>
+                  </div>
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">Valor Unit.</span>
+                    <p className="font-mono text-text-muted mt-0.5">{formatCurrency(item.precoUnitario)}</p>
+                  </div>
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">Subtotal</span>
+                    <p className="font-bold text-accent font-mono mt-0.5">
+                      {formatCurrency(item.quantidade * item.precoUnitario)}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="px-4 md:px-6 py-4 border-t border-border flex justify-between items-center bg-surface-elevated/20">
             <span className="text-[10px] font-bold text-text-faint uppercase tracking-widest">
               Valor Total
             </span>
-            <span className="text-xl font-bold text-accent font-mono">
+            <span className="text-lg md:text-xl font-bold text-accent font-mono">
               {formatCurrency(ov.valorTotal)}
             </span>
           </div>

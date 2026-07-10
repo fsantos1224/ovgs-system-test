@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Plus, Pencil, Trash2 } from "lucide-react";
-import { useFetch } from "../hooks/useFetch";
+import { useItens, useCriarItem, useAtualizarItem, useExcluirItem } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
-import { apiPost, apiPatch, apiDelete } from "../api/fetch";
 import { Modal } from "../components/Modal";
 import { itemSchema } from "../lib/validation";
 import type { Item } from "../domain/types";
@@ -12,19 +11,21 @@ function formatCurrency(val: number) {
 }
 
 export function Itens() {
-  const { data: itens, loading, refresh } = useFetch<Item[]>("/itens");
+  const { data: itens, isLoading } = useItens();
+  const criarItem = useCriarItem();
+  const atualizarItem = useAtualizarItem();
+  const excluirItem = useExcluirItem();
   const podeCriar = usePermissao("itens:criar");
   const [editando, setEditando] = useState<Item | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [erro, setErro] = useState("");
 
-  if (loading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
+  if (isLoading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
 
   const handleDelete = async (id: string) => {
     if (!window.confirm("Tem certeza que deseja excluir este item?")) return;
     try {
-      await apiDelete(`/itens/${id}`);
-      refresh();
+      await excluirItem.mutateAsync(id);
     } catch {
       alert("Erro ao excluir item.");
     }
@@ -48,24 +49,23 @@ export function Itens() {
 
     try {
       if (editando) {
-        await apiPatch(`/itens/${editando.id}`, parsed.data);
+        await atualizarItem.mutateAsync({ id: editando.id, data: parsed.data });
       } else {
-        await apiPost("/itens", parsed.data);
+        await criarItem.mutateAsync(parsed.data);
       }
       setEditando(null);
       setMostrarForm(false);
-      refresh();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao salvar");
     }
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
         <div>
           <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">Itens / CATÁLOGO DE ATIVOS</span>
-          <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">Itens</h1>
+          <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">Itens</h1>
           <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">Consulte e gerencie o catálogo de produtos comercializáveis.</p>
         </div>
         {podeCriar && (
@@ -81,7 +81,7 @@ export function Itens() {
 
       <Modal open={mostrarForm} title={editando ? `Editar Item: ${editando.nome}` : "Novo Item"} onClose={() => { setMostrarForm(false); setEditando(null); setErro(""); }}>
         <form key={editando?.id ?? "new"} onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Nome</label>
               <input name="nome" defaultValue={editando?.nome ?? ""} required className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden" />
@@ -125,58 +125,112 @@ export function Itens() {
         </form>
       </Modal>
 
+      {/* Desktop table */}
       <div role="region" aria-label="Lista de itens" className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
-        <table className="w-full text-left border-collapse">
-          <caption className="sr-only">Lista de itens</caption>
-          <thead>
-            <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-              <th className="px-6 py-4.5">Nome</th>
-              <th className="px-6 py-4.5">SKU</th>
-              <th className="px-6 py-4.5">Categoria</th>
-              <th className="px-6 py-4.5">Preço Unit.</th>
-              <th className="px-6 py-4.5">Unidade</th>
-              <th className="px-6 py-4.5">Ativo</th>
-              <th className="px-6 py-4.5 text-center">Ações</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border-subtle text-xs">
-            {itens?.map((i) => (
-              <tr key={i.id} className="hover:bg-hover transition-colors">
-                <td className="px-6 py-4 font-bold text-text text-sm">{i.nome}</td>
-                <td className="px-6 py-4 text-text-muted font-mono font-medium">{i.sku}</td>
-                <td className="px-6 py-4 text-text-subtle font-medium">{i.categoria}</td>
-                <td className="px-6 py-4 font-bold text-accent font-mono">{formatCurrency(i.precoUnitario)}</td>
-                <td className="px-6 py-4 font-mono text-text-muted font-medium">{i.unidadeMedida}</td>
-                <td className="px-6 py-4">
-                  <span className={`text-[10px] font-bold uppercase tracking-wider ${i.ativo ? 'text-emerald-500' : 'text-text-faint'}`}>
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <caption className="sr-only">Lista de itens</caption>
+            <thead>
+              <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
+                <th className="px-6 py-4.5">Nome</th>
+                <th className="px-6 py-4.5">SKU</th>
+                <th className="px-6 py-4.5">Categoria</th>
+                <th className="px-6 py-4.5">Preço Unit.</th>
+                <th className="px-6 py-4.5">Unidade</th>
+                <th className="px-6 py-4.5">Ativo</th>
+                <th className="px-6 py-4.5 text-center">Ações</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle text-xs">
+              {itens?.map((i) => (
+                <tr key={i.id} className="hover:bg-hover transition-colors">
+                  <td className="px-6 py-4 font-bold text-text text-sm">{i.nome}</td>
+                  <td className="px-6 py-4 text-text-muted font-mono font-medium">{i.sku}</td>
+                  <td className="px-6 py-4 text-text-subtle font-medium">{i.categoria}</td>
+                  <td className="px-6 py-4 font-bold text-accent font-mono">{formatCurrency(i.precoUnitario)}</td>
+                  <td className="px-6 py-4 font-mono text-text-muted font-medium">{i.unidadeMedida}</td>
+                  <td className="px-6 py-4">
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${i.ativo ? 'text-emerald-500' : 'text-text-faint'}`}>
+                      {i.ativo ? 'Disponível' : 'Indisponível'}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <div className="flex items-center justify-center gap-0.5">
+                      <button
+                        onClick={() => { setEditando(i); setMostrarForm(true); setErro(""); }}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Editar"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(i.id)}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Excluir"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+                {itens?.length === 0 && (
+                  <tr><td colSpan={7} className="px-6 py-12 text-center text-text-subtle italic">Nenhum item cadastrado.</td></tr>
+                )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-border-subtle">
+          {itens?.length === 0 ? (
+            <div className="px-6 py-12 text-center text-text-subtle italic">Nenhum item cadastrado.</div>
+          ) : (
+            itens?.map((i) => (
+              <div key={i.id} className="p-4 space-y-3 hover:bg-hover transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="min-w-0 flex-1">
+                    <p className="font-bold text-text text-sm">{i.nome}</p>
+                    <p className="text-text-muted font-mono text-xs mt-0.5">{i.sku}</p>
+                  </div>
+                  <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${i.ativo ? 'text-emerald-500' : 'text-text-faint'}`}>
                     {i.ativo ? 'Disponível' : 'Indisponível'}
                   </span>
-                </td>
-                <td className="px-6 py-4 text-center">
-                  <div className="flex items-center justify-center gap-0.5">
-                    <button
-                      onClick={() => { setEditando(i); setMostrarForm(true); setErro(""); }}
-                      className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                      title="Editar"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(i.id)}
-                      className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                      title="Excluir"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">Categoria</span>
+                    <p className="text-text-subtle mt-0.5">{i.categoria}</p>
                   </div>
-                </td>
-              </tr>
-            ))}
-              {itens?.length === 0 && (
-                <tr><td colSpan={7} className="px-6 py-12 text-center text-text-subtle italic">Nenhum item cadastrado.</td></tr>
-              )}
-          </tbody>
-        </table>
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">Preço</span>
+                    <p className="font-bold text-accent font-mono mt-0.5">{formatCurrency(i.precoUnitario)}</p>
+                  </div>
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">Unidade</span>
+                    <p className="text-text-muted font-mono mt-0.5">{i.unidadeMedida}</p>
+                  </div>
+                </div>
+                <div className="flex items-center justify-end gap-1 pt-2 border-t border-border-subtle">
+                  <button
+                    onClick={() => { setEditando(i); setMostrarForm(true); setErro(""); }}
+                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                    title="Editar"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(i.id)}
+                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

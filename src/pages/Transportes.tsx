@@ -1,8 +1,7 @@
 import { useState } from "react";
 import { Plus, Truck, Pencil, Trash2 } from "lucide-react";
-import { useFetch } from "../hooks/useFetch";
+import { useTransportes, useCriarTransporte, useAtualizarTransporte, useExcluirTransporte } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
-import { apiPost, apiPatch, apiDelete } from "../api/fetch";
 import { Modal } from "../components/Modal";
 import { transporteSchema } from "../lib/validation";
 import type { TipoTransporte } from "../domain/types";
@@ -15,18 +14,17 @@ const MODAL_LABEL: Record<string, string> = {
 };
 
 export function Transportes() {
-  const {
-    data: transportes,
-    loading,
-    refresh,
-  } = useFetch<TipoTransporte[]>("/tiposTransporte");
+  const { data: transportes, isLoading } = useTransportes();
+  const criarTransporte = useCriarTransporte();
+  const atualizarTransporte = useAtualizarTransporte();
+  const excluirTransporte = useExcluirTransporte();
   const podeCriar = usePermissao("transportes:criar");
   const podeEditar = usePermissao("transportes:editar");
   const [editando, setEditando] = useState<TipoTransporte | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
   const [erro, setErro] = useState("");
 
-  if (loading)
+  if (isLoading)
     return (
       <p role="status" aria-live="polite" className="text-text-muted p-6">
         Carregando...
@@ -48,13 +46,12 @@ export function Transportes() {
 
     try {
       if (editando) {
-        await apiPatch(`/tiposTransporte/${editando.id}`, parsed.data);
+        await atualizarTransporte.mutateAsync({ id: editando.id, data: parsed.data });
       } else {
-        await apiPost("/tiposTransporte", parsed.data);
+        await criarTransporte.mutateAsync(parsed.data);
       }
       setEditando(null);
       setMostrarForm(false);
-      refresh();
     } catch (err) {
       setErro(err instanceof Error ? err.message : "Erro ao salvar");
     }
@@ -63,21 +60,20 @@ export function Transportes() {
   const handleDelete = async (id: string) => {
     if (!window.confirm("Tem certeza que deseja excluir este transporte?")) return;
     try {
-      await apiDelete(`/tiposTransporte/${id}`);
-      refresh();
+      await excluirTransporte.mutateAsync(id);
     } catch {
       alert("Erro ao excluir transporte.");
     }
   };
 
   return (
-    <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
         <div>
           <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
             Transportes / MODAIS LOGÍSTICOS
           </span>
-          <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
+          <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
             Tipos de Transporte
           </h1>
           <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
@@ -177,75 +173,123 @@ export function Transportes() {
         </form>
       </Modal>
 
+      {/* Desktop table */}
       <div
         role="region"
         aria-label="Lista de tipos de transporte"
         className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl"
       >
-        <table className="w-full text-left border-collapse">
-          <caption className="sr-only">Lista de tipos de transporte</caption>
-          <thead>
-            <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-              <th className="px-6 py-4.5">Nome</th>
-              <th className="px-6 py-4.5">Modal</th>
-              <th className="px-6 py-4.5">Ativo</th>
-              {podeEditar && <th className="px-6 py-4.5 text-center">Ações</th>}
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border-subtle text-xs">
-            {transportes?.map((t) => (
-              <tr key={t.id} className="hover:bg-hover transition-colors">
-                <td className="px-6 py-4 font-bold text-text text-sm inline-flex items-center gap-2">
-                  <Truck
-                    className="w-3.5 h-3.5 text-text-faint"
-                    aria-hidden="true"
-                  />
-                  {t.nome}
-                </td>
-                <td className="px-6 py-4 text-text-muted">
-                  {MODAL_LABEL[t.modal] ?? t.modal}
-                </td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`text-[10px] font-bold uppercase tracking-wider ${t.ativo ? "text-emerald-500" : "text-text-faint"}`}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <caption className="sr-only">Lista de tipos de transporte</caption>
+            <thead>
+              <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
+                <th className="px-6 py-4.5">Nome</th>
+                <th className="px-6 py-4.5">Modal</th>
+                <th className="px-6 py-4.5">Ativo</th>
+                {podeEditar && <th className="px-6 py-4.5 text-center">Ações</th>}
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border-subtle text-xs">
+              {transportes?.map((t) => (
+                <tr key={t.id} className="hover:bg-hover transition-colors">
+                  <td className="px-6 py-4 font-bold text-text text-sm inline-flex items-center gap-2">
+                    <Truck
+                      className="w-3.5 h-3.5 text-text-faint shrink-0"
+                      aria-hidden="true"
+                    />
+                    {t.nome}
+                  </td>
+                  <td className="px-6 py-4 text-text-muted">
+                    {MODAL_LABEL[t.modal] ?? t.modal}
+                  </td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`text-[10px] font-bold uppercase tracking-wider ${t.ativo ? "text-emerald-500" : "text-text-faint"}`}
+                    >
+                      {t.ativo ? "Ativo" : "Inativo"}
+                    </span>
+                  </td>
+                  {podeEditar && (
+                    <td className="px-6 py-4 text-center">
+                      <div className="flex items-center justify-center gap-0.5">
+                        <button
+                          onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                          title="Editar"
+                        >
+                          <Pencil className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(t.id)}
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                          title="Excluir"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  )}
+                </tr>
+              ))}
+              {transportes?.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={4}
+                    className="px-6 py-12 text-center text-text-subtle italic"
                   >
+                    Nenhum transporte cadastrado.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-border-subtle">
+          {transportes?.length === 0 ? (
+            <div className="px-6 py-12 text-center text-text-subtle italic">
+              Nenhum transporte cadastrado.
+            </div>
+          ) : (
+            transportes?.map((t) => (
+              <div key={t.id} className="p-4 space-y-3 hover:bg-hover transition-colors">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <Truck className="w-4 h-4 text-text-faint shrink-0" aria-hidden="true" />
+                    <p className="font-bold text-text text-sm truncate">{t.nome}</p>
+                  </div>
+                  <span className={`shrink-0 text-[10px] font-bold uppercase tracking-wider ${t.ativo ? "text-emerald-500" : "text-text-faint"}`}>
                     {t.ativo ? "Ativo" : "Inativo"}
                   </span>
-                </td>
+                </div>
+                <div>
+                  <span className="text-[9px] uppercase tracking-wider text-text-faint">Modal</span>
+                  <p className="text-text-muted text-xs mt-0.5">{MODAL_LABEL[t.modal] ?? t.modal}</p>
+                </div>
                 {podeEditar && (
-                  <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-0.5">
-                      <button
-                        onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
-                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                        title="Editar"
-                      >
-                        <Pencil className="w-4 h-4" />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(t.id)}
-                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                        title="Excluir"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+                  <div className="flex items-center justify-end gap-1 pt-2 border-t border-border-subtle">
+                    <button
+                      onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
+                      className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                      title="Editar"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(t.id)}
+                      className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                      title="Excluir"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 )}
-              </tr>
-            ))}
-            {transportes?.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="px-6 py-12 text-center text-text-subtle italic"
-                >
-                  Nenhum transporte cadastrado.
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   );

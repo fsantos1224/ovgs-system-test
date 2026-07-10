@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
-import { useFetch } from "../hooks/useFetch";
-import type { OrdemVenda, OVStatus } from "../domain/types";
+import { useOrdensVenda } from "../queries";
+import type { OrdemVendaResponse } from "../schemas/ordemVenda";
+import type { OVStatus } from "../domain/types";
 import { statusLabel } from "../domain/types";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
@@ -54,9 +55,10 @@ function formatDate(dateStr: string) {
 
 export function Dashboard() {
   const navigate = useNavigate();
-  const { data: ordens, loading } = useFetch<OrdemVenda[]>("/ordensVenda");
+  const { data: ordensData, isLoading } = useOrdensVenda({ page: 1, pageSize: 100 });
+  const ordens = ordensData?.data as OrdemVendaResponse[] | undefined;
 
-  if (loading)
+  if (isLoading)
     return (
       <p role="status" aria-live="polite" className="text-text-muted">
         Carregando...
@@ -71,13 +73,13 @@ export function Dashboard() {
     }, {}) ?? {};
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6 md:space-y-8 animate-fade-in">
       {/* Editorial Header */}
-      <div className="border-b border-border pb-6">
+      <div className="border-b border-border pb-4 md:pb-6">
         <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
           Dashboard / MÓDULO PRINCIPAL
         </span>
-        <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
+        <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
           Dashboard
         </h1>
         <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
@@ -86,21 +88,21 @@ export function Dashboard() {
       </div>
 
       {/* KPI Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
         {STATUS_ORDER.map((status) => {
           const count = porStatus[statusLabel(status)] ?? 0;
           return (
             <div
               key={status}
-              className="bg-surface rounded-xl border border-border p-6 relative overflow-hidden flex flex-col justify-between h-32 transition-all duration-200 hover:border-border-strong"
+              className="bg-surface rounded-xl border border-border p-4 md:p-6 relative overflow-hidden flex flex-col justify-between h-28 md:h-32 transition-all duration-200 hover:border-border-strong"
             >
               <div>
                 <span
-                  className={`text-4xl font-serif italic ${STATUS_ACCENT[status]}`}
+                  className={`text-2xl md:text-4xl font-serif italic ${STATUS_ACCENT[status]}`}
                 >
                   {count}
                 </span>
-                <p className="text-[10px] uppercase tracking-widest text-text-faint font-bold mt-2.5">
+                <p className="text-[10px] uppercase tracking-widest text-text-faint font-bold mt-2 md:mt-2.5">
                   {statusLabel(status)}
                 </p>
               </div>
@@ -112,17 +114,19 @@ export function Dashboard() {
         })}
       </div>
 
-      {/* Latest Orders Table */}
+      {/* Latest Orders */}
       <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
-        <div className="p-6 border-b border-border flex justify-between items-center bg-surface-elevated/40">
-          <h2 className="text-sm uppercase tracking-widest font-bold text-text">
+        <div className="p-4 md:p-6 border-b border-border flex justify-between items-center bg-surface-elevated/40">
+          <h2 className="text-[11px] md:text-sm uppercase tracking-widest font-bold text-text">
             Últimas Ordens de Venda
           </h2>
           <span className="text-[10px] uppercase tracking-widest text-text-faint">
             {ordens?.length ?? 0} registros
           </span>
         </div>
-        <div className="overflow-x-auto">
+
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
@@ -137,10 +141,10 @@ export function Dashboard() {
               {ordens?.slice(0, 5).map((ov) => (
                 <tr
                   key={ov.id}
-                onClick={() => navigate(`/ovs/${ov.id}`)}
+                  onClick={() => navigate(`/ovs/${ov.id}`)}
                   className="hover:bg-hover transition-colors duration-150 cursor-pointer"
-                  >
-                    <td className="px-6 py-4.5 font-bold text-text font-mono">
+                >
+                  <td className="px-6 py-4.5 font-bold text-text font-mono">
                     {ov.numero}
                   </td>
                   <td className="px-6 py-4.5 text-text-muted font-medium">
@@ -173,6 +177,56 @@ export function Dashboard() {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-border-subtle">
+          {ordens?.slice(0, 5).map((ov) => (
+            <div
+              key={ov.id}
+              onClick={() => navigate(`/ovs/${ov.id}`)}
+              className="p-4 space-y-3 hover:bg-hover transition-colors cursor-pointer active:bg-hover-strong"
+            >
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-sm font-bold text-text font-mono">
+                    {ov.numero}
+                  </span>
+                  <p className="text-xs text-text-muted font-medium mt-0.5">
+                    {ov.nomeCliente}
+                  </p>
+                </div>
+                <span
+                  className={`inline-block px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 ${STATUS_BADGE[ov.status]}`}
+                >
+                  {statusLabel(ov.status)}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-2 text-xs">
+                <div>
+                  <span className="text-[9px] uppercase tracking-wider text-text-faint">
+                    Valor
+                  </span>
+                  <p className="font-bold text-accent font-mono mt-0.5">
+                    {formatCurrency(ov.valorTotal)}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-[9px] uppercase tracking-wider text-text-faint">
+                    Previsão
+                  </span>
+                  <p className="text-text-subtle font-mono mt-0.5">
+                    {formatDate(ov.dataEmissao)}
+                  </p>
+                </div>
+              </div>
+            </div>
+          ))}
+          {ordens?.length === 0 && (
+            <div className="px-6 py-12 text-center text-text-subtle italic">
+              Nenhuma ordem de venda registrada.
+            </div>
+          )}
         </div>
       </div>
     </div>

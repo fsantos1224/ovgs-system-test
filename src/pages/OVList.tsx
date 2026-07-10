@@ -1,15 +1,8 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, Calendar, Eye, Pencil, Trash2 } from "lucide-react";
-import { usePaginatedFetch } from "../hooks/usePaginatedFetch";
-import { useFetch } from "../hooks/useFetch";
-import { apiDelete } from "../api/fetch";
-import type {
-  OrdemVenda,
-  Cliente,
-  TipoTransporte,
-  OVStatus,
-} from "../domain/types";
+import { useOrdensVenda, useClientes, useTransportes, useExcluirOV } from "../queries";
+import type { OVStatus } from "../domain/types";
 import { statusLabel, STATUS_FLOW } from "../domain/types";
 import { usePermissao } from "../hooks/usePermission";
 import { Pagination } from "../components/Pagination";
@@ -51,18 +44,19 @@ export function OVList() {
   const [dataDe, setDataDe] = useState("");
   const [dataAte, setDataAte] = useState("");
 
-  const { data: clientes } = useFetch<Cliente[]>("/clientes");
-  const { data: transportes } = useFetch<TipoTransporte[]>("/tiposTransporte");
+  const { data: clientesData } = useClientes();
+  const { data: transportesData } = useTransportes();
+  const clientes = clientesData ?? [];
+  const transportes = transportesData ?? [];
 
-  const {
-    data: ordens,
-    loading,
-    page,
-    totalPages,
-    setPage,
-    setFilters,
-    refresh,
-  } = usePaginatedFetch<OrdemVenda[]>("/ordensVenda", 10);
+  const filters = { q: debouncedSearch || undefined, status: filtroStatus || undefined, nomeCliente_like: filtroCliente || undefined, nomeTransporte_like: filtroTransporte || undefined, dataEntregaPrevista_gte: dataDe || undefined, dataEntregaPrevista_lte: dataAte || undefined };
+
+  const { data: ordensData, isLoading } = useOrdensVenda({ page, pageSize: 10, filters });
+  const ordens = ordensData?.data;
+  const totalCount = ordensData?.totalCount ?? 0;
+  const totalPages = Math.max(1, Math.ceil(totalCount / 10));
+
+  const excluirOV = useExcluirOV();
 
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(search), 300);
@@ -119,7 +113,7 @@ export function OVList() {
     setPage(1);
   }, [montarFiltros, setFilters, setPage]);
 
-  if (loading)
+  if (isLoading)
     return (
       <p role="status" aria-live="polite" className="text-text-muted p-6">
         Carregando...
@@ -127,14 +121,14 @@ export function OVList() {
     );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-4 md:space-y-6 animate-fade-in">
       {/* Editorial Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
         <div>
           <span className="text-[10px] tracking-[0.3em] font-bold text-accent uppercase">
             Ordens de Venda / FLUXO DE TRANSAÇÕES
           </span>
-          <h1 className="text-4xl font-serif italic tracking-tight text-text mt-1">
+          <h1 className="text-2xl md:text-4xl font-serif italic tracking-tight text-text mt-1">
             Ordens de Venda
           </h1>
           <p className="mt-1.5 text-xs text-text-muted tracking-wide font-medium">
@@ -153,9 +147,9 @@ export function OVList() {
       </div>
 
       {/* Filters Card */}
-      <div className="bg-surface rounded-xl border border-border p-5 space-y-4">
+      <div className="bg-surface rounded-xl border border-border p-4 md:p-5 space-y-4">
         {/* Linha 1 — filtros estruturais */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
           <div className="space-y-1.5">
             <label className="text-[10px] font-bold text-text-faint uppercase tracking-wider block">
               Status
@@ -228,7 +222,7 @@ export function OVList() {
               Atalhos de período
             </span>
             <div
-              className="flex flex-nowrap items-center gap-2"
+              className="flex flex-nowrap items-center gap-2 overflow-x-auto pb-1"
               role="group"
               aria-label="Atalhos de período"
             >
@@ -298,9 +292,10 @@ export function OVList() {
         </div>
       </div>
 
-      {/* Table */}
+      {/* Table / Cards */}
       <div className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
-        <div className="overflow-x-auto">
+        {/* Desktop table */}
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
@@ -388,6 +383,93 @@ export function OVList() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile cards */}
+        <div className="md:hidden divide-y divide-border-subtle">
+          {ordens?.length === 0 ? (
+            <div className="px-6 py-12 text-center text-text-subtle italic">
+              Nenhuma ordem encontrada.
+            </div>
+          ) : (
+            ordens?.map((ov) => (
+              <div
+                key={ov.id}
+                className="p-4 space-y-3 hover:bg-hover transition-colors active:bg-hover-strong"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      to={`/ovs/${ov.id}`}
+                      className="text-sm font-bold text-text font-mono hover:text-accent transition-colors"
+                    >
+                      {ov.numero}
+                    </Link>
+                    <p className="text-xs text-text-muted font-medium mt-0.5 truncate">
+                      {ov.nomeCliente}
+                    </p>
+                  </div>
+                  <span
+                    className={`inline-block px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0 ${STATUS_BADGE[ov.status]}`}
+                  >
+                    {statusLabel(ov.status)}
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">
+                      Transporte
+                    </span>
+                    <p className="text-text-subtle mt-0.5 truncate">
+                      {ov.nomeTransporte}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">
+                      Valor
+                    </span>
+                    <p className="font-bold text-accent font-mono mt-0.5">
+                      {formatCurrency(ov.valorTotal)}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <span className="text-[9px] uppercase tracking-wider text-text-faint">
+                      Previsão
+                    </span>
+                    <p className="text-text-subtle font-mono mt-0.5">
+                      {formatDate(ov.dataEntregaPrevista)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center justify-end gap-1 pt-2 border-t border-border-subtle">
+                  <Link
+                    to={`/ovs/${ov.id}`}
+                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                    title="Visualizar"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </Link>
+                  <button
+                    onClick={() => navigate(`/ovs/${ov.id}/editar`)}
+                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                    title="Editar"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => handleDelete(ov.id)}
+                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                    title="Excluir"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
         <Pagination
           page={page}
           totalPages={totalPages}
