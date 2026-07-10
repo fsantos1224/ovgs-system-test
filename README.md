@@ -38,7 +38,7 @@
 
 **Contexto:** Auth (user/role), toasts e tema UI precisam de estado global acessível em toda árvore de componentes.
 
-**Decisão:** Zustand para 3 stores atómicas (`authStore`, `toastStore`, `uiStore`). Sem Context, sem Provider. Role persistida em `localStorage`.
+**Decisão:** Zustand para 3 stores atómicas (`authStore`, `toastStore`, `uiStore`). Sem Context, sem Provider. Auth persistida em `localStorage` para sobreviver a reload (ponytail: sem persist middleware, 5 linhas manuais).
 
 **Consequências:** Zero re-renders em cascata (Zustand faz selects finos). Stores independentes — auth não depende de UI. Role switcher no sidebar com reload para resetar estado React (`🐴` simplificação intencional).
 
@@ -64,7 +64,7 @@
 
 **Decisão:** `PERMISSOES_POR_ROLE` mapeia permissões literais por role. `getPermissoes()` acumula permissões baseado na hierarquia. `usePermissao()` verifica se a role do utilizador ou qualquer role superior tem a permissão. Role lida do Zustand `authStore` (em memória, sem `localStorage`).
 
-**Consequências:** Admin herda todas as permissões automaticamente. UI condicional esconde elementos que o utilizador não pode usar. Login expira ao recarregar (necessário re-autenticar). Sem CASL.
+**Consequências:** Admin herda todas as permissões automaticamente. UI condicional esconde elementos que o utilizador não pode usar. Auth persiste ao recarregar (`localStorage`). Sem CASL.
 
 ### ADR-06: json-server com middleware custom
 
@@ -88,7 +88,7 @@
 
 **Decisão:** 3 camadas de teste: (1) **unitários** (Vitest) — lógica de domínio pura (`canTransition`, `canUseTransporte`, `parseBRLtoCents`) + hook `useConfirm` (RTL); (2) **integração** (Vitest + `node:http`) — servidor mock `server.cjs` end-to-end (regras de negócio, idempotência, auditoria, allowlist PATCH, identity gate); (3) **E2E** (Playwright) — fluxos completos (RBAC, criar OV, detalhe, listagem).
 
-**Consequências:** ~15 testes unitários, ~7 de integração, ~9 E2E. Cobertura de componentes via RTL + E2E. `🐴` Submissão RHF via Playwright tem limitação conhecida (handleSubmit não reconhece eventos sintéticos).
+**Consequências:** ~15 testes unitários, ~7 de integração, ~18 E2E (incluindo auditoria de CWV em 9 rotas). Cobertura de componentes via RTL + E2E. `🐴` Submissão RHF via Playwright tem limitação conhecida (handleSubmit não reconhece eventos sintéticos).
 
 ---
 
@@ -156,9 +156,9 @@ src/
 │   ├── OVDetail.tsx       # Detalhe + transição de status + agendamento
 │   ├── OVNew.tsx          # Criação (React Hook Form + useFieldArray)
 │   ├── Agendamento.tsx    # Central de agendamento
-│   ├── Clientes.tsx       # CRUD clientes (tabela + modal)
-│   ├── Transportes.tsx    # CRUD tipos de transporte
-│   ├── Itens.tsx          # CRUD itens
+│   ├── Clientes.tsx       # CRUD clientes (busca + paginação + consulta/edição)
+│   ├── Transportes.tsx    # CRUD tipos de transporte (busca + paginação + consulta/edição)
+│   ├── Itens.tsx          # Criar/Consultar itens (busca + paginação + consulta)
 │   ├── Auditoria.tsx      # Log de eventos de auditoria
 │   └── NotFound.tsx       # Página 404
 ├── queries/
@@ -255,7 +255,7 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 - **`data/db.json`** — ficheiro de runtime em memória persistente (ignorado no `.gitignore` e `.dockerignore`); o `server.cjs` copia o `db.seed.json` para cá no primeiro boot se não existir.
 - **`idempotencyStore`** — `Map` em memória no processo `server.cjs`. Reseta ao reiniciar.
 - **TanStack Query cache** — dados do servidor em memória (volátil, recria ao recarregar).
-- **Zustand stores** — estado de sessão (auth) e UI (tema, sidebar) em memória; sem `localStorage`. O login expira ao recarregar a página.
+- **Zustand stores** — auth profile persistido em `localStorage` (sobrevive a reload); UI (tema, sidebar) em memória.
 - Sem base de dados real. `🐴` Aceitável para protótipo/desafio.
 
 ---
@@ -264,7 +264,7 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 
 - **TanStack Query** — cache automático, refetch apenas quando necessário, `keepPreviousData` durante paginação
 - **Lazy loading** (`React.lazy` + Suspense) em todas as rotas — cada página é um chunk separado
-- **Debounce de 300ms** no filtro de pesquisa da listagem de OVs
+- **Debounce de 300ms** nos filtros de pesquisa (OVs + cadastros)
 - **Paginação server-side** (json-server `_page` + `_limit` + `X-Total-Count`)
 - **Performance Observer** nativo para LCP/CLS/INP (W3C compliant)
 - **Bundle splitting** — Vite `manualChunks` separa react, react-router-dom e vendors
@@ -284,7 +284,7 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 - **Allowlist de campos em PATCH** — apenas campos permitidos por entidade (F3)
 - **Idempotency store com TTL** — chaves expiram em 1h; máximo 1000 entradas; bounded, evita DoS
 - **`NODE_ENV=production` no Docker** — sem stack traces em runtime
-- **Sem localStorage para dados sensíveis** — role e user armazenados apenas em memória (Zustand); recarregar a página requer novo login
+- **localStorage para auth** — perfil do usuário guardado em `localStorage` (chave `xpto:auth:user`); apenas dados públicos de mock, sem token real
 - **Auditoria em DELETE** — cada exclusão é registada com utilizador e estado anterior
 - **Container API como root apenas onde necessário**; nginx master/workers separados
 - **CSP via meta tag + nginx add_header** — defesa em profundidade
@@ -302,7 +302,7 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 | Store de idempotência in-memory           | Perde-se ao reiniciar o servidor. Bounded por TTL (1h) e tamanho máx. (1000).              |
 | RBAC só no frontend                       | Inerente ao json-server. Documentado como limitação.                                        |
 | Playwright + RTL                          | Testes de componente com RTL + E2E com Playwright. Submissão RHF tem limitação conhecida.   |
-| Autenticação fake (Zustand em memória)    | Simulada para demonstrar RBAC. Sem JWT, sem OAuth. Login expira ao recarregar a página.      |
+| Autenticação fake (localStorage)          | Simulada para demonstrar RBAC. Sem JWT, sem OAuth. Persistência via localStorage (5 linhas, sem middleware). |
 | Web Vitals nativos vs PostHog/Sentry      | Dados apenas no console em dev. Sem telemetria remota.                                      |
 | Docker com `npm install` em vez de `npm ci` | Lockfile incompatível com esbuild linux. `🐴` Aceitável para protótipo.                   |
 

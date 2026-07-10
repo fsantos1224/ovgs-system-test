@@ -305,7 +305,7 @@ O sistema usa **3 camadas de armazenamento**:
 
 | Dado | Local | Persistência |
 |------|-------|-------------|
-| Role do utilizador | Zustand (memória) | Volátil — recarregar a página requer novo login |
+| Sessão do utilizador | Zustand + localStorage (`xpto:auth:user`) | Persistente entre reloads |
 | Tema (dark/light) | Zustand (memória) | Volátil — sempre dark ao recarregar |
 | Cache TanStack Query | Memória | Volátil (recria ao recarregar) |
 
