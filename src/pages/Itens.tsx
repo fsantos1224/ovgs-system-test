@@ -64,7 +64,7 @@ export function Itens() {
   const onSubmit = async (data: ItemInput) => {
     setErro('');
     try {
-      await criarItem.mutateAsync(data as unknown as Record<string, unknown>);
+      await criarItem.mutateAsync(data);
       setMostrarForm(false);
       reset();
     } catch (err) {

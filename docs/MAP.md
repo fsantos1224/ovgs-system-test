@@ -280,7 +280,7 @@ Depois: 14b (depende de 14a) → 19 (depende de 13 + 14b).
 | #      | Título                                             | Slug                                                   | Tipo                 | Bloqueado por | Status |
 | ------ | -------------------------------------------------- | ------------------------------------------------------ | -------------------- | ------------- | ------ |
 | ~~40~~ | Prefactor: inverter dependência do domínio         | `40-inverter-dependencia-dominio`                      | `wayfinder:refactor` | —             | ✔      |
-| 41     | DTOs base + API Client interface                   | `41-dtos-api-client-interface`                         | `wayfinder:feature`  | 40            | 🔲     |
+| ~~41~~ | DTOs base + API Client interface                   | `41-dtos-api-client-interface`                         | `wayfinder:feature`  | 40            | ✔      |
 | 42     | OrdemVenda: repository ports + concreto + migração | `42-ordemvenda-repository-migracao`                    | `wayfinder:feature`  | 40, 41        | 🔲     |
 | 43     | Clientes/Transportes/Itens/Auditoria: repositories | `43-clientes-transportes-itens-auditoria-repositories` | `wayfinder:feature`  | 40, 41        | 🔲     |
 | 44     | Use case: CriarOrdemVenda + AlterarStatusOV        | `44-use-case-criar-ov-alterar-status`                  | `wayfinder:feature`  | 42            | 🔲     |
@@ -294,7 +294,14 @@ Depois: 14b (depende de 14a) → 19 (depende de 13 + 14b).
 - Zod schemas em `schemas/` permanecem independentes — domínio não depende mais de detalhe de infraestrutura
 - Nenhuma mudança de comportamento: `tsc --noEmit`, `vitest run` (39/39), `npm run build` verificados
 
-Fronteira: ticket 41 (bloqueado por 40 → 40 resolvido, pode começar).
+### Ticket 41 — DTOs base + API Client interface (resolvido)
+
+- `src/application/ports/` criado com `DTOs.ts` (9 interfaces DTO + `PaginatedResult<T>`) e `IApiClient.ts`
+- Mutations em `useOrdensVenda.ts`, `useClientes.ts`, `useItens.ts`, `useTransportes.ts` tipadas com DTOs
+- Casts `Record<string, unknown>` removidos em `Itens.tsx` e `Agendamento.tsx`
+- `tsc --noEmit`, `vitest run` (39/39) verificados
+
+Fronteira: tickets 42 e 43 — ambos bloqueados por 40+41 (resolvidos), podem começar em paralelo.
 
 ## Not yet specified
 

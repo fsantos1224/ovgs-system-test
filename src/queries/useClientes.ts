@@ -1,16 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
-import { apiGet, apiPost, apiPatch, apiDelete } from "./api";
-import { clienteSchema } from "../schemas/cliente";
-import type { ClienteResponse } from "../schemas/cliente";
-import { useToast } from "../stores/toastStore";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
+import { apiGet, apiPost, apiPatch, apiDelete } from './api';
+import { clienteSchema } from '../schemas/cliente';
+import type { ClienteResponse } from '../schemas/cliente';
+import type { CriarClienteDTO, AtualizarClienteDTO } from '../application/ports/DTOs';
+import { useToast } from '../stores/toastStore';
 
-const KEY = "clientes";
+const KEY = 'clientes';
 
 export function useClientes() {
   return useQuery({
     queryKey: [KEY],
-    queryFn: () => apiGet<ClienteResponse[]>("/clientes", z.array(clienteSchema)),
+    queryFn: () => apiGet<ClienteResponse[]>('/clientes', z.array(clienteSchema)),
   });
 }
 
@@ -26,9 +27,12 @@ export function useCriarCliente() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) => apiPost("/clientes", data, clienteSchema),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: [KEY] }); toast.success("Cliente criado com sucesso."); },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro ao criar cliente"),
+    mutationFn: (data: CriarClienteDTO) => apiPost('/clientes', data, clienteSchema),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [KEY] });
+      toast.success('Cliente criado com sucesso.');
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Erro ao criar cliente'),
   });
 }
 
@@ -36,9 +40,13 @@ export function useAtualizarCliente() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/clientes/${id}`, data, clienteSchema),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: [KEY] }); toast.success("Cliente atualizado com sucesso."); },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro ao atualizar cliente"),
+    mutationFn: ({ id, data }: { id: string; data: AtualizarClienteDTO }) =>
+      apiPatch(`/clientes/${id}`, data, clienteSchema),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [KEY] });
+      toast.success('Cliente atualizado com sucesso.');
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Erro ao atualizar cliente'),
   });
 }
 
@@ -47,7 +55,10 @@ export function useExcluirCliente() {
   const toast = useToast();
   return useMutation({
     mutationFn: (id: string) => apiDelete(`/clientes/${id}`),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: [KEY] }); toast.success("Cliente excluído."); },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro ao excluir cliente"),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: [KEY] });
+      toast.success('Cliente excluído.');
+    },
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Erro ao excluir cliente'),
   });
 }

@@ -1,16 +1,17 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { z } from "zod";
-import { apiGet, apiPost, apiPatch, apiDelete } from "./api";
-import { transporteSchema } from "../schemas/transporte";
-import type { TransporteResponse } from "../schemas/transporte";
-import { useToast } from "../stores/toastStore";
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { z } from 'zod';
+import { apiGet, apiPost, apiPatch, apiDelete } from './api';
+import { transporteSchema } from '../schemas/transporte';
+import type { TransporteResponse } from '../schemas/transporte';
+import type { CriarTransporteDTO, AtualizarTransporteDTO } from '../application/ports/DTOs';
+import { useToast } from '../stores/toastStore';
 
-const KEY = "transportes";
+const KEY = 'transportes';
 
 export function useTransportes() {
   return useQuery({
     queryKey: [KEY],
-    queryFn: () => apiGet<TransporteResponse[]>("/tiposTransporte", z.array(transporteSchema)),
+    queryFn: () => apiGet<TransporteResponse[]>('/tiposTransporte', z.array(transporteSchema)),
   });
 }
 
@@ -18,12 +19,12 @@ export function useCriarTransporte() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) => apiPost("/tiposTransporte", data, transporteSchema),
+    mutationFn: (data: CriarTransporteDTO) => apiPost('/tiposTransporte', data, transporteSchema),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
-      toast.success("Transporte criado.");
+      toast.success('Transporte criado.');
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro ao criar transporte."),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Erro ao criar transporte.'),
   });
 }
 
@@ -31,12 +32,13 @@ export function useAtualizarTransporte() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/tiposTransporte/${id}`, data, transporteSchema),
+    mutationFn: ({ id, data }: { id: string; data: AtualizarTransporteDTO }) =>
+      apiPatch(`/tiposTransporte/${id}`, data, transporteSchema),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
-      toast.success("Transporte atualizado.");
+      toast.success('Transporte atualizado.');
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro ao atualizar transporte."),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Erro ao atualizar transporte.'),
   });
 }
 
@@ -47,8 +49,8 @@ export function useExcluirTransporte() {
     mutationFn: (id: string) => apiDelete(`/tiposTransporte/${id}`),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
-      toast.success("Transporte excluído.");
+      toast.success('Transporte excluído.');
     },
-    onError: (err) => toast.error(err instanceof Error ? err.message : "Erro ao excluir transporte."),
+    onError: (err) => toast.error(err instanceof Error ? err.message : 'Erro ao excluir transporte.'),
   });
 }

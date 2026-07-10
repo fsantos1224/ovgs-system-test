@@ -8,6 +8,7 @@ import { Calendar, Clock } from 'lucide-react';
 import { useOrdensVenda, useAtualizarOV } from '../queries';
 import { usePermissao } from '../hooks/usePermission';
 import { statusLabel } from '../domain/types';
+import type { AtualizarOVDTO } from '../application/ports/DTOs';
 import { trackEvent } from '../lib/telemetry';
 import { useToast } from '../stores/toastStore';
 import { Breadcrumbs } from '../components/Breadcrumbs';
@@ -57,7 +58,7 @@ export function Agendamento() {
   const onSubmitForm = async (data: AgendamentoInput) => {
     const ov = agendaveis.find((o) => o.id === editando);
     if (!ov) return;
-    const body: Record<string, string> = {};
+    const body: AtualizarOVDTO = {};
     if (data.dataEntrega) body.dataEntregaPrevista = new Date(data.dataEntrega).toISOString();
     if (data.janela) body.janelaAtendimento = data.janela;
     if (ov.status === 'PLANEJADA') body.status = 'AGENDADA';

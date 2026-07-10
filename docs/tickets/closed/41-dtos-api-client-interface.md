@@ -38,7 +38,25 @@ Formalizar os DTOs de entrada/saída que estavam implícitos nos schemas de form
 
 ## Critérios de aceitação
 
-- [ ] `src/application/ports/DTOs.ts` com todos os DTOs listados
-- [ ] `src/application/ports/IApiClient.ts` com interface genérica
-- [ ] Tipos DTO usados em mutations (não mais `Record<string, unknown>`)
-- [ ] `tsc --noEmit` limpo
+- [x] `src/application/ports/DTOs.ts` com todos os DTOs listados
+- [x] `src/application/ports/IApiClient.ts` com interface genérica
+- [x] Tipos DTO usados em mutations (não mais `Record<string, unknown>`)
+- [x] `tsc --noEmit` limpo
+
+## Resolução
+
+`src/application/ports/` criado com:
+
+- `DTOs.ts` — interfaces `CriarOVDTO`, `AtualizarOVDTO`, `ListarOVParams`, `CriarClienteDTO`, `AtualizarClienteDTO`, `CriarItemDTO`, `AtualizarItemDTO`, `CriarTransporteDTO`, `AtualizarTransporteDTO`, `PaginatedResult<T>`
+- `IApiClient.ts` — interface genérica com métodos `get`, `getPaginated`, `post`, `patch`, `delete`
+
+Mutations nos hooks de query atualizadas para usar DTOs:
+
+- `useOrdensVenda.ts` — `ListarOVParams`, `AtualizarOVDTO`, `Pick<AtualizarOVDTO, "status">`; tipo export `CriarOVPayload` para o payload completo
+- `useClientes.ts` — `CriarClienteDTO`, `AtualizarClienteDTO`
+- `useItens.ts` — `CriarItemDTO`, `AtualizarItemDTO`
+- `useTransportes.ts` — `CriarTransporteDTO`, `AtualizarTransporteDTO`
+- Cast `as unknown as Record<string, unknown>` removido em `Itens.tsx`
+- `Record<string, string>` trocado por `AtualizarOVDTO` em `Agendamento.tsx`
+
+`tsc --noEmit`, `vitest run` (39/39) verificados.

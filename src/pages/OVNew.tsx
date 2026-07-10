@@ -107,10 +107,11 @@ export function OVNew() {
       dataEntregaPrevista: new Date(data.dataEntregaPrevista).toISOString(),
       transporteId: data.transporteId,
       nomeTransporte: transporte?.nome ?? '',
-      status: 'CRIADA',
+      status: 'CRIADA' as const,
       itens: itensOV,
       valorTotal: itensOV.reduce((acc, i) => acc + i.quantidade * i.precoUnitario, 0),
       observacoes: data.observacoes || undefined,
+      janelaAtendimento: undefined,
     };
 
     try {
