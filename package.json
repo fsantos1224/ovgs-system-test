@@ -13,25 +13,30 @@
     "dev:full": "concurrently \"npm run dev\" \"npm run mock:api\""
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.101.2",
     "cors": "^2.8.6",
+    "json-server": "^0.17.4",
     "lucide-react": "^0.546.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-hook-form": "^7.81.0",
     "react-router-dom": "^6.28.0",
-    "zod": "^4.4.3"
+    "zod": "^4.4.3",
+    "zustand": "^5.0.14"
   },
   "devDependencies": {
     "@playwright/test": "^1.61.1",
     "@tailwindcss/vite": "^4.1.14",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
-    "@vitejs/plugin-react": "^4.3.4",
+    "@vitejs/plugin-react": "^6.0.3",
     "concurrently": "^9.1.0",
-    "json-server": "^0.17.4",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.1.14",
     "typescript": "^5.6.3",
-    "vite": "^5.4.11",
+    "vite": "^8.1.4",
     "vitest": "^4.1.10"
   }
 }
