@@ -68,7 +68,7 @@ export function ConfirmProvider({ children }: { children: ReactNode }) {
                 onClick={() => close(true)}
                 className={
                   pending.variant === "danger"
-                    ? "px-4 py-2 bg-rose-950/30 border border-rose-500/30 text-rose-300 hover:bg-rose-500/40 rounded-lg text-[10px] uppercase tracking-wider font-bold focus-visible:outline-2 focus-visible:outline-rose-400 transition-colors"
+                    ? "px-4 py-2 bg-rose-600 text-white border border-rose-600 hover:bg-rose-700 hover:border-rose-700 rounded-lg text-[10px] uppercase tracking-wider font-bold focus-visible:outline-2 focus-visible:outline-rose-400 transition-colors"
                     : "px-4 py-2 bg-accent text-on-accent hover:opacity-90 rounded-lg text-[10px] uppercase tracking-wider font-bold focus-visible:outline-2 focus-visible:outline-accent transition-opacity"
                 }
               >

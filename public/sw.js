@@ -1,7 +1,7 @@
 // XPTO Gestão — Service Worker v1.0.0
 // Cache-first for static assets, network-first for API calls
 
-const CACHE_NAME = "xpto-cache-v1";
+const CACHE_NAME = "xpto-cache-v2";
 const STATIC_ASSETS = [
   "/",
   "/index.html",
