@@ -1,181 +1,954 @@
-# PLAN — Rebrand Visual XPTO (Tema Light / Ápice Consultoria)
+# PLAN — Migração de Formulários para React Hook Form + Zod
 
 > Documento de planejamento. **Nenhuma implementação será feita antes da aprovação.**
 
 ---
 
-## 1. Goal
+## 1. Overview
 
-Reaplicar a **linguagem visual** do `.prototype/` (cartões limpos, tipografia editorial, micro-animações sutis) sobre o frontend atual do XPTO, **invertendo a paleta para o Tema Claro corporativo** inspirado em **Ápice Consultoria / Thera Consulting**: azul corporativo profundo (estrutura), aqua/laranja (sinais), branco + cinza-ultraleve (superfícies), texto grafite (não preto puro). A arquitetura (Router, RBAC, json-server, testes, Docker) **não muda** — é uma repintura, não uma reescrita.
+Substituir os padrões atuais de formulário (FormData + `e.preventDefault()` + `safeParse` manual no submit, ou `useState` controlado) por **React Hook Form** com **zodResolver** em todas as páginas de formulário do XPTO.
+
+### Formulários a migrar (6 páginas, 7 formulários)
+
+| Página            | Padrão atual                              | Schema                         | Modo           |
+| ----------------- | ----------------------------------------- | ------------------------------ | -------------- |
+| `Clientes.tsx`    | FormData + `clienteSchema.safeParse()`    | `clienteFormSchema`            | Criar + Editar |
+| `Transportes.tsx` | FormData + `transporteSchema.safeParse()` | `transporteFormSchema`         | Criar + Editar |
+| `Itens.tsx`       | FormData + `itemSchema.safeParse()`       | `itemFormSchema`               | Criar apenas   |
+| `Agendamento.tsx` | FormData + `validarJanela()` custom       | `agendamentoFormSchema` (novo) | Editar inline  |
+| `Login.tsx`       | `useState` controlado                     | `loginFormSchema` (novo)       | Submit apenas  |
+| `OVNew.tsx`       | RHF + `ovSchema.safeParse()` manual       | `ovFormSchema` (já existe)     | Criar          |
+
+### O que muda
+
+- **Antes**: `const fd = new FormData(e.currentTarget)` → objeto raw → `schema.safeParse(raw)` → erro manual
+- **Depois**: `useForm<T>({ resolver: zodResolver(schema) })` → erros reativos campo a campo via `formState.errors`
+- **Validação no submit**: RHF já valida tudo antes de chamar `onSubmit` — não precisa mais `safeParse` dentro do handler
+- **Formatação de input** (máscara CPF/CNPJ, telefone): mantida via `onChange` ou `onBlur` nos registros
+- **Botões de preenchimento rápido** (Login): mantidos via `setValue()` do RHF
+
+### Dependências
+
+| Pacote                    | Status              |
+| ------------------------- | ------------------- |
+| `react-hook-form@^7.81.0` | ✅ Já instalado     |
+| `zod@^4.4.3`              | ✅ Já instalado     |
+| `@hookform/resolvers`     | ❌ Precisa instalar |
 
 ---
 
-## 2. Design Tokens (Ápice)
+## 2. Pré-requisitos (Ticket #33 — Infraestrutura)
 
-```css
-/* Em CSS-first, todos entram em @theme dentro de src/index.css */
+**Nada pode começar sem este ticket.** Ele prepara o terreno para os 6 formulários.
 
---color-primary-900: #0b2545; /* sidebar / header / títulos estruturais */
---color-primary-700: #13315c; /* hover sidebar / borda ativa */
---color-primary-500: #1e4e8c; /* links institucionais, ícones estruturais */
+### 2.1 Instalar `@hookform/resolvers`
 
---color-accent-500: #0ea5e9; /* aqua — CTA secundário, links, ícones de ação */
---color-accent-600: #0284c7; /* hover do aqua */
---color-warn-500: #f97316; /* laranja — só para alertas/destaques críticos */
-
---color-surface-0: #ffffff; /* canvas de cards, modais, inputs */
---color-surface-50: #f8fafc; /* zebra de tabela, fundo do <main> */
---color-surface-100: #f1f5f9; /* cabeçalho de tabela, blocos alternados */
-
---color-border: #e2e8f0; /* bordas sutis (slate-200) */
---color-text-900: #1f2937; /* grafite — corpo principal (graphite, não preto) */
---color-text-700: #374151; /* secundário forte */
---color-text-500: #64748b; /* labels, metadados */
---color-text-400: #94a3b8; /* placeholders, disabled */
---color-danger-500: #dc2626; /* erros de validação (mantém vermelho WCAG AA) */
-
-/* Tipografia — manter Inter (já no projeto, equivalente Roboto/Open Sans */
---font-sans: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
---font-mono: "JetBrains Mono", ui-monospace, monospace; /* SKUs/IDs/valores */
-
-/* Espaçamento — escala Tailwind padrão (4, 8, 12, 16, 24) */
---radius-card: 8px; /* 🐴 mais conservador que rounded-2xl do .prototype */
---shadow-card: 0 1px 2px rgba(15, 23, 42, 0.06); /* sombra leve B2B */
+```bash
+npm install @hookform/resolvers
 ```
 
-Sem bordas ultra-arredondadas (`rounded-2xl`), sem JetBrains Mono para tudo — só números/SKUs.
+Verificar se o `zodResolver` exportado é compatível com Zod v4 (já instalado). O pacote `@hookform/resolvers` v3+ suporta Zod v3 e v4.
 
----
+**Verificação pós-instalação:**
 
-## 3. Scope (arquivos a modificar)
-
-### Configuração (5 arquivos)
-
-| Arquivo              | Ação                                                                                                   |
-| -------------------- | ------------------------------------------------------------------------------------------------------ |
-| `package.json`       | Tailwind v3 → v4; `+tailwindcss@^4`, `+@tailwindcss/vite`; `+lucide-react`; `+@vitejs/plugin-react@^5` |
-| `vite.config.ts`     | Importar `tailwindcss()` plugin em vez de PostCSS                                                      |
-| `tailwind.config.js` | **DELETAR** (v4 usa `@theme` no CSS)                                                                   |
-| `postcss.config.js`  | **DELETAR**                                                                                            |
-| `tsconfig.json`      | Sem mudança                                                                                            |
-| `src/index.css`      | Reescrita total: `@import "tailwindcss"` + bloco `@theme` + keyframe `fadeIn` + scrollbar light        |
-
-### Views / Componentes (13 arquivos — todos os `.tsx` de UI)
-
-- `src/layouts/AppLayout.tsx` — sidebar vira **light corporate** (fundo `primary-900`, texto branco, item ativo `accent-500`); **toggle de colapso** (apenas ícones) com estado local — `ponytail: useState simples, sem Context`
-- `src/pages/Login.tsx` — card branco sobre `surface-50`, botão `accent-500`
-- `src/pages/Dashboard.tsx` — KPIs em card branco, números grafite, badges de status com nova paleta
-- `src/pages/OVList.tsx` — tabela zebra `surface-0` / `surface-50`, header `primary-900` texto branco
-- `src/pages/OVDetail.tsx` — `surface-0` cards, botões de transição `accent-500`
-- `src/pages/OVNew.tsx` — formulário, mesmos componentes estilizados
-- `src/pages/Agendamento.tsx` — badges PLANEJADA âmbar (`warn-500`), AGENDADA aqua (`accent-500`)
-- `src/pages/Clientes.tsx`, `Itens.tsx`, `Transportes.tsx` — tabelas + modal consistentes
-- `src/pages/Auditoria.tsx` — tabela com `font-mono` em IDs/timestamps
-- `src/pages/NotFound.tsx` — mesmo padrão visual
-- `src/components/Modal.tsx`, `Pagination.tsx` — paleta + radius consistentes
-
-### Infra light
-
-- `index.html` — adicionar `<link rel="preconnect" href="https://fonts.googleapis.com">` 🐴 (perf, mas opcional)
-
----
-
-## 4. Files NOT to Touch (arquitetura preservada)
-
-- **Router**: `src/App.tsx`, qualquer arquivo de rota
-- **Estado/Hooks**: `src/hooks/useFetch.ts`, `usePaginatedFetch.ts`, `useAuth.ts`, `usePermission.ts`
-- **API**: `src/api/fetch.ts`
-- **Domínio**: `src/domain/types.ts`, `src/domain/*.ts`, `src/auth/credentials.ts`
-- **Dados**: `src/data/*.ts`, `src/data/*.json`, `db.seed.json` (template), `data/db.json` (runtime)
-- **Telemetria**: `src/lib/telemetry.ts`
-- **Mock backend**: `server.cjs` — json-server inteiro
-- **Testes**: `e2e/*.spec.ts` (4 arquivos), `vitest.config.ts` (se existir), testes unitários
-- **Container**: `Dockerfile`, `nginx.conf`, `docker-compose.yml`, `.dockerignore`
-- **Tickets abertos (13–19)**: nenhum é tocado por este plano — worktree paralela
-
----
-
-## 5. Implementation Steps (incrementalmente verificável)
-
-1. **Dependências** — `npm uninstall tailwindcss postcss autoprefixer && npm i -D tailwindcss@^4 @tailwindcss/vite && npm i lucide-react`. Verificar `npm run build` ainda compila.
-2. **CSS-first tokens** — reescrever `src/index.css` com `@theme { ... }`. Confirmar que tokens customizados viram classes (`bg-primary-900`, `text-accent-500`). `ponytail: usar @theme inline em vez de CSS variables avulsas`
-3. **Botão canário** — em `OVList.tsx`, aplicar `bg-accent-500` no botão "Nova OV" e `bg-surface-50` no `<main>`. **Smoke**: `npm run dev` + login admin → OV list com 1 elemento repintado.
-4. **Tabela completa** — `OVList.tsx`: zebra, header `primary-900`. Semântica HTML preservada (caption sr-only, role=region).
-5. **Sidebar** — `AppLayout.tsx`: substituir paleta + adicionar ícones `lucide-react`. Implementar colapso: estado `collapsed: boolean`, largura `w-64` ↔ `w-16`, esconder labels com `hidden` quando colapsado. Botão `<<` / `>>` no header.
-6. **Páginas restantes** — replicar tokens em todas as views (Login, Dashboard, Detail, New, Agendamento, cadastros, Auditoria, 404).
-7. **Modal + Pagination** — mesma paleta + radius.
-8. **Scrollbar estilizada** — adicionar `::-webkit-scrollbar` no `index.css`, track `surface-50`, thumb `primary-500`.
-9. **Micro-animações** — keyframe `fadeIn` (já no `.prototype`) em cards/listas. `ponytail: CSS only, sem framer-motion/GSAP — uma @keyframes resolve 80% dos casos`
-10. **A11y check** — `focus-visible:outline-2 focus-visible:outline-accent-500` em todos os interativos; contraste mínimo 4.5:1; aria-labels intactos.
-
-Cada passo é commitável e testável isoladamente.
-
----
-
-## 6. Dependencies (delta exato)
-
-```diff
-  dependencies:
-+   lucide-react               ^0.546.0
-  devDependencies:
--   autoprefixer               ^10.4.20
--   postcss                    ^8.4.49
--   tailwindcss                ^3.4.15
-+   tailwindcss                ^4.1.14
-+   @tailwindcss/vite          ^4.1.14
+```ts
+import { zodResolver } from '@hookform/resolvers/zod';
+// Deve compilar sem erros
 ```
 
-**Removidos**: `autoprefixer`, `postcss` (v4 não usa).
-**Adicionados**: `tailwindcss@4`, `@tailwindcss/vite` (plugin oficial), `lucide-react`.
-**NÃO adicionados**: `gsap` (YAGNI — animações-chave são CSS), `framer-motion`, `clsx` (Tailwind utility classes bastam), `tailwind-merge`.
+### 2.2 Criar `src/components/FormField.tsx`
+
+Componente de boilerplate que reduz a repetição label + erro em todos os formulários. **API:**
+
+```tsx
+// FormField.tsx — API pública
+import { type FieldError, type FieldErrors } from 'react-hook-form';
+
+interface FormFieldProps {
+  label: string;
+  required?: boolean;
+  error?: FieldError;
+  children: React.ReactNode;
+}
+
+export function FormField({ label, required, error, children }: FormFieldProps) {
+  return (
+    <div className="space-y-1.5">
+      <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">
+        {label}
+        {required && <span className="text-amber-500"> *</span>}
+      </label>
+      {children}
+      {error && (
+        <p role="alert" className="text-rose-400 text-xs mt-1">
+          {error.message}
+        </p>
+      )}
+    </div>
+  );
+}
+```
+
+**Uso típico:**
+
+```tsx
+<FormField label="Nome" required error={errors.nome}>
+  <input {...register('nome')} className="..." />
+</FormField>
+```
+
+**Por que `error` é `FieldError | undefined` em vez de `FieldErrors<T>` + field name?** Porque o padrão `errors.nome` já resolve para `FieldError | undefined` no ponto de uso. O componente não precisa saber o nome do campo — só renderizar o `message` se existir. Isso mantém a API minimalista e o tipo mais simples.
+
+**O componente deve ser colocado em `src/components/FormField.tsx`.**
+
+### 2.3 Criar `src/schemas/agendamento.ts`
+
+Schema Zod para agendamento (atualmente sem schema — usa `validarJanela()` função inline em `Agendamento.tsx`).
+
+```ts
+// src/schemas/agendamento.ts
+import { z } from 'zod';
+
+function parseJanela(val: string): { inicio: number; fim: number } | null {
+  const match = val.match(/^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/);
+  if (!match) return null;
+  const h1 = parseInt(match[1], 10),
+    m1 = parseInt(match[2], 10);
+  const h2 = parseInt(match[3], 10),
+    m2 = parseInt(match[4], 10);
+  if (h1 > 23 || m1 > 59 || h2 > 23 || m2 > 59) return null;
+  const inicio = h1 * 60 + m1;
+  const fim = h2 * 60 + m2;
+  if (fim <= inicio) return null;
+  return { inicio, fim };
+}
+
+// Super-refinement customizado para validar o formato HH:MM-HH:MM
+const janelaSchema = z.string().refine(
+  (val) => {
+    if (!val) return true; // campo opcional
+    return parseJanela(val) !== null;
+  },
+  { message: 'Formato inválido. Use HH:MM-HH:MM (ex: 08:00-12:00).' },
+);
+
+export const agendamentoFormSchema = z.object({
+  dataEntrega: z.string().min(1, 'Informe a data de entrega'),
+  janela: janelaSchema.optional().default(''),
+});
+
+export type AgendamentoInput = z.infer<typeof agendamentoFormSchema>;
+```
+
+**Registrar no barrel export** `src/schemas/index.ts`:
+
+```ts
+export { agendamentoFormSchema } from './agendamento';
+export type { AgendamentoInput } from './agendamento';
+```
+
+**Registrar no re-export** `src/lib/validation.ts`:
+
+```ts
+import { agendamentoFormSchema } from '../schemas';
+export const agendamentoSchema = agendamentoFormSchema;
+```
+
+### 2.4 Criar `src/schemas/login.ts`
+
+Schema para login (email + senha).
+
+```ts
+// src/schemas/login.ts
+import { z } from 'zod';
+
+export const loginFormSchema = z.object({
+  email: z.string().email('E-mail inválido'),
+  senha: z.string().min(1, 'Senha é obrigatória'),
+});
+
+export type LoginInput = z.infer<typeof loginFormSchema>;
+```
+
+**Registrar no barrel** e re-export:
+
+```ts
+// schemas/index.ts
+export { loginFormSchema } from './login';
+export type { LoginInput } from './login';
+
+// lib/validation.ts
+import { loginFormSchema } from '../schemas';
+export const loginSchema = loginFormSchema;
+```
+
+### 2.5 Verificação do ticket #33
+
+```bash
+npm run build   # tsc + vite build — deve passar limpo
+```
 
 ---
 
-## 7. Risk Register
+## 3. Ordem de Implementação
 
-| #   | Risco                                                                                                                                                                                                                          | Mitigação                                                                                     |
-| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------- |
-| R1  | **Testes E2E** referenciam `localStorage.setItem("XPTO:role", "admin")` e `getByRole("button", { name: "Criar OV" })` — ambos **preservados** pela nova paleta (não mudamos labels nem storage keys).                          | Rodar `npx playwright test` após passo 3; nenhum spec precisa de edição.                      |
-| R2  | **Contraste WCAG**: `text-text-500 #64748B` sobre `surface-50 #F8FAFC` ≈ 4.6:1 ✅. `accent-500 #0EA5E9` em botão branco ≈ 3.1:1 ❌ para texto — usar só para ícones/bordas, texto do CTA em branco sobre `accent-600 #0284C7`. | Definir contrato explícito no `index.css`: "CTA texto sempre branco sobre accent-600".        |
-| R3  | **a11y regressions**: classes `focus-visible:outline-slate-400` sumiriam na migração → precisa reescrever para `focus-visible:outline-accent-500` em todos os `.tsx`.                                                          | Grep `focus-visible` antes do build; substituir em batch via edit único.                      |
-| R4  | **Selector drift** em testes: `.bg-slate-800` deixa de existir no DOM se alguém fizer refactor semântico.                                                                                                                      | Testes Playwright usam `getByRole` (não classes) — imunes.                                    |
-| R5  | **Tailwind v4 build**: classes customizadas só funcionam se listadas no `@theme`. Esquecer `--color-accent-500` quebraria `bg-accent-500` em runtime (não em build).                                                           | `npm run build` + smoke manual em todas as páginas; build-time warnings se classe não existe. |
-| R6  | **Bundle splitting** (ticket 18) pode ser afetado pela troca de plugin Tailwind. `manualChunks` em `vite.config.ts` é independente do plugin → seguro.                                                                         | Verificar `dist/assets/` mostra 3+ chunks após build.                                         |
-| R7  | **Dockerfile** usa `node:20-alpine` e `npm install` (sem lock estrito). v4 não muda requirements de runtime.                                                                                                                   | Build Docker fica para verificação manual ao final.                                           |
-| R8  | **Scrollbar styled** não funciona no Firefox (`::-webkit-scrollbar` é WebKit-only).                                                                                                                                            | Documentar fallback: Firefox usa scrollbar nativa — aceitável para B2B interno.               |
-| R9  | **Sidebar colapsada em mobile**: `w-16` num viewport de 360px deixa <200px para conteúdo.                                                                                                                                      | 🐴 Não tratar mobile agora — backoffice desktop-only (escopo original).                       |
+```mermaid
+graph TD
+    A[#33 Infraestrutura] --> B[#34 OVNew]
+    A --> C[#35 Clientes]
+    A --> D[#36 Transportes]
+    A --> E[#37 Itens]
+    A --> F[#38 Agendamento]
+    A --> G[#39 Login]
+```
 
----
-
-## 8. Verification Plan
-
-Após cada passo:
-
-1. `npm run build` → sem erros TS, sem warnings Tailwind.
-2. `npm run dev:full` → login como admin.
-3. Smoke visual (manual, checklist):
-   - [ ] Login: card branco sobre cinza claro, botão aqua.
-   - [ ] Sidebar: azul corporativo, item ativo com detalhe aqua.
-   - [ ] OV List: header de tabela azul, zebrada, badges coloridas por status.
-   - [ ] Colapso de sidebar: clique no `<<` esconde labels, mantém ícones.
-   - [ ] Modais: cantos `rounded-lg`, sombra sutil.
-   - [ ] Scrollbar custom aparece em overflow.
-4. `npx playwright test` → 4 specs, todas verdes.
-5. `npm run test` (vitest) → unit tests verdes (não-tocados mas sanity).
-6. `docker compose build frontend` → build sem erros.
-7. Lighthouse/F12 contrast spot-check em `bg-accent-500 text-white` (botões CTA).
+**#33 primeiro.** Depois #34–#39 podem ser feitos em **qualquer ordem** (são independentes entre si).
 
 ---
 
-## 9. Open Questions (precisam de resposta antes do passo 1)
+## 4. Implementação Detalhada por Ticket
 
-1. **GSAP**: o briefing original pedia GSAP. Para Ápice (B2B sério), proponho **não usar** — `@keyframes` + `transition-*` cobrem fade-in de cards, hover de linhas, colapso suave. Confirma abandonar GSAP? (`+0 KB`, `+0 deps` — argumento forte)
-2. **Cor de destaque secundário**: **aqua** (`#0EA5E9`) ou **laranja** (`#F97316`)? Ápice usa os dois em momentos diferentes — proponho aqua como accent padrão + laranja só em badges de alerta crítica.
-3. **Logo textual**: manter "XPTO" ou rebatizar como "Ápice" / "Thera"? Proponho manter "XPTO" (não é uma reescrita de domínio), só trocar grafia.
-4. **Tipografia**: o briefing cita Roboto/Open Sans/Helvetica. Projeto atual usa **Inter** (versão métrica equivalente, já em uso). Trocar para Roboto é trivial (`swap de 1 linha em @import`). Vale o trabalho?
-5. **Sidebar colapsada**: incluir **neste** ticket (passo 5) ou abrir ticket 20 à parte? Eu recomendo incluir — é uma linha de código de estado + 2 classes condicionais.
-6. **Tickets 13/14a/14b/15a/15b/16/17/18/19** (todos abertos, nenhum relacionado a visual): a rebrand **vai tocar os mesmos arquivos** que esses tickets mexem (AppLayout, OVNew, OVList). Concorda em **resolver a rebrand primeiro** e atacar os outros depois, re-resolvendo conflitos? Alternativa: fechar tickets pendentes primeiro.
+### 4.1 Ticket #34 — Refatorar OVNew
+
+**Arquivo:** `src/pages/OVNew.tsx`
+
+**Mudanças:**
+
+1. Adicionar import do `zodResolver`
+2. Mudar `useForm<FormData>` para usar `resolver: zodResolver(ovFormSchema)`
+3. Remover validações inline `required: "msg"` dos registers — o schema já define isso
+4. Remover `ovSchema.safeParse()` manual do `onSubmit`
+5. Remover estado `serverError` (era usado para erro de parse do safeParse — agora o resolver já valida)
+
+**Antes:**
+
+```tsx
+import { ovSchema } from "../lib/validation";
+
+const { register, handleSubmit, control, watch, setError, clearErrors, setValue, formState: { errors } }
+  = useForm<FormData>({
+    defaultValues: { itens: [{ itemId: "", quantidade: 1 }] },
+  });
+
+// validação inline nos registers:
+<input {...register("clienteId", { required: "Selecione um cliente" })} />
+
+// safeParse manual no submit:
+const onSubmit = async (data: FormData) => {
+  const itensValidos = data.itens.filter((i) => i.itemId).length;
+  if (itensValidos === 0) {
+    setError("itens", { type: "manual", message: "Adicione ao menos um item" });
+    return;
+  }
+  const parsed = ovSchema.safeParse(data);
+  if (!parsed.success) { setServerError(parsed.error.issues[0].message); ... return; }
+  // ... usa parsed.data
+};
+```
+
+**Depois:**
+
+```tsx
+import { zodResolver } from '@hookform/resolvers/zod';
+import { ovFormSchema } from '../schemas'; // note: ovFormSchema, não ovSchema
+
+const {
+  register,
+  handleSubmit,
+  control,
+  watch,
+  setValue,
+  formState: { errors },
+} = useForm<FormData>({
+  resolver: zodResolver(ovFormSchema),
+  defaultValues: { itens: [{ itemId: '', quantidade: 1 }] },
+});
+
+// registers sem validação inline:
+<input {...register('clienteId')} />;
+
+// onSubmit limpo — RHF já validou via resolver:
+const onSubmit = async (data: FormData) => {
+  // data já está 100% válido segundo ovFormSchema
+  // Só precisa do check de itensValidos (filter + length) como lógica de negócio
+  const itensValidos = data.itens.filter((i) => i.itemId).length;
+  if (itensValidos === 0) {
+    setError('itens', { type: 'manual', message: 'Adicione ao menos um item' });
+    return;
+  }
+  clearErrors('itens');
+  // ... prosseguir com data diretamente (não parsed.data)
+};
+```
+
+**Detalhes importantes:**
+
+- `ovSchema` vs `ovFormSchema`: O schema de validação do formulário é `ovFormSchema` (não `ovSchema` que inclui `id`, `numero`, etc.). **Mudar o import** de `ovSchema` para `ovFormSchema`.
+- O `ovFormSchema` já tem `dataEntregaPrevista` com regex `^\d{4}-\d{2}-\d{2}$` — vai acusar erro se o usuário digitar data inválida.
+- O `setError` para "itens vazios" permanece como validação manual (é lógica de negócio: o `ovFormSchema` exige `min(1)`, mas itens com `itemId = ""` passam no schema — o filtro de negócio remove esses).
+- Remover o import de `ovSchema` de `../lib/validation` (pode deixar se ainda usado em outros lugares; nesse arquivo específico, substituir).
+- Manter `clearErrors("itens")` no onSubmit após o filtro.
+
+### 4.2 Ticket #35 — Refatorar Clientes
+
+**Arquivo:** `src/pages/Clientes.tsx`
+
+**Mudanças fundamentais:**
+
+1. Trocar `handleSubmit` com FormData por `useForm<ClienteInput>` com `zodResolver(clienteFormSchema)`
+2. Formatação de documento/telefone: antes era `onInput` mutando `e.currentTarget.value` — migrar para `onChange` do RHF
+3. Lidar com o modal criar/editar: usar `reset()` para preencher valores na edição
+4. Erro de submit (mutation) continua em estado local `erro` (erro de rede, não de validação)
+
+**Antes (padrão FormData):**
+
+```tsx
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+  setErro("");
+  const fd = new FormData(e.currentTarget);
+  const raw = { nome: ..., documento: ..., etc };
+  const parsed = clienteSchema.safeParse(raw);
+  if (!parsed.success) { setErro(parsed.error.issues[0].message); return; }
+  // mutation...
+};
+```
+
+**Depois:**
+
+```tsx
+type FormValues = z.infer<typeof clienteFormSchema>;
+
+// Hook state
+const [editando, setEditando] = useState<Cliente | null>(null);
+const [mostrarForm, setMostrarForm] = useState(false);
+const [erro, setErro] = useState('');
+
+const {
+  register,
+  handleSubmit,
+  reset,
+  formState: { errors },
+} = useForm<FormValues>({
+  resolver: zodResolver(clienteFormSchema),
+  defaultValues: {
+    nome: '',
+    documento: '',
+    email: '',
+    telefone: '',
+    endereco: '',
+    ativo: true,
+  },
+});
+
+// Reset do form ao abrir modal (novo ou edição)
+const abrirForm = (cliente?: Cliente) => {
+  setEditando(cliente ?? null);
+  setErro('');
+  if (cliente) {
+    reset({
+      nome: cliente.nome,
+      documento: cliente.documento,
+      email: cliente.email,
+      telefone: cliente.telefone,
+      endereco: cliente.endereco ?? '',
+      ativo: cliente.ativo,
+    });
+  } else {
+    reset(); // volta aos defaultValues
+  }
+  setMostrarForm(true);
+};
+
+const onSubmit = async (data: FormValues) => {
+  setErro('');
+  try {
+    if (editando) {
+      await atualizarCliente.mutateAsync({ id: editando.id, data });
+    } else {
+      await criarCliente.mutateAsync(data);
+    }
+    setEditando(null);
+    setMostrarForm(false);
+  } catch (err) {
+    setErro(err instanceof Error ? err.message : 'Erro ao salvar');
+  }
+};
+
+// Fechar modal
+const fecharForm = () => {
+  setMostrarForm(false);
+  setEditando(null);
+  setErro('');
+  reset();
+};
+```
+
+**Formatação de documento e telefone:**
+
+A formatação visual (máscara) acontece **no onChange** — armazenamos o valor "limpo" (só dígitos) no estado do RHF, mas exibimos formatado.
+
+```tsx
+// Helper para formatar documento no display
+function formatDocumentoDisplay(val: string): string {
+  const d = val.replace(/\D/g, '');
+  if (d.length <= 11) return d.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  return d.replace(/(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})/, '$1.$2.$3/$4-$5');
+}
+```
+
+**Opção A — Controlled input via `useController`** (recomendada para formatações complexas):
+
+```tsx
+import { useController } from 'react-hook-form';
+
+const { field: docField } = useController({
+  control,
+  name: 'documento',
+});
+
+// No input:
+<input
+  value={formatDocumentoDisplay(docField.value)}
+  onChange={(e) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    docField.onChange(raw); // store only digits
+  }}
+/>;
+```
+
+**Opção B — Uncontrolled com `onChange` no register** (mais simples, suficiente para este caso):
+
+```tsx
+<input
+  {...register('documento')}
+  onChange={(e) => {
+    const raw = e.target.value.replace(/\D/g, '');
+    e.target.value = formatDocumentoDisplay(raw);
+    register('documento').onChange({ target: { value: raw } }); // ❌ complexo, não recomendado
+  }}
+/>
+```
+
+**Recomendação: Opção A** — `useController` para documento e telefone (campos com máscara), `register` simples para os demais.
+
+**Template do form com RHF + FormField:**
+
+```tsx
+<form key={editando?.id ?? 'new'} onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <FormField label="Nome" required error={errors.nome}>
+      <input
+        {...register('nome')}
+        className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
+      />
+    </FormField>
+    <FormField label="Documento" required error={errors.documento}>
+      <input
+        {...docField}
+        value={formatDocumentoDisplay(docField.value)}
+        onChange={(e) => {
+          const raw = e.target.value.replace(/\D/g, '');
+          docField.onChange(raw);
+        }}
+        className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
+      />
+    </FormField>
+    <FormField label="Email" required error={errors.email}>
+      <input type="email" {...register('email')} className="..." />
+    </FormField>
+    <FormField label="Telefone" error={errors.telefone}>
+      {/* similar ao documento, com useController */}
+    </FormField>
+  </div>
+  <FormField label="Endereço" error={errors.endereco}>
+    <input {...register('endereco')} className="..." />
+  </FormField>
+  <FormField label="Ativo" error={errors.ativo}>
+    <select {...register('ativo')} className="...">
+      <option value="true">Sim</option>
+      <option value="false">Não</option>
+    </select>
+  </FormField>
+  {erro && (
+    <p role="alert" className="text-rose-400 text-xs">
+      {erro}
+    </p>
+  )}
+  {/* buttons */}
+</form>
+```
+
+**Atenção:** O campo `ativo` é `z.boolean()`. O RHF envia string do `<select>` (`"true"` / `"false"`). O zodResolver vai rejeitar porque espera boolean. Duas opções:
+
+1. **Usar controlled** com `useController` e fazer `onChange` converter string → boolean
+2. **Converter no schema** adicionando `.transform()` — mas isso muda o schema para todos
+3. **Usar `setValueAs`** no register:
+
+```tsx
+<select {...register("ativo", { setValueAs: (v) => v === "true" })}>
+```
+
+Opção #3 é a mais limpa — não polui o schema e não precisa de controller.
+
+**Mesmo padrão se aplica a Transportes e Itens** que também têm campo `ativo`.
+
+### 4.3 Ticket #36 — Refatorar Transportes
+
+**Arquivo:** `src/pages/Transportes.tsx`
+
+**Padrão idêntico ao Clientes**, mas mais simples (só 3 campos: `nome`, `modal`, `ativo`).
+
+**Mudanças:**
+
+1. Substituir FormData por `useForm<TransporteInput>` com `zodResolver(transporteFormSchema)`
+2. `reset()` na abertura do modal (novo/edição)
+3. Campo `modal` é `z.enum(["rodoviario", "aereo", "maritimo", "ferroviario"])` — o `<select>` funciona direto com register (valores correspondem aos enum values)
+4. Campo `ativo` usa `setValueAs` (mesmo padrão do Clientes)
+5. Remover `transporteSchema` do import de `validation.ts` (ou manter se usado em outro lugar, mas migrar o handleSubmit)
+
+**Template:**
+
+```tsx
+type TransporteFormValues = z.infer<typeof transporteFormSchema>;
+
+const {
+  register,
+  handleSubmit,
+  reset,
+  formState: { errors },
+} = useForm<TransporteFormValues>({
+  resolver: zodResolver(transporteFormSchema),
+  defaultValues: { nome: '', modal: 'rodoviario', ativo: true },
+});
+
+// abrirForm, onSubmit, fecharForm — mesmo padrão do Clientes
+```
+
+### 4.4 Ticket #37 — Refatorar Itens
+
+**Arquivo:** `src/pages/Itens.tsx`
+
+**Particularidades:**
+
+1. Apenas **criação** (sem edição) — mais simples
+2. Campo `preco` no HTML que mapeia para `precoUnitario` no schema (com transform `* 100`)
+
+**Mudanças:**
+
+1. `useForm<ItemInput>` com `zodResolver(itemFormSchema)`
+2. Campo `precoUnitario` no schema espera `z.number()` — no HTML o input é `type="number"` com nome `preco`. **Mapear via register:**
+   - Ou renomear o input name para `precoUnitario`
+   - Ou usar `setValueAs` para converter string → number e o resolver faz o parse
+3. Campo `ativo` com `setValueAs`
+
+**Atenção ao `precoUnitario`:**
+
+O schema `itemFormSchema` define:
+
+```ts
+precoUnitario: z.number().positive().transform(v => Math.round(v * 100)),
+```
+
+Mas o valor armazenado no banco é em centavos (inteiro). O input HTML exibe valor em reais (real). O schema já faz o transform.
+
+Para o RHF, o valor que entra no campo deve ser **em reais** (número decimal), e o resolver aplica o transform.
+
+```tsx
+<input type="number" step="0.01" {...register('precoUnitario', { valueAsNumber: true })} />
+```
+
+`valueAsNumber: true` faz o RHF converter a string do input para `number`. O `zodResolver` então roda `z.number().positive().transform(v => Math.round(v * 100))`.
+
+**O que o submit recebe:** `precoUnitario` já em centavos (inteiro). Perfeito.
+
+### 4.5 Ticket #38 — Refatorar Agendamento
+
+**Arquivo:** `src/pages/Agendamento.tsx`
+
+**Particularidades:**
+
+- **Múltiplos formulários** na mesma página (um card por OV, cada um com seu form)
+- Cada form precisa de seu próprio `useForm` — mas como só um pode estar em edição por vez (controlado por `editando` state), pode-se usar **um único `useForm`** e resetar com os valores da OV ao abrir edição
+- Validação de janela (`HH:MM-HH:MM`) agora é feita pelo `zodResolver` com `agendamentoFormSchema`
+
+**Mudanças:**
+
+1. Criar `useForm<AgendamentoInput>` com `zodResolver(agendamentoFormSchema)`
+2. Ao clicar "Agendar/Reagendar" em uma OV, chamar `reset()` com os valores atuais
+3. Substituir `handleSalvar` (que recebia `form: HTMLFormElement`) por `handleSubmit` do RHF
+4. Remover `validarJanela()` e `setJanelaErro` — erros agora vêm de `errors.janela`
+
+**Antes:**
+
+```tsx
+const [janelaErro, setJanelaErro] = useState('');
+
+const handleSalvar = async (ov, form) => {
+  const fd = new FormData(form);
+  const dataEntregaPrevista = fd.get('dataEntrega') as string;
+  const janelaAtendimento = fd.get('janela') as string;
+  const erro = validarJanela(janelaAtendimento);
+  if (erro) {
+    setJanelaErro(erro);
+    return;
+  }
+  // mutation...
+};
+```
+
+**Depois:**
+
+```tsx
+type AgendamentoFormValues = z.infer<typeof agendamentoFormSchema>;
+
+const { register, handleSubmit, reset, formState: { errors } } = useForm<AgendamentoFormValues>({
+  resolver: zodResolver(agendamentoFormSchema),
+  defaultValues: { dataEntrega: "", janela: "" },
+});
+
+const abrirEdicao = (ov: OrdemVenda) => {
+  setEditando(ov.id);
+  setJanelaErro("");
+  reset({
+    dataEntrega: ov.dataEntregaPrevista?.split("T")[0] ?? "",
+    janela: ov.janelaAtendimento ?? "",
+  });
+};
+
+const onSubmitForm = async (data: AgendamentoFormValues) => {
+  // data já está validado pelo zodResolver
+  // data.dataEntrega = "2026-12-31", data.janela = "08:00-12:00"
+  const ov = agendaveis.find((o) => o.id === editando);
+  if (!ov) return;
+
+  const body: Record<string, string> = {};
+  if (data.dataEntrega) body.dataEntregaPrevista = new Date(data.dataEntrega).toISOString();
+  if (data.janela) body.janelaAtendimento = data.janela;
+  if (ov.status === "PLANEJADA") body.status = "AGENDADA";
+
+  try {
+    await atualizarOV.mutateAsync({ id: ov.id, data: body });
+    trackEvent("ov:agendar", "ordem_venda", { ovId: ov.id, ... });
+    setEditando(null);
+    toast.success("Agendamento salvo com sucesso.");
+  } catch (err) {
+    toast.error(err instanceof Error ? err.message : "Erro ao salvar agendamento");
+  }
+};
+
+// No JSX:
+{editandoAgora ? (
+  <form onSubmit={handleSubmit(onSubmitForm)} className="space-y-3">
+    <FormField label="Data" required error={errors.dataEntrega}>
+      <input type="date" {...register("dataEntrega")} className="..." />
+    </FormField>
+    <FormField label="Janela" error={errors.janela}>
+      <input
+        type="text"
+        placeholder="ex: 08:00-12:00"
+        {...register("janela")}
+        className="..."
+      />
+    </FormField>
+    {/* buttons */}
+  </form>
+) : (...)}
+```
+
+### 4.6 Ticket #39 — Refatorar Login
+
+**Arquivo:** `src/pages/Login.tsx`
+
+**Particularidades:**
+
+- Formulário simples: email + senha
+- Botões de preenchimento rápido que usam `setValue`
+- Validação feita pelo schema (`email` valida formato, `senha` valida não-vazio)
+- Submit chama `login()` do authStore (não mutation)
+
+**Antes:**
+
+```tsx
+const [email, setEmail] = useState("");
+const [senha, setSenha] = useState("");
+const [erro, setErro] = useState("");
+
+// botão de preenchimento:
+onClick={() => { setEmail("admin@XPTO.local"); setSenha("admin123"); }}
+```
+
+**Depois:**
+
+```tsx
+import { zodResolver } from '@hookform/resolvers/zod';
+import { loginSchema } from '../lib/validation';
+import type { LoginInput } from '../schemas';
+
+const {
+  register,
+  handleSubmit,
+  setValue,
+  formState: { errors },
+} = useForm<LoginInput>({
+  resolver: zodResolver(loginSchema),
+  defaultValues: { email: '', senha: '' },
+});
+
+const [erro, setErro] = useState('');
+
+const onSubmit = (data: LoginInput) => {
+  setErro('');
+  const msg = login(data.email, data.senha);
+  if (msg) {
+    setErro(msg);
+  } else {
+    navigate('/');
+  }
+};
+
+// Botões de preenchimento rápido:
+<button
+  onClick={() => {
+    setValue('email', 'admin@XPTO.local');
+    setValue('senha', 'admin123');
+    setErro('');
+  }}
+>
+  admin@XPTO.local / admin123 (Admin)
+</button>;
+```
+
+**Não esquecer** de remover os `useState` de `email` e `senha` (agora gerenciados pelo RHF).
 
 ---
 
-**Próxima ação do usuário**: responder às 6 questões acima. Após aprovação, abrir ticket novo (sugestão: `20-rebrand-light-apice.md`) ou encadear como `01-rebrand-...` na sequência da fronteira.
+## 5. Padrões e Decisões Transversais
+
+### 5.1 `ativo` — string "true"/"false" → boolean
+
+O `<select name="ativo">` envia string. O RHF com zodResolver vai falhar se o schema espera `z.boolean()`. Solução: **`setValueAs`** no register.
+
+```tsx
+<select {...register("ativo", { setValueAs: (v: string) => v === "true" })}>
+```
+
+Isso se aplica a: Clientes, Transportes, Itens.
+
+### 5.2 `reset()` no modal criar/editar
+
+Ao abrir modal para **edição**, chamar `reset(cliente)` com os valores existentes. Para **novo**, chamar `reset()` (volta aos defaultValues). Usar `key={editando?.id ?? "new"}` no `<form>` para forçar re-montagem se necessário (RHF gerencia estado interno — reset é suficiente).
+
+### 5.3 Erro de servidor vs erro de validação
+
+- **Erro de validação** (campo inválido): gerenciado pelo RHF via `errors.nome.message` → renderizado pelo `FormField`
+- **Erro de servidor** (mutation rejeitada, rede, etc): estado local `erro` (ou `serverError`), exibido como bloco no topo do form
+
+Manter a variável `erro`/`serverError` + `<p role="alert">` para erros de servidor. **Não** misturar com `setError` do RHF (que é para erros de campo).
+
+### 5.4 FormField opcional mas não obrigatório
+
+O `FormField` reduz boilerplate mas não precisa ser usado em todos os formulários se o layout exigir personalização. Pode-se usar o padrão manual (label + children + erro condicional) onde fizer mais sentido.
+
+### 5.5 `formState: { errors }` — desestruturação
+
+Sempre desestruturar `formState: { errors }` do `useForm()`. Isso cria um objeto reativo que reflete os erros atuais.
+
+### 5.6 Zod v4 compatibilidade
+
+Zod v4 está instalado. O `@hookform/resolvers` v3+ funciona com Zod v4. O `z.object`, `z.string`, `z.number`, `.min()`, `.max()`, `.email()`, `.regex()`, `.refine()`, `.transform()` — tudo compatível.
+
+### 5.7 `useForm` + `control` só quando necessário
+
+`control` só é necessário quando há `useFieldArray` ou `useController`. Se o formulário só usa `register`, não precisa desestruturar `control`.
+
+---
+
+## 6. Verificação
+
+### 6.1 Para cada ticket
+
+```bash
+npm run build        # tsc + vite build — sem erros
+npx vitest run       # testes unitários existentes continuam passando
+npx playwright test  # testes E2E existentes continuam passando
+```
+
+### 6.2 Checklist de verificação manual
+
+#### Ticket #33
+
+- [ ] `@hookform/resolvers` no `package.json`
+- [ ] `FormField` importável de `src/components/FormField`
+- [ ] `agendamentoFormSchema` exportado de `src/schemas/agendamento`
+- [ ] `loginFormSchema` exportado de `src/schemas/login`
+- [ ] `npm run build` passa
+
+#### Ticket #34 (OVNew)
+
+- [ ] `useForm` usa `zodResolver(ovFormSchema)` ao invés de validação inline
+- [ ] `onSubmit` recebe dados já validados — sem `safeParse` manual
+- [ ] Erros de campo aparecem reativamente (ex: submit sem cliente → campo cliente fica vermelho)
+- [ ] Teste E2E `e2e/ov-create.spec.ts` passa
+
+#### Ticket #35 (Clientes)
+
+- [ ] Formulário usa `useForm<ClienteInput>` com `zodResolver(clienteFormSchema)`
+- [ ] Máscara de documento (CPF/CNPJ) funciona ao digitar
+- [ ] Máscara de telefone funciona ao digitar
+- [ ] Editar cliente pré-preenche o formulário corretamente
+- [ ] Criar cliente funciona e aparece na lista
+- [ ] Erros de campo aparecem reativamente
+
+#### Ticket #36 (Transportes)
+
+- [ ] Formulário usa `useForm<TransporteInput>` com `zodResolver(transporteFormSchema)`
+- [ ] Criar/editar funcionam
+- [ ] Erros aparecem reativamente
+
+#### Ticket #37 (Itens)
+
+- [ ] Formulário usa `useForm<ItemInput>` com `zodResolver(itemFormSchema)`
+- [ ] Preço em reais → armazenado em centavos (ex: 10,50 → 1050)
+- [ ] Criar item funciona
+
+#### Ticket #38 (Agendamento)
+
+- [ ] Formulário usa `useForm<AgendamentoInput>` com `zodResolver(agendamentoFormSchema)`
+- [ ] Janela `08:00-12:00` → válido
+- [ ] Janela `25:00-12:00` → erro
+- [ ] Janela `12:00-08:00` → erro (fim > início)
+- [ ] Data vazia → erro
+- [ ] Agendamento/reagendamento persiste e atualiza card
+
+#### Ticket #39 (Login)
+
+- [ ] Formulário usa `useForm<LoginInput>` com `zodResolver(loginFormSchema)`
+- [ ] Botões de preenchimento rápido preenchem campos
+- [ ] Email inválido → erro reativo
+- [ ] Senha vazia → erro reativo
+- [ ] Credenciais corretas → login funciona
+
+### 6.3 Testes E2E impactados
+
+| Arquivo                       | Impacto                                                                                                                                                                                                 |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `e2e/ov-create.spec.ts`       | Usa `select[name="clienteId"]`, `select[name="transporteId"]`, `input[name="dataEntregaPrevista"]`, `select[name="itens.0.itemId"]`, `input[name="itens.0.quantidade"]` — **todos preservados** com RHF |
+| `e2e/rbac.spec.ts`            | Não mexe em formulários — **sem impacto**                                                                                                                                                               |
+| `e2e/ov-list-filters.spec.ts` | Filtros de listagem — **sem impacto**                                                                                                                                                                   |
+| `e2e/ov-detail.spec.ts`       | Detalhes da OV — **sem impacto**                                                                                                                                                                        |
+| `e2e/cwv-audit.spec.ts`       | Métricas de performance — **sem impacto**                                                                                                                                                               |
+
+**Nenhum teste E2E precisa ser alterado** — os `name` attributes dos inputs permanecem os mesmos (o RHF usa `register("nome")` que cria `<input name="nome">`).
+
+---
+
+## 7. Exemplo Completo: Padrão de Migração (Cliente como referência)
+
+**Arquivo original:** `src/pages/Clientes.tsx` (283 linhas)
+
+**Estrutura final esperada** (linhas que mudam):
+
+```tsx
+// IMPORTS — adicionar:
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { clienteFormSchema } from '../schemas';
+import type { ClienteInput } from '../lib/validation';
+import { FormField } from '../components/FormField';
+
+// STATE — remover:
+// const [erro, setErro] = useState(""); ← mantém para erro de servidor
+
+// HOOK:
+const {
+  register,
+  handleSubmit,
+  reset,
+  control,
+  formState: { errors },
+} = useForm<ClienteInput>({
+  resolver: zodResolver(clienteFormSchema),
+  defaultValues: { nome: '', documento: '', email: '', telefone: '', endereco: '', ativo: true },
+});
+
+// FUNÇÃO DE ABRIR MODAL:
+const abrirForm = (cliente?: Cliente) => {
+  setEditando(cliente ?? null);
+  setErro('');
+  reset(cliente ?? undefined);
+  setMostrarForm(true);
+};
+
+// HANDLE SUBMIT:
+const onSubmit = async (data: ClienteInput) => {
+  setErro('');
+  try {
+    if (editando) {
+      await atualizarCliente.mutateAsync({ id: editando.id, data });
+    } else {
+      await criarCliente.mutateAsync(data);
+    }
+    setEditando(null);
+    setMostrarForm(false);
+  } catch (err) {
+    setErro(err instanceof Error ? err.message : 'Erro ao salvar');
+  }
+};
+
+// MODAL FORM — antes era:
+// <form key={...} onSubmit={handleSubmit} className="...">
+// Agora:
+<form key={editando?.id ?? 'new'} onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
+  <FormField label="Nome" required error={errors.nome}>
+    <input {...register('nome')} className="..." />
+  </FormField>
+  {/* ... */}
+  {erro && (
+    <p role="alert" className="text-rose-400 text-xs">
+      {erro}
+    </p>
+  )}
+</form>;
+
+// ATUALIZAR BOTÕES DE ABRIR MODAL:
+// Antes: onClick={() => { setMostrarForm(true); setEditando(null); setErro(""); }}
+// Depois: onClick={() => abrirForm()}
+//
+// Antes: onClick={() => { setEditando(c); setMostrarForm(true); setErro(""); }}
+// Depois: onClick={() => abrirForm(c)}
+```
+
+---
+
+## 8. Resumo de Arquivos por Ticket
+
+| Ticket | Arquivos criados                                                                     | Arquivos modificados                                            |
+| ------ | ------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| #33    | `src/components/FormField.tsx`, `src/schemas/agendamento.ts`, `src/schemas/login.ts` | `package.json`, `src/schemas/index.ts`, `src/lib/validation.ts` |
+| #34    | —                                                                                    | `src/pages/OVNew.tsx`                                           |
+| #35    | —                                                                                    | `src/pages/Clientes.tsx`                                        |
+| #36    | —                                                                                    | `src/pages/Transportes.tsx`                                     |
+| #37    | —                                                                                    | `src/pages/Itens.tsx`                                           |
+| #38    | —                                                                                    | `src/pages/Agendamento.tsx`                                     |
+| #39    | —                                                                                    | `src/pages/Login.tsx`                                           |
+
+---
+
+## 9. Open Questions
+
+1. **FormField opcional?** O componente reduz boilerplate mas pode ser ignorado onde o layout for complexo.
+2. **Zod v4 + @hookform/resolvers:** Confirmar compatibilidade na instalação (`npm install @hookform/resolvers` e testar build).
+3. **setValueAs para `ativo`:** Confirmar que `setValueAs` funciona com `zodResolver` (RHF passa o valor transformado para o resolver).
+4. **Cliente modal key:** Usar `key={editando?.id ?? "new"}` no form continua sendo uma boa prática para forçar unmount/remount se houver resquícios de estado nativo do form.
+
+---
+
+## 10. Plano de Rollback
+
+Se algo quebrar após um ticket:
+
+1. `git diff` para ver o que mudou
+2. `git checkout -- src/pages/<arquivo>` para reverter o arquivo
+3. Se o problema for no schema/componente compartilhado (#33): reverter o arquivo + `npm uninstall @hookform/resolvers`
+4. Rodar `npm run build` e `npx playwright test` para confirmar volta ao estado verde

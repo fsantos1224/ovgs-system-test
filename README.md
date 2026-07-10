@@ -6,21 +6,21 @@
 
 ## Stack
 
-| Camada             | Tecnologia                            | Justificação                              |
-| ------------------ | ------------------------------------- | ----------------------------------------- |
-| Runtime            | Node 20 + TypeScript strict           |                                           |
-| UI                 | React 18 + Vite 8                     | Dev server rápido, HMR nativo             |
-| Roteamento         | React Router v6                       | lazy loading + Suspense                   |
-| Estilização        | Tailwind CSS v4                       | CSS-first, `@theme` tokens                |
-| Formulários        | React Hook Form                       | `useFieldArray` para itens dinâmicos      |
-| Data Fetching      | TanStack React Query                  | Cache, refetch automático, paginação      |
-| Validação          | Zod                                   | Schemas de formulário + respostas API     |
-| Estado (global)    | Zustand                               | Auth, toast, UI (tema/sidebar)            |
-| Mock API           | json-server + `server.cjs`            | Middleware custom (validação, auditoria)   |
-| Testes unitários   | Vitest                                | Nativo Vite, zero config                  |
-| Testes integração  | Vitest + `node:http`                  | Servidor mock `server.cjs`                |
-| Testes E2E         | Playwright                            | `getByRole` nativo, sem Testing Library   |
-| Contentorização    | Docker (multi-stage) + docker-compose |                                           |
+| Camada            | Tecnologia                            | Justificação                             |
+| ----------------- | ------------------------------------- | ---------------------------------------- |
+| Runtime           | Node 20 + TypeScript strict           |                                          |
+| UI                | React 18 + Vite 8                     | Dev server rápido, HMR nativo            |
+| Roteamento        | React Router v6                       | lazy loading + Suspense                  |
+| Estilização       | Tailwind CSS v4                       | CSS-first, `@theme` tokens               |
+| Formulários       | React Hook Form                       | `useFieldArray` para itens dinâmicos     |
+| Data Fetching     | TanStack React Query                  | Cache, refetch automático, paginação     |
+| Validação         | Zod                                   | Schemas de formulário + respostas API    |
+| Estado (global)   | Zustand                               | Auth, toast, UI (tema/sidebar)           |
+| Mock API          | json-server + `server.cjs`            | Middleware custom (validação, auditoria) |
+| Testes unitários  | Vitest                                | Nativo Vite, zero config                 |
+| Testes integração | Vitest + `node:http`                  | Servidor mock `server.cjs`               |
+| Testes E2E        | Playwright                            | `getByRole` nativo, sem Testing Library  |
+| Contentorização   | Docker (multi-stage) + docker-compose |                                          |
 
 ---
 
@@ -40,7 +40,7 @@
 
 **Decisão:** Zustand para 3 stores atómicas (`authStore`, `toastStore`, `uiStore`). Sem Context, sem Provider. Auth persistida em `localStorage` para sobreviver a reload (ponytail: sem persist middleware, 5 linhas manuais).
 
-**Consequências:** Zero re-renders em cascata (Zustand faz selects finos). Stores independentes — auth não depende de UI. Role switcher no sidebar com reload para resetar estado React (`🐴` simplificação intencional).
+**Consequências:** Zero re-renders em cascata (Zustand faz selects finos). Stores independentes — auth não depende de UI. Role switcher no sidebar com reload para resetar estado React.
 
 ### ADR-03: Zod para validação em duas camadas
 
@@ -256,7 +256,6 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 - **`idempotencyStore`** — `Map` em memória no processo `server.cjs`. Reseta ao reiniciar.
 - **TanStack Query cache** — dados do servidor em memória (volátil, recria ao recarregar).
 - **Zustand stores** — auth profile persistido em `localStorage` (sobrevive a reload); UI (tema, sidebar) em memória.
-- Sem base de dados real. `🐴` Aceitável para protótipo/desafio.
 
 ---
 
@@ -293,18 +292,18 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 
 ## Trade-offs e Limitações
 
-| Decisão                                   | Trade-off                                                                                   |
-| ----------------------------------------- | ------------------------------------------------------------------------------------------- |
-| TanStack Query                            | Cache em memória sem persistência. Zero bundle ~5 kB.                                       |
-| Zustand em vez de Context                 | Stores atómicas sem Provider. Selects finos evitam re-renders.                              |
-| Zod em vez de validação manual            | Schemas centralizados, reutilizados form + API. Bundle ~7 kB.                               |
-| json-server vs backend real               | Sem persistência relacional, sem auth real. Mas prototipagem instantânea com middleware.    |
-| Store de idempotência in-memory           | Perde-se ao reiniciar o servidor. Bounded por TTL (1h) e tamanho máx. (1000).              |
-| RBAC só no frontend                       | Inerente ao json-server. Documentado como limitação.                                        |
-| Playwright + RTL                          | Testes de componente com RTL + E2E com Playwright. Submissão RHF tem limitação conhecida.   |
-| Autenticação fake (localStorage)          | Simulada para demonstrar RBAC. Sem JWT, sem OAuth. Persistência via localStorage (5 linhas, sem middleware). |
-| Web Vitals nativos vs PostHog/Sentry      | Dados apenas no console em dev. Sem telemetria remota.                                      |
-| Docker com `npm install` em vez de `npm ci` | Lockfile incompatível com esbuild linux. `🐴` Aceitável para protótipo.                   |
+| Decisão                                     | Trade-off                                                                                                    |
+| ------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| TanStack Query                              | Cache em memória sem persistência. Zero bundle ~5 kB.                                                        |
+| Zustand em vez de Context                   | Stores atómicas sem Provider. Selects finos evitam re-renders.                                               |
+| Zod em vez de validação manual              | Schemas centralizados, reutilizados form + API. Bundle ~7 kB.                                                |
+| json-server vs backend real                 | Sem persistência relacional, sem auth real. Mas prototipagem instantânea com middleware.                     |
+| Store de idempotência in-memory             | Perde-se ao reiniciar o servidor. Bounded por TTL (1h) e tamanho máx. (1000).                                |
+| RBAC só no frontend                         | Inerente ao json-server. Documentado como limitação.                                                         |
+| Playwright + RTL                            | Testes de componente com RTL + E2E com Playwright. Submissão RHF tem limitação conhecida.                    |
+| Autenticação fake (localStorage)            | Simulada para demonstrar RBAC. Sem JWT, sem OAuth. Persistência via localStorage (5 linhas, sem middleware). |
+| Web Vitals nativos vs PostHog/Sentry        | Dados apenas no console em dev. Sem telemetria remota.                                                       |
+| Docker com `npm install` em vez de `npm ci` | Lockfile incompatível com esbuild linux. `🐴` Aceitável para protótipo.                                      |
 
 ---
 

@@ -131,42 +131,42 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 
 ## Tickets
 
-| #      | Ticket                                     | Slug                       | Tipo                  | Bloqueado por |
+| # | Ticket | Slug | Tipo | Bloqueado por |
 | ------ | ------------------------------------------ | -------------------------- | --------------------- | ------------- | --- |
-| ~~1~~  | Stack Frontend                             | `01-stack-frontend`        | `wayfinder:grilling`  | —             | ✔   |
-| ~~5~~  | Routing e Layout                           | `05-routing-layout`        | `wayfinder:prototype` | 1             | ✔   |
-| ~~9~~  | Observabilidade                            | `09-observabilidade`       | `wayfinder:research`  | 1             | ✔   |
-| ~~10~~ | Performance                                | `10-performance`           | `wayfinder:research`  | 1             | ✔   |
-| ~~2~~  | Mock HTTP — Apenas json-server             | `02-mock-json-server`      | `wayfinder:grilling`  | 1             | ✔   |
-| ~~3~~  | Domínio — Entidades + Máquina de Estados   | `03-dominio-status`        | `wayfinder:grilling`  | 1             | ✔   |
-| ~~4~~  | Estado — useState + fetch nativo           | `04-estado-fetch`          | `wayfinder:grilling`  | 3             | ✔   |
-| ~~6~~  | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao`      | `wayfinder:grilling`  | 1             | ✔   |
-| ~~7~~  | Formulários e Validação                    | `07-formularios-validacao` | `wayfinder:grilling`  | 3, 6          | ✔   |
-| ~~8~~  | a11y — HTML semântico + ARIA + Tailwind    | `08-acessibilidade`        | `wayfinder:prototype` | 5, 6          | ✔   |
-| ~~11~~ | Testes — Vitest + Playwright               | `11-testes`                | `wayfinder:grilling`  | 2, 4, 6       | ✔   |
-| ~~12~~ | Docker + Documentação                      | `12-docker-docs`           | `wayfinder:task`      | 2, 11         | ✔   |
+| ~~1~~ | Stack Frontend | `01-stack-frontend` | `wayfinder:grilling` | — | ✔ |
+| ~~5~~ | Routing e Layout | `05-routing-layout` | `wayfinder:prototype` | 1 | ✔ |
+| ~~9~~ | Observabilidade | `09-observabilidade` | `wayfinder:research` | 1 | ✔ |
+| ~~10~~ | Performance | `10-performance` | `wayfinder:research` | 1 | ✔ |
+| ~~2~~ | Mock HTTP — Apenas json-server | `02-mock-json-server` | `wayfinder:grilling` | 1 | ✔ |
+| ~~3~~ | Domínio — Entidades + Máquina de Estados | `03-dominio-status` | `wayfinder:grilling` | 1 | ✔ |
+| ~~4~~ | Estado — useState + fetch nativo | `04-estado-fetch` | `wayfinder:grilling` | 3 | ✔ |
+| ~~6~~ | RBAC — Papéis, Permissões e UI condicional | `06-rbac-autorizacao` | `wayfinder:grilling` | 1 | ✔ |
+| ~~7~~ | Formulários e Validação | `07-formularios-validacao` | `wayfinder:grilling` | 3, 6 | ✔ |
+| ~~8~~ | a11y — HTML semântico + ARIA + Tailwind | `08-acessibilidade` | `wayfinder:prototype` | 5, 6 | ✔ |
+| ~~11~~ | Testes — Vitest + Playwright | `11-testes` | `wayfinder:grilling` | 2, 4, 6 | ✔ |
+| ~~12~~ | Docker + Documentação | `12-docker-docs` | `wayfinder:task` | 2, 11 | ✔ |
 
 ## Next frontier (code review 2026-07-09)
 
 Code review contra `CONTEXT.md` + senior-level criteria identificou 9 tickets adicionais. Fecham gaps de spec (transporte-autorizado, integração, visibilidade), bugs concretos (Rules of Hooks, error messages, validate race) e melhorias de senior bar (Web Vitals corretos, bundle splitting, E2E de criar OV).
 
-| #   | Título                                         | Slug                                | Tipo                    | Bloqueado por | Status |
-| --- | ---------------------------------------------- | ----------------------------------- | ----------------------- | ------------- | ------ |
-| ~~13~~  | Bugs em AppLayout + OVNew                  | `13-bugs-applayout-ovnew`           | `wayfinder:bugfix`      | —             | ✔   |
-| ~~14a~~ | Transporte autorizado — domain + seed + server | `14a-transporte-autorizado-backend` | `wayfinder:feature`     | —             | ✔   |
-| ~~14b~~ | Transporte autorizado — dropdown dependente    | `14b-transporte-autorizado-ui`      | `wayfinder:feature`     | 14a           | ✔   |
-| ~~15a~~ | Filtrar clientes inativos no dropdown de OV    | `15a-clientes-ativos-dropdown`      | `wayfinder:bugfix`      | —             | ✔   |
-| ~~15b~~ | Permission gate na página de Auditoria         | `15b-auditoria-permission-gate`     | `wayfinder:bugfix`      | —             | ✔   |
-| ~~16~~  | Testes de integração do server.cjs             | `16-testes-integracao-server`       | `wayfinder:quality`     | —             | ✔   |
-| ~~17~~  | Web Vitals conforme spec W3C                   | `17-web-vitals-w3c`                 | `wayfinder:quality`     | —             | ✔   |
-| ~~18~~  | Bundle splitting + preload hints               | `18-bundle-splitting`               | `wayfinder:performance` | —             | ✔   |
-| ~~19~~  | E2E do happy path de criar OV                  | `19-e2e-criar-ov`                   | `wayfinder:quality`     | 13, 14b       | ✔   |
-| ~~20~~  | Identity gate no server.cjs (F1)               | `20-identity-gate-server`           | `wayfinder:bugfix`      | —             | ✔   |
-| ~~21~~  | Allowlist de campos em PATCH (F3)              | `21-allowlist-patch`                | `wayfinder:bugfix`      | —             | ✔   |
-| ~~22~~  | DELETE auditado (F5)                          | `22-audit-delete`                   | `wayfinder:bugfix`      | —             | ✔   |
-| ~~23~~  | Hardening de idempotência (F4+F7)              | `23-idempotency-hardening`          | `wayfinder:bugfix`      | —             | ✔   |
-| ~~24~~  | Migração de IDs para UUID                      | `24-uuid-migration`                 | `wayfinder:refactor`    | —             | ✔   |
-| ~~27~~  | Coluna "Ações" nas tabelas de listagem         | `27-acoes-coluna`                   | `wayfinder:feature`     | —             | ✔   |
+| #       | Título                                         | Slug                                | Tipo                    | Bloqueado por | Status |
+| ------- | ---------------------------------------------- | ----------------------------------- | ----------------------- | ------------- | ------ |
+| ~~13~~  | Bugs em AppLayout + OVNew                      | `13-bugs-applayout-ovnew`           | `wayfinder:bugfix`      | —             | ✔      |
+| ~~14a~~ | Transporte autorizado — domain + seed + server | `14a-transporte-autorizado-backend` | `wayfinder:feature`     | —             | ✔      |
+| ~~14b~~ | Transporte autorizado — dropdown dependente    | `14b-transporte-autorizado-ui`      | `wayfinder:feature`     | 14a           | ✔      |
+| ~~15a~~ | Filtrar clientes inativos no dropdown de OV    | `15a-clientes-ativos-dropdown`      | `wayfinder:bugfix`      | —             | ✔      |
+| ~~15b~~ | Permission gate na página de Auditoria         | `15b-auditoria-permission-gate`     | `wayfinder:bugfix`      | —             | ✔      |
+| ~~16~~  | Testes de integração do server.cjs             | `16-testes-integracao-server`       | `wayfinder:quality`     | —             | ✔      |
+| ~~17~~  | Web Vitals conforme spec W3C                   | `17-web-vitals-w3c`                 | `wayfinder:quality`     | —             | ✔      |
+| ~~18~~  | Bundle splitting + preload hints               | `18-bundle-splitting`               | `wayfinder:performance` | —             | ✔      |
+| ~~19~~  | E2E do happy path de criar OV                  | `19-e2e-criar-ov`                   | `wayfinder:quality`     | 13, 14b       | ✔      |
+| ~~20~~  | Identity gate no server.cjs (F1)               | `20-identity-gate-server`           | `wayfinder:bugfix`      | —             | ✔      |
+| ~~21~~  | Allowlist de campos em PATCH (F3)              | `21-allowlist-patch`                | `wayfinder:bugfix`      | —             | ✔      |
+| ~~22~~  | DELETE auditado (F5)                           | `22-audit-delete`                   | `wayfinder:bugfix`      | —             | ✔      |
+| ~~23~~  | Hardening de idempotência (F4+F7)              | `23-idempotency-hardening`          | `wayfinder:bugfix`      | —             | ✔      |
+| ~~24~~  | Migração de IDs para UUID                      | `24-uuid-migration`                 | `wayfinder:refactor`    | —             | ✔      |
+| ~~27~~  | Coluna "Ações" nas tabelas de listagem         | `27-acoes-coluna`                   | `wayfinder:feature`     | —             | ✔      |
 
 ### Ticket 27 — Coluna "Ações" nas tabelas de listagem (resolvido)
 
@@ -215,6 +215,65 @@ Depois: 14b (depende de 14a) → 19 (depende de 13 + 14b).
 10. Ticket 8 — a11y (depende de 5, 6)
 11. Ticket 11 — Testes (depende de 2, 4, 6)
 12. Ticket 12 — Docker + Docs (depende de 2, 11)
+
+| #      | Título                                  | Slug                            | Tipo                 | Bloqueado por | Status |
+| ------ | --------------------------------------- | ------------------------------- | -------------------- | ------------- | ------ |
+| ~~33~~ | Infraestrutura de formulários           | `33-infraestrutura-formularios` | `wayfinder:refactor` | —             | ✔      |
+| ~~34~~ | Refatorar OVNew — zodResolver           | `34-refactor-ovnew`             | `wayfinder:refactor` | 33            | ✔      |
+| ~~35~~ | Refatorar Clientes — React Hook Form    | `35-refactor-clientes`          | `wayfinder:refactor` | 33            | ✔      |
+| ~~36~~ | Refatorar Transportes — React Hook Form | `36-refactor-transportes`       | `wayfinder:refactor` | 33            | ✔      |
+| ~~37~~ | Refatorar Itens — React Hook Form       | `37-refactor-itens`             | `wayfinder:refactor` | 33            | ✔      |
+| ~~38~~ | Refatorar Agendamento — React Hook Form | `38-refactor-agendamento`       | `wayfinder:refactor` | 33            | ✔      |
+| ~~39~~ | Refatorar Login — React Hook Form       | `39-refactor-login`             | `wayfinder:refactor` | 33            | ✔      |
+
+### Ticket 33 — Infraestrutura de formulários (resolvido)
+
+- `@hookform/resolvers` instalado para integração Zod + React Hook Form
+- `FormField` componente criado em `src/components/FormField.tsx` — label + children + erro, API minimalista
+- `agendamentoFormSchema` em `src/schemas/agendamento.ts` — validação de janela HH:MM-HH:MM com refine
+- `loginFormSchema` em `src/schemas/login.ts` — validação de email + senha obrigatória
+- Ambos registrados em `src/schemas/index.ts` e `src/lib/validation.ts`
+
+### Ticket 34 — Refatorar OVNew (resolvido)
+
+- `useForm` migrado para `zodResolver(ovFormSchema)` — validação reativa campo a campo
+- Removido `safeParse` manual do onSubmit — dados já chegam validados
+- Removido `serverError` state (só era usado para erro do safeParse)
+- Mantida lógica de negócio de `setError("itens")` para itens com `itemId` vazio
+- Inline `required` removido dos registers (schema cobre)
+
+### Ticket 35 — Refatorar Clientes (resolvido)
+
+- FormData substituído por `useForm<ClienteInput>` + `zodResolver`
+- `useController` para máscara de documento e telefone (value = só dígitos, display = formatado)
+- `abrirForm`/`fecharForm` helpers com `reset()` para novo/edição
+- `setValueAs` para campo `ativo` (string "true"/"false" → boolean)
+- Erro de servidor mantido em estado local separado
+
+### Ticket 36 — Refatorar Transportes (resolvido)
+
+- FormData substituído por `useForm<TransporteInput>` + `zodResolver`
+- Mesmo padrão de Clientes (mais simples: 3 campos sem máscara)
+- `setValueAs` para `ativo`
+
+### Ticket 37 — Refatorar Itens (resolvido)
+
+- FormData substituído por `useForm<ItemInput>` + `zodResolver`
+- `valueAsNumber: true` para `precoUnitario` (input decimal → schema transform * 100)
+- `setValueAs` para `ativo`
+
+### Ticket 38 — Refatorar Agendamento (resolvido)
+
+- FormData + `validarJanela()` custom substituídos por `useForm` + `zodResolver(agendamentoFormSchema)`
+- `parseJanela`/`validarJanela` removidas — lógica migrada para refine do Zod
+- `reset()` com dados da OV ao abrir edição de card
+- Validação reativa de janela (formato + fim > início)
+
+### Ticket 39 — Refatorar Login (resolvido)
+
+- `useState` controlado substituído por `useForm<LoginInput>` + `zodResolver`
+- Botões de preenchimento rápido migrados para `setValue()`
+- Validação reativa de email e senha
 
 ## Not yet specified
 
