@@ -11,8 +11,8 @@ Este ticket faz o dropdown de transporte **depender do cliente selecionado**: ao
 
 ## Restrições YAGNI
 
-- `🐴` Sem state global — `useState` local + `useEffect` já bastam
-- `🐴` Sem auto-seleção — se o transporte previamente escolhido não é válido, apenas limpa o campo
+- Sem state global — `useState` local + `useEffect` já bastam
+- Sem auto-seleção — se o transporte previamente escolhido não é válido, apenas limpa o campo
 
 ## Cenários de aceitação
 
@@ -33,6 +33,7 @@ Este ticket faz o dropdown de transporte **depender do cliente selecionado**: ao
 **Status:** ✔ Resolvido (2026-07-09)
 
 **Evidência no código (`src/pages/OVNew.tsx`):**
+
 - **L. 57-60** — `transportesDisponiveis = useMemo(() => (transportes ?? []).filter(t => canUseTransporte(clienteSelecionado, t.id)), ...)`. Dependências: `[transportes, clienteSelecionado]`.
 - **L. 62-68** — efeito de "limpar transporte inválido" via `setValue("transporteId", "")` se o transporte previamente escolhido não consta nos autorizados do novo cliente.
 - **L. 179-191** — `disabled={!clienteSelecionado}` no `<select>` de transporte, com mensagem contextual:

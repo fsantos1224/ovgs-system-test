@@ -9,7 +9,7 @@ Como garantir performance aceitável na listagem de OVs (potencialmente centenas
 
 ## Restrições YAGNI
 
-- `🐴` Paginação server-side via json-server (`?_page=1&_limit=20`) — zero libs
+- Paginação server-side via json-server (`?_page=1&_limit=20`) — zero libs
 - Nada de react-window, react-virtualizado, infinite scroll — overkill para backoffice
 - Filtros no servidor, não no client (????q=, ?cliente_id=, etc.)
 
@@ -24,7 +24,6 @@ Como garantir performance aceitável na listagem de OVs (potencialmente centenas
 ## Exemplo de output esperado (ponytail)
 
 ```typescript
-// 🐴: paginação server-side — json-server nativo, sem virtualização
 const fetchOVs = async (page: number, filters: Record<string, string>) => {
   const params = new URLSearchParams({ _page: String(page), _limit: '20', ...filters });
   const res = await fetch(`/api/ovs?${params}`);
@@ -35,4 +34,4 @@ const fetchOVs = async (page: number, filters: Record<string, string>) => {
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+_[a preencher quando resolvido]_

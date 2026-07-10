@@ -9,7 +9,7 @@ Como modelar as entidades de domínio (Cliente, OrdemVenda, Item, TipoTransporte
 
 ## Restrições YAGNI
 
-- `🐴` Máquina de estados = um enum + função de transição. Nada mais.
+- Máquina de estados = um enum + função de transição. Nada mais.
 - Sem libs externas (xstate, effector, etc.)
 - Sem classes, sem this — tipos e funções puras.
 
@@ -24,9 +24,8 @@ Como modelar as entidades de domínio (Cliente, OrdemVenda, Item, TipoTransporte
 ## Exemplo de output esperado (ponytail)
 
 ```typescript
-// 🐴: enum + função pura, sem state machine library
 const STATUS_FLOW = ['CRIADA', 'PLANEJADA', 'AGENDADA', 'EM_TRANSPORTE', 'ENTREGUE'] as const;
-type Status = typeof STATUS_FLOW[number];
+type Status = (typeof STATUS_FLOW)[number];
 
 const canTransition = (from: Status, to: Status): boolean => {
   const idx = STATUS_FLOW.indexOf(from);
@@ -36,4 +35,4 @@ const canTransition = (from: Status, to: Status): boolean => {
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+_[a preencher quando resolvido]_

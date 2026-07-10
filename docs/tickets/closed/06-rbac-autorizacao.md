@@ -9,7 +9,7 @@ Como modelar o sistema de autorização RBAC (Role-Based Access Control) no fron
 
 ## Restrições YAGNI
 
-- `🐴` Sem libs de autorização (CASL, etc.)
+- Sem libs de autorização (CASL, etc.)
 - Sem framework de permissões — objeto de configuração + hook custom
 - UI-level (esconder botões) + operação-level (rejeitar chamadas mock)
 
@@ -25,9 +25,18 @@ Como modelar o sistema de autorização RBAC (Role-Based Access Control) no fron
 ## Exemplo de output esperado (ponytail)
 
 ```typescript
-// 🐴: objeto de configuração + hook — sem lib de autorização
 const PERMISSIONS = {
-  admin: ['create_ov', 'read_ov', 'update_ov', 'delete_ov', 'schedule', 'audit', 'manage_clients', 'manage_transport', 'manage_items'],
+  admin: [
+    'create_ov',
+    'read_ov',
+    'update_ov',
+    'delete_ov',
+    'schedule',
+    'audit',
+    'manage_clients',
+    'manage_transport',
+    'manage_items',
+  ],
   manager: ['create_ov', 'read_ov', 'update_ov', 'schedule', 'audit'],
   operator: ['create_ov', 'read_ov', 'update_ov'],
   viewer: ['read_ov'],
@@ -45,4 +54,4 @@ const usePermission = () => {
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+_[a preencher quando resolvido]_

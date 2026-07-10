@@ -19,8 +19,8 @@ Exclusões de clientes, itens ou tipos de transporte **não geram evento de audi
 
 ## Restrições YAGNI
 
-- `🐴` Mesmo interceptor, só estender a condição + payload — sem novo handler
-- `🐴` Sem soft delete — exclusão é física (atual regra do json-server)
+- Mesmo interceptor, só estender a condição + payload — sem novo handler
+- Sem soft delete — exclusão é física (atual regra do json-server)
 
 ## Cenários de aceitação
 
@@ -39,11 +39,13 @@ Exclusões de clientes, itens ou tipos de transporte **não geram evento de audi
 **Status:** ✔ Resolvido (2026-07-09)
 
 **Evidência no código (`server.cjs:381-396`):**
+
 ```js
 let acao;
-if (method === "POST") acao = "criacao";
-else if (method === "PATCH") acao = "alteracao";
-else if (method === "DELETE") acao = "exclusao";   // ← F5 fechado
+if (method === 'POST') acao = 'criacao';
+else if (method === 'PATCH') acao = 'alteracao';
+else if (method === 'DELETE')
+  acao = 'exclusao'; // ← F5 fechado
 else acao = null;
 ```
 
@@ -52,5 +54,6 @@ else acao = null;
 Para DELETE: `acao: "exclusao"`, `estadoAnterior` parseado de `req.__before` (snapshot completo do registro antes da exclusão), `estadoPosterior: null`, `detalhes: "{Nome} {id} excluído"`.
 
 **Verificação:** `tests/integration/server.test.ts:362-396` (describe `"DELETE auditado (F5)"`) — 2 testes:
+
 - DELETE em `/clientes/:id` gera evento com `acao=exclusao`, `estadoAnterior` não-nulo, `estadoPosterior=null` ✓
 - DELETE em `/ordensVenda/:id` **não** cria evento de exclusão (regra preservada) ✓

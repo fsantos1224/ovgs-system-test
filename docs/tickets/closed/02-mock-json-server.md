@@ -25,10 +25,10 @@ Como estruturar o mock do backend usando **apenas json-server** — sem MSW, sem
 
 Uma operação como "criar OV" afeta múltiplas entidades (OV + Itens + Auditoria + Estoque). Com json-server (sem transações reais):
 
-- `🐴` **Operações atómicas via middleware custom:** No `server.js`, um único POST para `/api/ovs` é interceptado pelo middleware que executa múltiplas writes no `db.json` dentro de um bloco síncrono — se alguma falha, o middleware retorna erro 500 sem aplicar partial writes.
-- `🐴` **Idempotência via UUID + idempotency-key:** Cada requisição de criação de OV inclui um header `Idempotency-Key`. O middleware verifica se a key já foi processada (cache em Map em memória) e retorna o resultado anterior sem re-executar. Isto simula a proteção contra duplicatas sem backend real.
+- **Operações atómicas via middleware custom:** No `server.js`, um único POST para `/api/ovs` é interceptado pelo middleware que executa múltiplas writes no `db.json` dentro de um bloco síncrono — se alguma falha, o middleware retorna erro 500 sem aplicar partial writes.
+- **Idempotência via UUID + idempotency-key:** Cada requisição de criação de OV inclui um header `Idempotency-Key`. O middleware verifica se a key já foi processada (cache em Map em memória) e retorna o resultado anterior sem re-executar. Isto simula a proteção contra duplicatas sem backend real.
 - **Trade-off:** json-server não tem transações nativas. A abordagem com middleware custom é suficiente para demonstração do conceito (e para testes E2E), mas em produção seria necessário um banco relacional com transações ACID.
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+_[a preencher quando resolvido]_

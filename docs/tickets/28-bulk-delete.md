@@ -9,10 +9,10 @@ Operador com 30 OVs para cancelar precisa clicar 30x. Sem seleção múltipla em
 
 ## Restrições YAGNI
 
-- `🐴` Sem shift-click range selection — só toggle individual + toggle-all na linha de header
-- `🐴` Sem endpoint novo `POST /bulk-delete` — usar `Promise.allSettled` com DELETE por item (preserva auditoria individual)
-- `🐴` Sem persistir seleção no reload — local state, limpo quando componente desmonta ou filtro muda
-- `🐴` Sem tooltips "1 selecionado" — counter simples é suficiente
+- Sem shift-click range selection — só toggle individual + toggle-all na linha de header
+- Sem endpoint novo `POST /bulk-delete` — usar `Promise.allSettled` com DELETE por item (preserva auditoria individual)
+- Sem persistir seleção no reload — local state, limpo quando componente desmonta ou filtro muda
+- Sem tooltips "1 selecionado" — counter simples é suficiente
 
 ## Cenários de aceitação
 

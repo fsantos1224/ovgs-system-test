@@ -11,7 +11,7 @@ A página `Agendamento.tsx:16` já tem o padrão correto como referência.
 
 ## Restrições YAGNI
 
-- `🐴` Mesmo padrão do `Agendamento.tsx` — early return com mensagem
+- Mesmo padrão do `Agendamento.tsx` — early return com mensagem
 
 ## Cenários de aceitação
 
@@ -31,6 +31,7 @@ A página `Agendamento.tsx:16` já tem o padrão correto como referência.
 **Status:** ✔ Resolvido (2026-07-09)
 
 **Evidência no código (`src/pages/Auditoria.tsx:18-49`):**
+
 ```tsx
 const podeVer = usePermissao("auditoria:ver");
 if (!podeVer) {

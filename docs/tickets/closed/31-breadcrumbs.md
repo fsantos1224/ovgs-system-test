@@ -6,6 +6,7 @@
 ## Questão
 
 Cada página tem um "kicker" hardcoded do tipo `Ordens de Venda / DETALHES` no topo. Strings são literais em cada arquivo:
+
 - `OVList.tsx:105`
 - `OVNew.tsx:150`
 - `OVDetail.tsx`
@@ -21,10 +22,10 @@ Substituir por breadcrumbs calculados a partir de `useMatches()` do react-router
 
 ## Restrições YAGNI
 
-- `🐴` Sem dropdown nos itens
-- `🐴` Sem "página atual oculta como última" — trilha visível completa; última entrada marcada com `aria-current="page"`
-- `🐴` Sem internacionalização de labels (rotas em pt-BR direto)
-- `🐴` Sem persistência (deep-link não-válido não redireciona)
+- Sem dropdown nos itens
+- Sem "página atual oculta como última" — trilha visível completa; última entrada marcada com `aria-current="page"`
+- Sem internacionalização de labels (rotas em pt-BR direto)
+- Sem persistência (deep-link não-válido não redireciona)
 
 ## Cenários de aceitação
 
@@ -50,6 +51,7 @@ Substituir por breadcrumbs calculados a partir de `useMatches()` do react-router
 ## Decision record
 
 **Implementado:**
+
 - `src/hooks/useBreadcrumbs.ts` — hook que usa `useMatches()` do `createBrowserRouter` para derivar trilha dos `handle.crumb` das rotas.
 - `src/components/Breadcrumbs.tsx` — `<nav aria-label="Breadcrumb">` com `<ol>`, separador `/`, último item com `aria-current="page"`.
 - `App.tsx` migrado de `<BrowserRouter>` para `createBrowserRouter` (data router necessário para `useMatches()`).
@@ -57,4 +59,5 @@ Substituir por breadcrumbs calculados a partir de `useMatches()` do react-router
 - Kickers hardcoded substituídos por `<Breadcrumbs />` em 9 páginas (Dashboard, OVList, OVNew, OVDetail, Agendamento, Clientes, Transportes, Itens, Auditoria).
 
 **Desvio de spec:**
+
 - A rota `/ovs/:id` (Detalhes) usa crumb estático "Detalhes" em vez de dinâmico `"OV-2025-0042"`. O hook suporta funções assíncronas, mas o crumb dinâmico exigiria um hook separado com `useParams` + `useQuery` dentro do `handle.crumb`. Adiado para simplificação.

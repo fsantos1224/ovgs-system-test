@@ -9,8 +9,8 @@ Qual a estratégia de testes (unitários + E2E) para cobrir cenários críticos 
 
 ## Restrições YAGNI
 
-- `🐴` Vitest (unit + render) para lógica de negócio pura (funções de validação, transição de status, RBAC)
-- `🐴` Playwright para E2E (fluxo completo de criação de OV, agendamento, teste de permissões)
+- Vitest (unit + render) para lógica de negócio pura (funções de validação, transição de status, RBAC)
+- Playwright para E2E (fluxo completo de criação de OV, agendamento, teste de permissões)
 - Sem RTL, sem Testing Library — Playwright tem `page.getByRole()` nativo
 - Mínimo: 2 testes unitários + 1 E2E (requisito do desafio), ideal: cobrir cenários críticos
 
@@ -31,8 +31,8 @@ Qual a estratégia de testes (unitários + E2E) para cobrir cenários críticos 
 
 ### Decisão
 
-- `🐴` **Vitest** para lógica de domínio pura (6 testes unitários em `src/domain/types.test.ts`)
-- `🐴` **Playwright** para E2E com `webServer` (json-server + Vite) em `playwright.config.ts`
+- **Vitest** para lógica de domínio pura (6 testes unitários em `src/domain/types.test.ts`)
+- **Playwright** para E2E com `webServer` (json-server + Vite) em `playwright.config.ts`
 - Sem RTL, sem Testing Library — Playwright `getByRole` nativo
 - Sem testes de hook/componente — cobertura via E2E
 - Mínimo do desafio (2 unit + 1 E2E) excedido (6 unit + 3 E2E)
@@ -40,6 +40,7 @@ Qual a estratégia de testes (unitários + E2E) para cobrir cenários críticos 
 ### Cobertura implementada
 
 **Unitários (6):**
+
 - `canTransition('CRIADA', 'PLANEJADA') === true`
 - `canTransition('CRIADA', 'ENTREGUE') === false`
 - Transições completas até ENTREGUE
@@ -48,6 +49,7 @@ Qual a estratégia de testes (unitários + E2E) para cobrir cenários críticos 
 - `statusLabel()` retorna label em português
 
 **E2E (3):**
+
 - Viewer não vê botão "Nova OV"
 - Admin vê botão "Nova OV"
 - Formulário de criação carrega sem erros JS

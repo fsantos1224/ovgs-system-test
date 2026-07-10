@@ -12,8 +12,8 @@ Auditoria de segurança identificou duas fraquezas combinadas no `idempotencySto
 
 ## Restrições YAGNI
 
-- `🐴` Sem dependência nova — `node:crypto` (`randomUUID`, hash SHA-256) já disponível
-- `🐴` Backward-compat: requests legítimas continuam funcionando; requests maliciosas retornam 400
+- Sem dependência nova — `node:crypto` (`randomUUID`, hash SHA-256) já disponível
+- Backward-compat: requests legítimas continuam funcionando; requests maliciosas retornam 400
 
 ## Cenários de aceitação
 
@@ -37,26 +37,32 @@ Auditoria de segurança identificou duas fraquezas combinadas no `idempotencySto
 **Evidência no código (`server.cjs`):**
 
 **F7 — Validação de header (`server.cjs:96-104`):**
+
 ```js
 const IDEMPOTENCY_KEY_RE = /^[A-Za-z0-9_-]{1,128}$/;
 function validateIdempotencyKey(raw) {
-  if (typeof raw !== "string") return null;
+  if (typeof raw !== 'string') return null;
   return IDEMPOTENCY_KEY_RE.test(raw) ? raw : null;
 }
 ```
+
 Header ausente ou inválido (length > 128 ou chars fora de `[A-Za-z0-9_-]`) → **400** com mensagem clara. DoS por header gigante eliminado.
 
 **F4 — Chave canônica (`server.cjs:80-94`):**
+
 ```js
 function canonicalKey(method, path, body, user) {
-  return crypto.createHash("sha256")
+  return crypto
+    .createHash('sha256')
     .update(`${method}:${path}:${bodyHash(body)}:${user}`)
-    .digest("hex");
+    .digest('hex');
 }
 ```
+
 Cache key = `sha256(method:path:sha256(body):user)`. Mesmo cliente + mesma body + mesma key → cache hit (200). Cliente diferente OU body diferente → cache miss (201).
 
 **Verificação:** `tests/integration/server.test.ts:213-263` (describe `"POST /ordensVenda — idempotência (F4+F7)"`) — 3 testes:
+
 - Replay legítimo (mesmo body, mesma key) → 201 + 200, mesmo id ✓
 - Header com 200 chars → 400 ✓
 - Header com espaço (chars inválidos) → 400 ✓

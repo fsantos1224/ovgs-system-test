@@ -11,9 +11,9 @@ Adicionar hook `useConfirm()` que retorna `Promise<boolean>` e reusa o `<Modal>`
 
 ## Restrições YAGNI
 
-- `🐴` Sem variantes elaborate ("3 passos de wizard") — só `default` | `danger`
-- `🐴` Sem input no modal (confirmação é só sim/não)
-- `🐴` Sem `<ConfirmProvider>` separado — reusa `<Modal>` direto, estado em Context único
+- Sem variantes elaborate ("3 passos de wizard") — só `default` | `danger`
+- Sem input no modal (confirmação é só sim/não)
+- Sem `<ConfirmProvider>` separado — reusa `<Modal>` direto, estado em Context único
 
 ## Cenários de aceitação
 
@@ -33,9 +33,9 @@ Adicionar hook `useConfirm()` que retorna `Promise<boolean>` e reusa o `<Modal>`
   ```ts
   const confirm = useConfirm();
   const ok = await confirm({
-    title: "Excluir cliente?",
+    title: 'Excluir cliente?',
     body: `${cliente.nome} será removido permanentemente.`,
-    variant: "danger",
+    variant: 'danger',
   });
   if (!ok) return;
   await apiDelete(`/clientes/${id}`);
@@ -47,6 +47,7 @@ Adicionar hook `useConfirm()` que retorna `Promise<boolean>` e reusa o `<Modal>`
 ## Decision record
 
 **Implementado:**
+
 - `useConfirm()` hook com Context + Provider, `ConfirmOptions` (title, body, confirmLabel, cancelLabel, variant).
 - Variant `danger` com rose styling; Cancel/Esc resolve false; Confirm resolve true.
 - Modal passou a aceitar `role` prop — confirm usa `role="alertdialog"` + `aria-modal="true"`.
@@ -54,4 +55,5 @@ Adicionar hook `useConfirm()` que retorna `Promise<boolean>` e reusa o `<Modal>`
 - Componente `Modal` atualizado com `aria-labelledby` e `aria-modal` para acessibilidade.
 
 **Não implementado (fora do escopo original):**
+
 - Integração com botões de excluir nas páginas (requer ticket 27 como pré-requisito).

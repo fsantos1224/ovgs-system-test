@@ -11,9 +11,9 @@ Adicionar helper `parseBRLtoCents()` como utility forward-looking para quando fo
 
 ## Restrições YAGNI
 
-- `🐴` Só `parseBRLtoCents(str): number | null` — não criar `formatBRLDisplay` (já coberto por `Intl`)
-- `🐴` Sem lib (`currency.js`, `dinero.js`) — regex + aritmética cobrem
-- `🐴` Sem migração de schema para decimal — schema continua inteiro
+- Só `parseBRLtoCents(str): number | null` — não criar `formatBRLDisplay` (já coberto por `Intl`)
+- Sem lib (`currency.js`, `dinero.js`) — regex + aritmética cobrem
+- Sem migração de schema para decimal — schema continua inteiro
 
 ## Cenários de aceitação
 
@@ -33,6 +33,7 @@ Adicionar helper `parseBRLtoCents()` como utility forward-looking para quando fo
 **Status:** ✔ Resolvido (2026-07-09)
 
 **Evidência no código:**
+
 - `src/lib/money.ts:1-30` — `parseBRLtoCents(input: string): number | null`
 - Aceita: `R$ 1.500,00`, `1.500,00`, `1500,00`, `R$ 0,99`, `1500` (cents), `1500.00`, espaços extras
 - Rejeita: vazio, caracteres não-numéricos, 3+ casas decimais, separadores de milhar múltiplos (`1.500.00,00`)

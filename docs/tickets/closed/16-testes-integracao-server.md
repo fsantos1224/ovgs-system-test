@@ -13,9 +13,9 @@ O projeto tem 6 unit tests ✅ mas **zero integration tests** ❌. A camada `ser
 
 ## Restrições YAGNI
 
-- `🐴` Sem framework novo — Vitest puro + `node:child_process` para spawn do servidor, OU `supertest`/fetch direto contra o servidor em memória
-- `🐴` Sem cobertura 100% — cobrir os 4 fluxos críticos abaixo, ponto
-- `🐴` Cada teste é independente (limpa o `data/db.json` em `beforeEach` ou usa arquivo temp)
+- Sem framework novo — Vitest puro + `node:child_process` para spawn do servidor, OU `supertest`/fetch direto contra o servidor em memória
+- Sem cobertura 100% — cobrir os 4 fluxos críticos abaixo, ponto
+- Cada teste é independente (limpa o `data/db.json` em `beforeEach` ou usa arquivo temp)
 
 ## Cenários de aceitação
 
@@ -41,6 +41,7 @@ O projeto tem 6 unit tests ✅ mas **zero integration tests** ❌. A camada `ser
 **Abordagem escolhida:** spawn do `server.cjs` em subprocesso com `DATA_FILE` apontando para tempdir (isolamento do volume Docker). Cada teste é independente — `beforeAll` roda uma vez, `afterAll` mata o processo e limpa o tempdir.
 
 **Cenários cobertos (todos os 4 do ticket + extras pós-14a):**
+
 1. ✅ **Cliente inativo** — POST com `clienteId: "3"` (Gamma) retorna 400 com `error` matching `/inativo/i`.
 2. ✅ **Transporte não autorizado** — POST com `clienteId: "2"` + `transporteId: "1"` (Beta só aceita [2]) retorna 400 com `transportesAutorizados: ["2"]` no body.
 3. ✅ **Idempotência** — dois POSTs com mesmo `Idempotency-Key`: primeiro 201, segundo 200, mesmo `id` no body.

@@ -11,7 +11,7 @@ Filtro trivial no dropdown resolve. Cliente inativo continua aparecendo na pági
 
 ## Restrições YAGNI
 
-- `🐴` Só filter no map do dropdown — sem desabilitar/mostrar inativos, sem tooltip
+- Só filter no map do dropdown — sem desabilitar/mostrar inativos, sem tooltip
 
 ## Cenários de aceitação
 
@@ -29,10 +29,17 @@ Filtro trivial no dropdown resolve. Cliente inativo continua aparecendo na pági
 **Status:** ✔ Resolvido (2026-07-09)
 
 **Evidência no código (`src/pages/OVNew.tsx:164`):**
+
 ```tsx
-{clientes?.filter((c) => c.ativo).map((c) => (
-  <option key={c.id} value={c.id}>{c.nome}</option>
-))}
+{
+  clientes
+    ?.filter((c) => c.ativo)
+    .map((c) => (
+      <option key={c.id} value={c.id}>
+        {c.nome}
+      </option>
+    ));
+}
 ```
 
 Gamma Distribuidora (id "3", `ativo: false`) **não aparece** no dropdown de nova OV.

@@ -8,16 +8,17 @@
 
 | Camada            | Tecnologia                            | Justificação                             |
 | ----------------- | ------------------------------------- | ---------------------------------------- |
-| Runtime           | Node 20 + TypeScript strict           |                                          |
+| Runtime           | Node 22 + TypeScript strict           |                                          |
 | UI                | React 18 + Vite 8                     | Dev server rápido, HMR nativo            |
 | Roteamento        | React Router v6                       | lazy loading + Suspense                  |
 | Estilização       | Tailwind CSS v4                       | CSS-first, `@theme` tokens               |
 | Formulários       | React Hook Form                       | `useFieldArray` para itens dinâmicos     |
+| Validação (form)  | Zod + `@hookform/resolvers`           | zodResolver compartilha schema com API   |
 | Data Fetching     | TanStack React Query                  | Cache, refetch automático, paginação     |
-| Validação         | Zod                                   | Schemas de formulário + respostas API    |
 | Estado (global)   | Zustand                               | Auth, toast, UI (tema/sidebar)           |
 | Mock API          | json-server + `server.cjs`            | Middleware custom (validação, auditoria) |
 | Testes unitários  | Vitest                                | Nativo Vite, zero config                 |
+| Testes componente | Vitest + `@testing-library/react`     | Apenas `useConfirm` (1 ficheiro)         |
 | Testes integração | Vitest + `node:http`                  | Servidor mock `server.cjs`               |
 | Testes E2E        | Playwright                            | `getByRole` nativo, sem Testing Library  |
 | Contentorização   | Docker (multi-stage) + docker-compose |                                          |
@@ -80,15 +81,15 @@
 
 **Decisão:** `PerformanceObserver` para LCP/CLS/INP (3 observers com try/catch). `trackEvent()` escreve para `localStorage` (últimos 100 eventos) e `console.table`. Sem PostHog, Sem Sentry.
 
-**Consequências:** Dados disponíveis para debug sem dependências externas. Eventos rastreados: criação de OV, alteração de status. Sem telemetria remota — `🐴` Aceitável para protótipo.
+**Consequências:** Dados disponíveis para debug sem dependências externas. Eventos rastreados: criação de OV, alteração de status. Sem telemetria remota.
 
 ### ADR-08: Testes em 3 camadas
 
 **Contexto:** O mínimo do desafio são 2 testes unitários + 1 de integração. Buscamos cobertura relevante.
 
-**Decisão:** 3 camadas de teste: (1) **unitários** (Vitest) — lógica de domínio pura (`canTransition`, `canUseTransporte`, `parseBRLtoCents`) + hook `useConfirm` (RTL); (2) **integração** (Vitest + `node:http`) — servidor mock `server.cjs` end-to-end (regras de negócio, idempotência, auditoria, allowlist PATCH, identity gate); (3) **E2E** (Playwright) — fluxos completos (RBAC, criar OV, detalhe, listagem).
+**Decisão:** 3 camadas de teste: (1) **unitários** (Vitest) — lógica de domínio pura (`canTransition`, `canUseTransporte`, `parseBRLtoCents`) + 3 use cases (`CriarOrdemVendaUseCase`, `AlterarStatusOVUseCase`, `AgendarEntregaUseCase`) + hook `useConfirm` (RTL); (2) **integração** (Vitest + `node:http`) — servidor mock `server.cjs` end-to-end (regras de negócio, idempotência, auditoria, allowlist PATCH, identity gate, eventos de auditoria em DELETE); (3) **E2E** (Playwright) — fluxos completos (RBAC, criar OV, detalhe, listagem) + auditoria de CWV em 9 rotas.
 
-**Consequências:** ~15 testes unitários, ~7 de integração, ~18 E2E (incluindo auditoria de CWV em 9 rotas). Cobertura de componentes via RTL + E2E. `🐴` Submissão RHF via Playwright tem limitação conhecida (handleSubmit não reconhece eventos sintéticos).
+**Consequências:** 30 testes unitários (9 domínio + 10 use cases + 8 money + 3 useConfirm), 19 de integração (server.cjs end-to-end), 10 E2E (RBAC, OV-create, OV-detail, OV-list-filters, CWV-audit). Cobertura de UI via Playwright `getByRole` nativo. Submissão RHF via Playwright tem limitação conhecida (handleSubmit não reconhece eventos sintéticos).
 
 ---
 
@@ -124,37 +125,60 @@ Permissões:
 
 ```
 src/
-├── api/
-│   └── fetch.ts           # Wrapper fetch nativo (GET, POST, PATCH, DELETE, paginado)
 ├── application/           # ← Camada de aplicação (Clean Architecture)
 │   ├── ports/             #   Interfaces (repositories) + DTOs
+│   │   ├── DTOs.ts                     # Criar/Atualizar DTOs + PaginatedResult<T>
+│   │   ├── IApiClient.ts
+│   │   ├── IOrdemVendaRepository.ts
+│   │   ├── IClienteRepository.ts
+│   │   ├── IItemRepository.ts
+│   │   ├── ITransporteRepository.ts
+│   │   └── IAuditoriaRepository.ts
 │   └── use-cases/         #   Orquestração de regras de negócio
+│       ├── CriarOrdemVendaUseCase.ts + .test.ts
+│       ├── AlterarStatusOVUseCase.ts + .test.ts
+│       └── AgendarEntregaUseCase.ts + .test.ts
 ├── auth/
 │   └── credentials.ts     # Credenciais fake de demo
 ├── components/
+│   ├── Breadcrumbs.tsx    # Breadcrumbs dinâmicos (consome useBreadcrumbs)
+│   ├── FormField.tsx      # Label + children + erro (wrapper reutilizável)
 │   ├── Modal.tsx          # Modal dialog reutilizável (teclado + foco)
 │   ├── Pagination.tsx     # Controlo de paginação server-side
-│   └── Toaster.tsx        # Notificações toast (Sonner wrapper)
+│   └── Toaster.tsx        # Notificações toast (Zustand-backed, sem sonner)
 ├── data/
 │   └── usuarios.json      # Contas de demo (4 roles)
 ├── domain/                # ← Camada de domínio (pura, sem framework)
-│   ├── entities/          #   Interfaces e funções puras (OrdemVenda, Cliente, Item, ...)
+│   ├── entities/          #   Interfaces e funções puras
+│   │   ├── OrdemVenda.ts   #    + canTransition, statusLabel
+│   │   ├── Cliente.ts      #    + canUseTransporte
+│   │   ├── Item.ts
+│   │   ├── TipoTransporte.ts
+│   │   ├── EventoAuditoria.ts
+│   │   └── Usuario.ts
 │   ├── types.ts           #   Barrel de re-exports
 │   └── types.test.ts      #   Testes unitários (Vitest)
 ├── hooks/
+│   ├── useBreadcrumbs.ts  # Breadcrumbs derivados do data router
 │   ├── useConfirm.tsx     # Modal de confirmação (Context + Modal)
 │   │   └── useConfirm.test.tsx  # Teste RTL
 │   └── usePermission.ts   # RBAC: usePermissao, permissoesPorRole
 ├── infrastructure/        # ← Camada de infraestrutura (adapters)
 │   └── repositories/      #   Implementações concretas dos ports
+│       ├── OrdemVendaRepository.ts
+│       ├── ClienteRepository.ts
+│       ├── ItemRepository.ts
+│       ├── TransporteRepository.ts
+│       └── AuditoriaRepository.ts
 ├── layouts/
 │   └── AppLayout.tsx      # Sidebar + skip-to-content + role switcher + toaster
 ├── lib/
 │   ├── id.ts              # Geração/validação de UUID
+│   ├── logger.ts          # Logger estruturado (pino)
 │   ├── money.ts           # parseBRLtoCents
 │   │   └── money.test.ts  # Testes unitários
 │   ├── telemetry.ts       # PerformanceObserver + trackEvent
-│   └── validation.ts      # Schemas Zod para formulários
+│   └── validation.ts      # Helper de validação a partir de schemas
 ├── pages/
 │   ├── Login.tsx          # Login fake (demo)
 │   ├── Dashboard.tsx      # KPIs com indicadores
@@ -170,6 +194,7 @@ src/
 ├── queries/
 │   ├── api.ts             # Cliente API com validação Zod de respostas
 │   ├── queryClient.ts     # Config TanStack Query
+│   ├── index.ts           # Barrel de re-exports
 │   ├── useOrdensVenda.ts  # Query/mutation OVs (consome use cases)
 │   ├── useClientes.ts     # Query/mutation clientes
 │   ├── useTransportes.ts  # Query/mutation transportes
@@ -182,21 +207,24 @@ src/
 │   ├── cliente.ts         # Schema Zod cliente
 │   ├── transporte.ts      # Schema Zod transporte
 │   ├── item.ts            # Schema Zod item
-│   └── auditoria.ts       # Schema Zod auditoria
+│   ├── auditoria.ts       # Schema Zod auditoria
+│   ├── agendamento.ts     # Schema Zod agendamento (janela HH:MM-HH:MM)
+│   └── login.ts           # Schema Zod login (email + senha)
 ├── stores/
 │   ├── authStore.ts       # Zustand: auth (user, login, logout)
 │   ├── toastStore.ts      # Zustand: toasts
 │   └── uiStore.ts         # Zustand: tema, sidebar, menu mobile
-├── App.tsx                # Rotas com lazy loading + Suspense
+├── App.tsx                # createBrowserRouter + lazy loading + Suspense
 ├── main.tsx               # Entry point
 ├── index.css              # Tailwind v4 @theme + tokens + scrollbar
+├── test-setup.ts          # Setup global do Vitest (jsdom, jest-dom matchers)
 └── vite-env.d.ts          # Tipos Vite
 
 server.cjs          # json-server programático com middleware de negócio
 db.seed.json        # Seed versionado (25 OVs, 3 clientes, 3 transportes, 10 itens)
 data/db.json        # Runtime gerado pelo json-server (ignorado no git)
 nginx.conf          # Config nginx para SPA routing + proxy reverso /api/
-Dockerfile          # Multi-stage build (node:22-alpine → nginx:alpine)
+Dockerfile          # Multi-stage build (build: node:22-alpine, api: node:22-alpine, frontend: nginx:alpine)
 docker-compose.yml  # frontend + api
 ```
 
@@ -310,7 +338,7 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 | Playwright + RTL                            | Testes de componente com RTL + E2E com Playwright. Submissão RHF tem limitação conhecida.                    |
 | Autenticação fake (localStorage)            | Simulada para demonstrar RBAC. Sem JWT, sem OAuth. Persistência via localStorage (5 linhas, sem middleware). |
 | Web Vitals nativos vs PostHog/Sentry        | Dados apenas no console em dev. Sem telemetria remota.                                                       |
-| Docker com `npm install` em vez de `npm ci` | Lockfile incompatível com esbuild linux. `🐴` Aceitável para protótipo.                                      |
+| Docker com `npm install` em vez de `npm ci` | Lockfile incompatível com esbuild linux.                                          |
 
 ---
 

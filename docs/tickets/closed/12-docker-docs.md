@@ -28,7 +28,7 @@ Como containerizar o frontend + json-server e documentar o projeto para entrega 
 - nginx.conf minimalista com `try_files` para SPA routing
 - docker-compose.yml com 2 services: `api` (node server.cjs) + `frontend` (nginx construído)
 - README.md com: stack, 8 ADRs inline, modelagem de domínio, estrutura de pastas, instruções npm/Docker, estratégia de persistência, performance, trade-offs
-- `🐴` Build usa `npm install` (não `npm ci`) porque vitest puxa esbuild@0.28 que não está no lockfile gerado em macOS
+- Build usa `npm install` (não `npm ci`) porque vitest puxa esbuild@0.28 que não está no lockfile gerado em macOS
 
 ### Artefactos
 

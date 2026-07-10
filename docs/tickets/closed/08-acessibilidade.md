@@ -9,7 +9,7 @@ Como garantir acessibilidade (WCAG 2.1 AA) no sistema XPTO usando **apenas HTML 
 
 ## Restrições YAGNI
 
-- `🐴` Nada de design system — HTML semântico (button, nav, table, form, h1-h6, main, aside) + atributos ARIA
+- Nada de design system — HTML semântico (button, nav, table, form, h1-h6, main, aside) + atributos ARIA
 - Tailwind para estilos, com focus-visible, color contrast, etc. — nativo do Tailwind
 - Sem Axe-core como dependência (apenas ferramenta de auditoria)
 - Keyboard-first flows para criação de OV e agendamento

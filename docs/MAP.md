@@ -9,7 +9,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - **Domínio:** Backoffice de logística — gestão de OVs, agendamentos, monitoramento operacional.
 - **Stack stack:** React 18 + Vite 5 + TypeScript + React Router v6 + Tailwind CSS + json-server.
 - **Princípio YAGNI:** Nada de libs desnecessárias. Nada de abstrações prematuras. Nada de boilerplate.
-- **`/🐴`** marca simplificações intencionais.
+- marca simplificações intencionais.
 - Skills: `frontend-design`, `react-patterns`, `a11y-runtime-tester`, `performance-profiling`.
 
 ## Decisions so far
@@ -118,7 +118,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - Playwright para **9 testes E2E** em 4 specs: `rbac.spec.ts` (3), `ov-create.spec.ts` (2), `ov-detail.spec.ts` (2), `ov-list-filters.spec.ts` (2)
 - `playwright.config.ts` com `webServer` para json-server + Vite
 - Sem RTL, sem Testing Library — Playwright `getByRole` nativo
-- `🐴` Submissão RHF via Playwright → `🐴` conhecido: `handleSubmit` não reconhece eventos sintéticos do Playwright. API testada diretamente (funciona), form load testado sem erros JS.
+- Submissão RHF via Playwright → conhecido: `handleSubmit` não reconhece eventos sintéticos do Playwright. API testada diretamente (funciona), form load testado sem erros JS.
 
 ### Ticket 12 — Docker + Docs (resolvido)
 
@@ -127,7 +127,7 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - docker-compose.yml com `api` (json-server) + `frontend` (nginx)
 - `.dockerignore` para excluir node_modules/dist/.git
 - README.md completo: stack, 8 ADRs inline, modelagem de domínio, estrutura, instruções (npm + docker), testes, estratégia de persistência, performance, trade-offs
-- `🐴` Docker build usa `npm install` em vez de `npm ci` (lockfile incompatível com esbuild linux)
+- Docker build usa `npm install` em vez de `npm ci` (lockfile incompatível com esbuild linux)
 
 ## Tickets
 

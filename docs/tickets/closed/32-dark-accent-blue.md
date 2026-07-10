@@ -11,9 +11,9 @@ Migração é exclusiva em tokens do `@theme` do Tailwind v4 em `src/index.css`.
 
 ## Restrições YAGNI
 
-- `🐴` Sem renomear token `--color-accent`
-- `🐴` Sem mexer no light theme
-- `🐴` Sem alterar badges (`bg-amber-950/30`, `bg-sky-50` etc.) — semânticos
+- Sem renomear token `--color-accent`
+- Sem mexer no light theme
+- Sem alterar badges (`bg-amber-950/30`, `bg-sky-50` etc.) — semânticos
 
 ## Cenários de aceitação
 
@@ -38,11 +38,13 @@ Migração é exclusiva em tokens do `@theme` do Tailwind v4 em `src/index.css`.
 **Status:** ✔ Resolvido (2026-07-09)
 
 **Evidência no código:**
+
 - `src/index.css:18-20` — `--color-accent: #3b82f6` (Blue-500), `--color-accent-soft: rgb(59 130 246 / 0.15)`
 - `src/index.css:27` — `--color-on-accent: #ffffff` (blue-500 precisa de texto branco para contraste AA)
 - `docs/DESIGN.md:24` — paleta documentada com nota sobre badges semânticas preservadas
 
 **Verificação:**
+
 - `npm run build` → 19 chunks gerados, sem warnings
 - Badge colors semânticos intactos: `bg-amber-950/30` (CRIADA/PLANEJADA), `bg-sky-50` (AGENDADA), `bg-emerald-950/30` (ENTREGUE) — preservados
 - Dark theme: hover de botões primários, focus rings, KPI numbers, link hover agora usam Blue-500

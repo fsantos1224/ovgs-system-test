@@ -11,9 +11,9 @@ Adicionar toaster global. Decisão arquitetural: `toast.*` é chamado **dentro d
 
 ## Restrições YAGNI
 
-- `🐴` Sem queue management (toast desaparece sozinho após 4s)
-- `🐴` Sem actions inline no toast (sem botão "Desfazer" no toast) — apenas fechar
-- `🐴` Single lib: `sonner` (~5 kB gzip). Escolhida por não exigir Provider + tema dark/light nativo + ARIA built-in
+- Sem queue management (toast desaparece sozinho após 4s)
+- Sem actions inline no toast (sem botão "Desfazer" no toast) — apenas fechar
+- Single lib: `sonner` (~5 kB gzip). Escolhida por não exigir Provider + tema dark/light nativo + ARIA built-in
 
 ## Cenários de aceitação
 
@@ -44,13 +44,16 @@ Adicionar toaster global. Decisão arquitetural: `toast.*` é chamado **dentro d
 ## Decision record
 
 **Implementado (pré-existente):**
+
 - `src/components/Toaster.tsx` — toaster custom (Zustand) com `role="alert"`, auto-dismiss 4s, success/error/warning, bottom-right.
 - `<Toaster />` montado em `AppLayout`.
 - `src/stores/toastStore.ts` com `useToast()` hook expondo `success()`, `error()`, `warning()`.
 
 **Adicionado neste ticket:**
+
 - Toast integrado nas mutations de `useClientes.ts`, `useTransportes.ts`, `useItens.ts`, `useOrdensVenda.ts` — cada `onSuccess`/`onError` dispara `toast.success`/`toast.error` com mensagem específica da entidade.
 
 **Desvio de spec:**
+
 - Ticket sugeria `sonner` como lib de toasts. Optou-se por manter o toaster custom (Zustand) existente — zero dependências adicionais, funcionalidade equivalente, bundle menor.
 - Ticket sugeria injetar toast nos wrappers `api.ts`. Optou-se por injetar nos `onSuccess`/`onError` de cada mutation do TanStack Query — mais contexto disponível (nome da entidade, resposta) e sem acoplar o fetch layer a UI.

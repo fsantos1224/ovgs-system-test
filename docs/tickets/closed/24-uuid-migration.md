@@ -8,6 +8,7 @@
 Atualmente todos os IDs do projeto (`clientes.id`, `tiposTransporte.id`, `itens.id`, `ordensVenda.id`, `eventosAuditoria.id`, e os relacionais `clienteId`, `transporteId`, `itemId`, `entidadeId`) são strings curtas (`"1"`, `"2"`, `"abc-123"`), geradas por `length + 1` no servidor ou hardcoded no seed. Como **pattern**, todo `id` deve ser UUID v4 gerado por `crypto.randomUUID()`.
 
 Benefícios:
+
 - IDs não-enumeráveis (zero enumeration attack via `/clientes/1`, `/clientes/2`...)
 - Geração distribuída (cliente + servidor) sem coordenação
 - IDs estáveis entre ambientes (não dependem de contadores locais)
@@ -15,9 +16,9 @@ Benefícios:
 
 ## Restrições YAGNI
 
-- `🐴` UUID v4 via `crypto.randomUUID()` (nativo, sem lib)
-- `🐴` Tipos TypeScript permanecem `string` — só garantimos o pattern no servidor (validação por regex `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
-- `🐴` Não trocar `numero` da OV (continua `OV-2024-0001` — display key, diferente do `id` interno)
+- UUID v4 via `crypto.randomUUID()` (nativo, sem lib)
+- Tipos TypeScript permanecem `string` — só garantimos o pattern no servidor (validação por regex `^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$`)
+- Não trocar `numero` da OV (continua `OV-2024-0001` — display key, diferente do `id` interno)
 
 ## Cenários de aceitação
 
@@ -46,6 +47,7 @@ Benefícios:
 **1. Helper `src/lib/id.ts`** — `newId()` wrapper sobre `crypto.randomUUID()` (nativo) + `isUUID()` guard com regex UUID v4.
 
 **2. `db.seed.json` regenerado** com UUIDs consistentes:
+
 - 5 clientes com UUIDs novos
 - 5 transportes com UUIDs novos
 - 10 itens com UUIDs novos
@@ -53,6 +55,7 @@ Benefícios:
 - `transportesAutorizados` em cada cliente re-mapeado do array antigo `["1","3"]` para os UUIDs correspondentes (mapeamento preservado pelo nome: Alpha→Transportadora+Rápida+Navtec etc.)
 
 **3. `server.cjs`** (UUID + related):
+
 - Validador `isUUID()` no topo (L. 12-14)
 - Gerador `newId()` no topo (L. 15)
 - **L. 226** — POST `/ordensVenda` valida que `clienteId`, `transporteId` e `item.itemId` são UUIDs (400 caso contrário) e que itens referenciados existem
@@ -62,6 +65,7 @@ Benefícios:
 - 6 ocorrências de `String(length + 1)` → `newId()` em eventos de auditoria
 
 **4. Tests atualizados**:
+
 - `tests/integration/server.test.ts` (vitest): novo `beforeAll` carrega IDs via `fetch('/clientes')`, `/tiposTransporte`, `/itens`. Nenhum "1", "2", "3" hardcoded. Helpers `ids.alphaId`, `ids.betaId`, `ids.itemId`, etc.
 - `e2e/ov-create.spec.ts` (playwright): `test.beforeAll({request})` carrega UUIDs e armazena em `alphaId`, `betaId`, `alphaTransporteId`, `itemId` para uso nos testes
 - `e2e/ov-detail.spec.ts`: pega `id` real da primeira OV via API; 404 usa UUID artificial `00000000-...`
@@ -69,6 +73,7 @@ Benefícios:
 **5. Type `ItemOV`** em `src/domain/types.ts:73-79` ganhou `id: string` (UUID) além de `itemId`. `OVNew.tsx:101-104` gera UUID via `newId()` para cada item antes de submeter.
 
 **6. Validação**:
+
 - `npm test` → **28/28** passando (9 unit + 19 integration)
 - `npm run test:e2e` → **9/9** passando
 - `npm run build` → OK (sem warning de TS)

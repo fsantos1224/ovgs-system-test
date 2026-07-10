@@ -9,7 +9,7 @@ Como gerir o estado da aplicação usando **apenas `useState`/`useReducer` + `fe
 
 ## Restrições YAGNI
 
-- `🐴` Zero libs de estado. Nada de TanStack Query, Zustand, Redux, Context API global.
+- Zero libs de estado. Nada de TanStack Query, Zustand, Redux, Context API global.
 - Se precisar de partilhar estado entre componentes, usar props + lifting state up.
 - Apenas `fetch` nativo para chamadas à API (json-server).
 
@@ -23,7 +23,6 @@ Como gerir o estado da aplicação usando **apenas `useState`/`useReducer` + `fe
 ## Exemplo de output esperado (ponytail)
 
 ```typescript
-// 🐴: fetch nativo + useState, sem TanStack Query
 const useFetch = <T>(url: string) => {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +30,7 @@ const useFetch = <T>(url: string) => {
 
   useEffect(() => {
     fetch(url)
-      .then(r => r.json())
+      .then((r) => r.json())
       .then(setData)
       .catch(setError)
       .finally(() => setLoading(false));
@@ -43,4 +42,4 @@ const useFetch = <T>(url: string) => {
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+_[a preencher quando resolvido]_

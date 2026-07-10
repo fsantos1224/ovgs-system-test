@@ -9,8 +9,8 @@ Como implementar observabilidade básica (métricas de performance e eventos de 
 
 ## Restrições YAGNI
 
-- `🐴` Performance Observer nativo: 3 linhas, sem libs
-- `🐴` Eventos de negócio: console.log estruturado + localStorage para persistência simples
+- Performance Observer nativo: 3 linhas, sem libs
+- Eventos de negócio: console.log estruturado + localStorage para persistência simples
 - Nada de serviços externos (PostHog, GA, etc.) — o sistema é backoffice interno
 
 ## O que precisa de ser decidido
@@ -24,14 +24,12 @@ Como implementar observabilidade básica (métricas de performance e eventos de 
 ## Exemplo de output esperado (ponytail)
 
 ```typescript
-// 🐴: performance monitoring — 3 linhas, nativo do browser
-new PerformanceObserver(list => {
+new PerformanceObserver((list) => {
   for (const entry of list.getEntries()) {
     console.log('[WebVital]', entry.name, entry.value, entry.rating);
   }
 }).observe({ type: 'largest-contentful-paint', buffered: true });
 
-// 🐴: business events — console estruturado, sem SDK
 const trackEvent = (action: string, entity: string, details?: Record<string, unknown>) => {
   const event = { timestamp: new Date().toISOString(), action, entity, details };
   console.table([event]); // visível no DevTools
@@ -40,4 +38,4 @@ const trackEvent = (action: string, entity: string, details?: Record<string, unk
 
 ## Resolução
 
-*[a preencher quando resolvido]*
+_[a preencher quando resolvido]_
