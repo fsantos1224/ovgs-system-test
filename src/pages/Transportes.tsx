@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Plus, Truck, Pencil, Trash2 } from "lucide-react";
-import { useTransportes, useCriarTransporte, useAtualizarTransporte, useExcluirTransporte } from "../queries";
+import { useState, useEffect } from "react";
+import { Plus, Truck, Pencil, Search, Eye } from "lucide-react";
+import { useTransportes, useCriarTransporte, useAtualizarTransporte } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
-import { useConfirm } from "../hooks/useConfirm";
 import { Modal } from "../components/Modal";
+import { Pagination } from "../components/Pagination";
 import { transporteSchema } from "../lib/validation";
 import type { TipoTransporte } from "../domain/types";
 
@@ -18,13 +18,30 @@ export function Transportes() {
   const { data: transportes, isLoading } = useTransportes();
   const criarTransporte = useCriarTransporte();
   const atualizarTransporte = useAtualizarTransporte();
-  const excluirTransporte = useExcluirTransporte();
-  const confirm = useConfirm();
   const podeCriar = usePermissao("transportes:criar");
   const podeEditar = usePermissao("transportes:editar");
   const [editando, setEditando] = useState<TipoTransporte | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [consultando, setConsultando] = useState<TipoTransporte | null>(null);
   const [erro, setErro] = useState("");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const filtrados = (transportes ?? []).filter((t) => {
+    if (!debouncedSearch) return true;
+    const q = debouncedSearch.toLowerCase();
+    return t.nome.toLowerCase().includes(q) || (MODAL_LABEL[t.modal] || t.modal).toLowerCase().includes(q);
+  });
+  const totalPages = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
+  const paginados = filtrados.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   if (isLoading)
     return (
@@ -59,16 +76,6 @@ export function Transportes() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const ok = await confirm({ title: "Excluir Transporte", body: "Tem certeza que deseja excluir este transporte?", confirmLabel: "Excluir", cancelLabel: "Cancelar", variant: "danger" });
-    if (!ok) return;
-    try {
-      await excluirTransporte.mutateAsync(id);
-    } catch {
-      alert("Erro ao excluir transporte.");
-    }
-  };
-
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
@@ -97,6 +104,21 @@ export function Transportes() {
           </button>
         )}
       </div>
+
+      <Modal open={!!consultando} title={`Transporte: ${consultando?.nome ?? ""}`} onClose={() => setConsultando(null)}>
+        {consultando && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-4">
+              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Nome</span><p className="text-text font-medium">{consultando.nome}</p></div>
+              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Modal</span><p className="text-text font-medium">{MODAL_LABEL[consultando.modal] ?? consultando.modal}</p></div>
+              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Ativo</span><span className={`text-[10px] font-bold uppercase tracking-wider ${consultando.ativo ? "text-emerald-500" : "text-text-faint"}`}>{consultando.ativo ? "Sim" : "Não"}</span></div>
+            </div>
+            <div className="flex justify-end pt-4 border-t border-border">
+              <button type="button" onClick={() => setConsultando(null)} className="px-5 py-2.5 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted">Fechar</button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal
         open={mostrarForm}
@@ -176,6 +198,18 @@ export function Transportes() {
         </form>
       </Modal>
 
+      {/* Busca */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-faint pointer-events-none" aria-hidden="true" />
+        <input
+          type="text"
+          placeholder="Buscar transportes..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-input-bg border border-border text-text text-xs rounded-lg pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden placeholder:text-text-faint"
+        />
+      </div>
+
       {/* Desktop table */}
       <div
         role="region"
@@ -190,11 +224,11 @@ export function Transportes() {
                 <th className="px-4 py-4 w-[50%]">Nome</th>
                 <th className="px-4 py-4 w-[30%]">Modal</th>
                 <th className="px-4 py-4 w-[10%]">Ativo</th>
-                {podeEditar && <th className="px-4 py-4 w-[10%] text-center">Ações</th>}
+                <th className="px-4 py-4 w-[10%] text-center">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
-              {transportes?.map((t) => (
+              {paginados.map((t) => (
                 <tr key={t.id} className="hover:bg-hover transition-colors">
                   <td className="px-4 py-4 font-bold text-text text-sm inline-flex items-center gap-2">
                     <Truck
@@ -213,9 +247,16 @@ export function Transportes() {
                       {t.ativo ? "Ativo" : "Inativo"}
                     </span>
                   </td>
-                  {podeEditar && (
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center gap-0.5">
+                  <td className="px-4 py-4 text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => setConsultando(t)}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Consultar"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      {podeEditar && (
                         <button
                           onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
                           className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
@@ -223,25 +264,18 @@ export function Transportes() {
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => handleDelete(t.id)}
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                          title="Excluir"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  )}
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
-              {transportes?.length === 0 && (
+              {filtrados.length === 0 && (
                 <tr>
                   <td
-                    colSpan={podeEditar ? 4 : 3}
+                    colSpan={4}
                     className="px-4 py-12 text-center text-text-subtle italic"
                   >
-                    Nenhum transporte cadastrado.
+                    {debouncedSearch ? "Nenhum resultado encontrado." : "Nenhum transporte cadastrado."}
                   </td>
                 </tr>
               )}
@@ -251,12 +285,12 @@ export function Transportes() {
 
         {/* Mobile cards */}
         <div className="md:hidden divide-y divide-border-subtle">
-          {transportes?.length === 0 ? (
+          {filtrados.length === 0 ? (
             <div className="px-6 py-12 text-center text-text-subtle italic">
-              Nenhum transporte cadastrado.
+              {debouncedSearch ? "Nenhum resultado encontrado." : "Nenhum transporte cadastrado."}
             </div>
           ) : (
-            transportes?.map((t) => (
+            paginados.map((t) => (
               <div key={t.id} className="p-4 space-y-3 hover:bg-hover transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -271,8 +305,15 @@ export function Transportes() {
                   <span className="text-[9px] uppercase tracking-wider text-text-faint">Modal</span>
                   <p className="text-text-muted text-xs mt-0.5">{MODAL_LABEL[t.modal] ?? t.modal}</p>
                 </div>
-                {podeEditar && (
-                  <div className="flex items-center justify-end gap-1 pt-2 border-t border-border-subtle">
+                <div className="flex items-center justify-end gap-1 pt-2 border-t border-border-subtle">
+                  <button
+                    onClick={() => setConsultando(t)}
+                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                    title="Consultar"
+                  >
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  {podeEditar && (
                     <button
                       onClick={() => { setEditando(t); setMostrarForm(true); setErro(""); }}
                       className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
@@ -280,19 +321,14 @@ export function Transportes() {
                     >
                       <Pencil className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => handleDelete(t.id)}
-                      className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                      title="Excluir"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))
           )}
         </div>
+
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
     </div>
   );

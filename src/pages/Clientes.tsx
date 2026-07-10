@@ -1,9 +1,9 @@
-import { useState } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
-import { useClientes, useCriarCliente, useAtualizarCliente, useExcluirCliente } from "../queries";
+import { useState, useEffect } from "react";
+import { Plus, Pencil, Search, Eye } from "lucide-react";
+import { useClientes, useCriarCliente, useAtualizarCliente } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
-import { useConfirm } from "../hooks/useConfirm";
 import { Modal } from "../components/Modal";
+import { Pagination } from "../components/Pagination";
 import { clienteSchema } from "../lib/validation";
 import type { Cliente } from "../domain/types";
 
@@ -23,13 +23,30 @@ export function Clientes() {
   const { data: clientes, isLoading } = useClientes();
   const criarCliente = useCriarCliente();
   const atualizarCliente = useAtualizarCliente();
-  const excluirCliente = useExcluirCliente();
-  const confirm = useConfirm();
   const podeCriar = usePermissao("clientes:criar");
   const podeEditar = usePermissao("clientes:editar");
   const [editando, setEditando] = useState<Cliente | null>(null);
   const [mostrarForm, setMostrarForm] = useState(false);
+  const [consultando, setConsultando] = useState<Cliente | null>(null);
   const [erro, setErro] = useState("");
+  const [search, setSearch] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 10;
+
+  useEffect(() => {
+    const id = setTimeout(() => setDebouncedSearch(search), 300);
+    return () => clearTimeout(id);
+  }, [search]);
+  useEffect(() => { setPage(1); }, [debouncedSearch]);
+
+  const filtrados = (clientes ?? []).filter((c) => {
+    if (!debouncedSearch) return true;
+    const q = debouncedSearch.toLowerCase();
+    return c.nome.toLowerCase().includes(q) || c.documento.includes(q) || c.email.toLowerCase().includes(q);
+  });
+  const totalPages = Math.max(1, Math.ceil(filtrados.length / PAGE_SIZE));
+  const paginados = filtrados.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
   if (isLoading) return <p role="status" aria-live="polite" className="text-text-muted p-6">Carregando...</p>;
 
@@ -62,16 +79,6 @@ export function Clientes() {
     }
   };
 
-  const handleDelete = async (id: string) => {
-    const ok = await confirm({ title: "Excluir Cliente", body: "Tem certeza que deseja excluir este cliente?", confirmLabel: "Excluir", cancelLabel: "Cancelar", variant: "danger" });
-    if (!ok) return;
-    try {
-      await excluirCliente.mutateAsync(id);
-    } catch {
-      alert("Erro ao excluir cliente.");
-    }
-  };
-
   return (
     <div className="space-y-4 md:space-y-6 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4 md:pb-6">
@@ -86,6 +93,24 @@ export function Clientes() {
           </button>
         )}
       </div>
+
+      <Modal open={!!consultando} title={`Cliente: ${consultando?.nome ?? ""}`} onClose={() => setConsultando(null)}>
+        {consultando && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-4">
+              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Nome</span><p className="text-text font-medium">{consultando.nome}</p></div>
+              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Documento</span><p className="text-text font-mono">{formatDocumento(consultando.documento)}</p></div>
+              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Email</span><p className="text-text font-medium">{consultando.email}</p></div>
+              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Telefone</span><p className="text-text font-mono">{formatTelefone(consultando.telefone)}</p></div>
+              <div className="col-span-2"><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Endereço</span><p className="text-text">{consultando.endereco || "—"}</p></div>
+              <div><span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Ativo</span><span className={`text-[10px] font-bold uppercase tracking-wider ${consultando.ativo ? "text-emerald-500" : "text-text-faint"}`}>{consultando.ativo ? "Sim" : "Não"}</span></div>
+            </div>
+            <div className="flex justify-end pt-4 border-t border-border">
+              <button type="button" onClick={() => setConsultando(null)} className="px-5 py-2.5 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted">Fechar</button>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       <Modal open={mostrarForm} title={editando ? `Editar Cliente: ${editando.nome}` : "Novo Cliente"} onClose={() => { setMostrarForm(false); setEditando(null); setErro(""); }}>
         <form key={editando?.id ?? "new"} onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -128,6 +153,18 @@ export function Clientes() {
         </form>
       </Modal>
 
+      {/* Busca */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-faint pointer-events-none" aria-hidden="true" />
+        <input
+          type="text"
+          placeholder="Buscar clientes..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="w-full bg-input-bg border border-border text-text text-xs rounded-lg pl-9 pr-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden placeholder:text-text-faint"
+        />
+      </div>
+
       {/* Desktop table */}
       <div role="region" aria-label="Lista de clientes" className="bg-surface rounded-xl border border-border overflow-hidden shadow-2xl">
         <div className="hidden md:block overflow-x-auto">
@@ -140,11 +177,11 @@ export function Clientes() {
                 <th className="px-4 py-4 w-[22%]">Email</th>
                 <th className="px-4 py-4 w-[16%]">Telefone</th>
                 <th className="px-4 py-4 w-[8%]">Ativo</th>
-                {podeEditar && <th className="px-4 py-4 w-[8%] text-center">Ações</th>}
+                <th className="px-4 py-4 w-[10%] text-center">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
-              {clientes?.map((c) => (
+              {paginados.map((c) => (
                 <tr key={c.id} className="hover:bg-hover transition-colors">
                   <td className="px-4 py-4">
                     <div className="font-bold text-text text-sm truncate">{c.nome}</div>
@@ -158,9 +195,16 @@ export function Clientes() {
                       {c.ativo ? "Ativo" : "Inativo"}
                     </span>
                   </td>
-                  {podeEditar && (
-                    <td className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center gap-0.5">
+                  <td className="px-4 py-4 text-center">
+                    <div className="flex items-center justify-center gap-1">
+                      <button
+                        onClick={() => setConsultando(c)}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Consultar"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                      {podeEditar && (
                         <button
                           onClick={() => { setEditando(c); setMostrarForm(true); setErro(""); }}
                           className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
@@ -168,29 +212,22 @@ export function Clientes() {
                         >
                           <Pencil className="w-4 h-4" />
                         </button>
-                        <button
-                          onClick={() => handleDelete(c.id)}
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                          title="Excluir"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </td>
-                  )}
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
-              {clientes?.length === 0 && <tr><td colSpan={podeEditar ? 6 : 5} className="px-4 py-12 text-center text-text-subtle italic">Nenhum cliente cadastrado.</td></tr>}
+              {filtrados.length === 0 && <tr><td colSpan={7} className="px-4 py-12 text-center text-text-subtle italic">{debouncedSearch ? "Nenhum resultado encontrado." : "Nenhum cliente cadastrado."}</td></tr>}
             </tbody>
           </table>
         </div>
 
         {/* Mobile cards */}
         <div className="md:hidden divide-y divide-border-subtle">
-          {clientes?.length === 0 ? (
-            <div className="px-6 py-12 text-center text-text-subtle italic">Nenhum cliente cadastrado.</div>
+          {filtrados.length === 0 ? (
+            <div className="px-6 py-12 text-center text-text-subtle italic">{debouncedSearch ? "Nenhum resultado encontrado." : "Nenhum cliente cadastrado."}</div>
           ) : (
-            clientes?.map((c) => (
+            paginados.map((c) => (
               <div key={c.id} className="p-4 space-y-3 hover:bg-hover transition-colors">
                 <div className="flex items-start justify-between">
                   <div className="min-w-0 flex-1">
@@ -215,28 +252,28 @@ export function Clientes() {
                     <p className="text-text-muted mt-0.5 truncate">{c.email || "—"}</p>
                   </div>
                 </div>
-                {podeEditar && (
-                  <div className="flex items-center justify-end gap-1 pt-2 border-t border-border-subtle">
+                <div className="flex items-center justify-end gap-1 pt-2 border-t border-border-subtle">
+                  <button
+                    onClick={() => setConsultando(c)}
+                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                    title="Consultar">
+                    <Eye className="w-4 h-4" />
+                  </button>
+                  {podeEditar && (
                     <button
                       onClick={() => { setEditando(c); setMostrarForm(true); setErro(""); }}
                       className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                      title="Editar"
-                    >
+                      title="Editar">
                       <Pencil className="w-4 h-4" />
                     </button>
-                    <button
-                      onClick={() => handleDelete(c.id)}
-                      className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                      title="Excluir"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             ))
           )}
         </div>
+
+        <Pagination page={page} totalPages={totalPages} onPageChange={setPage} />
       </div>
     </div>
   );
