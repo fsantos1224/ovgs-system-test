@@ -77,7 +77,7 @@ As entidades do sistema foram rigidamente tipadas no TypeScript (`src/domain/typ
 Representa o documento principal do fluxo operacional.
 
 ```typescript
-type OrderStatus = "CRIADA" | "PLANEJADA" | "AGENDADA" | "EM_TRANSPORTE" | "ENTREGUE";
+type OrderStatus = 'CRIADA' | 'PLANEJADA' | 'AGENDADA' | 'EM_TRANSPORTE' | 'ENTREGUE';
 
 interface OrdemVenda {
   id: string;
@@ -145,7 +145,7 @@ Modalidade logística.
 interface TipoTransporte {
   id: string;
   nome: string; // Ex: "Caminhão", "Carreta", "Bi-truck"
-  modal: "rodoviario" | "aereo" | "maritimo" | "ferroviario";
+  modal: 'rodoviario' | 'aereo' | 'maritimo' | 'ferroviario';
   ativo: boolean;
 }
 ```
@@ -274,14 +274,15 @@ viewer → operator → manager → admin
 
 Cada papel herda as permissões do anterior e adiciona as suas:
 
-| Papel     | Permissões |
-|-----------|-----------|
-| `viewer`  | Listar OVs, clientes, transportes, itens |
-| `operator`| + Criar/editar OVs, alterar status |
-| `manager` | + Editar cadastros, agendar entregas, ver auditoria |
-| `admin`   | + Gerir utilizadores, todas as permissões |
+| Papel      | Permissões                                          |
+| ---------- | --------------------------------------------------- |
+| `viewer`   | Listar OVs, clientes, transportes, itens            |
+| `operator` | + Criar/editar OVs, alterar status                  |
+| `manager`  | + Editar cadastros, agendar entregas, ver auditoria |
+| `admin`    | + Gerir utilizadores, todas as permissões           |
 
 **Implementação:**
+
 - Matriz declarativa `PERMISSOES_POR_ROLE` em `src/hooks/usePermission.ts`
 - `usePermissao(perm)` — hook que verifica se a role atual ou qualquer role superior tem a permissão
 - UI condicional: botões, abas e nav items escondem-se se o utilizador não tem permissão
@@ -303,11 +304,11 @@ O sistema usa **3 camadas de armazenamento**:
 
 ### 7.2 Estado do Cliente (navegador)
 
-| Dado | Local | Persistência |
-|------|-------|-------------|
-| Sessão do utilizador | Zustand + localStorage (`xpto:auth:user`) | Persistente entre reloads |
-| Tema (dark/light) | Zustand (memória) | Volátil — sempre dark ao recarregar |
-| Cache TanStack Query | Memória | Volátil (recria ao recarregar) |
+| Dado                 | Local                                     | Persistência                        |
+| -------------------- | ----------------------------------------- | ----------------------------------- |
+| Sessão do utilizador | Zustand + localStorage (`xpto:auth:user`) | Persistente entre reloads           |
+| Tema (dark/light)    | Zustand (memória)                         | Volátil — sempre dark ao recarregar |
+| Cache TanStack Query | Memória                                   | Volátil (recria ao recarregar)      |
 
 ### 7.3 Estratégia para Produção
 

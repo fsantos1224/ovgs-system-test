@@ -8,10 +8,7 @@
       "telefone": "(11) 9999-8888",
       "endereco": "Rua A, 123",
       "ativo": true,
-      "transportesAutorizados": [
-        "5d0ba737-ca73-4b17-85ba-fb2b5c88aaa5",
-        "d7d43ad0-0800-44c7-abe5-4b1912a510d6"
-      ]
+      "transportesAutorizados": ["5d0ba737-ca73-4b17-85ba-fb2b5c88aaa5", "d7d43ad0-0800-44c7-abe5-4b1912a510d6"]
     },
     {
       "id": "23f952b1-4a80-4c7f-8711-a4460bcc823d",
@@ -21,9 +18,7 @@
       "telefone": "(21) 7777-6666",
       "endereco": "Av. B, 456",
       "ativo": true,
-      "transportesAutorizados": [
-        "348e50db-e7cf-4df4-9485-35a14977dda2"
-      ]
+      "transportesAutorizados": ["348e50db-e7cf-4df4-9485-35a14977dda2"]
     },
     {
       "id": "54e93cf2-0565-4f57-ba1a-cf475f3f8929",
@@ -33,9 +28,7 @@
       "telefone": "(31) 5555-4444",
       "endereco": "Rua C, 789",
       "ativo": false,
-      "transportesAutorizados": [
-        "d7d43ad0-0800-44c7-abe5-4b1912a510d6"
-      ]
+      "transportesAutorizados": ["d7d43ad0-0800-44c7-abe5-4b1912a510d6"]
     },
     {
       "id": "45b427ac-7e4b-48f8-9830-ac23d0e9beff",
@@ -73,9 +66,7 @@
       "telefone": "(61) 3333-1111",
       "endereco": "Rua das Indústrias, 500",
       "ativo": true,
-      "transportesAutorizados": [
-        "c6188d4b-33f3-4cd5-add2-eb10a64798e2"
-      ]
+      "transportesAutorizados": ["c6188d4b-33f3-4cd5-add2-eb10a64798e2"]
     },
     {
       "id": "6f75ecec-2aee-499d-b60c-7df310e074ff",
@@ -127,10 +118,7 @@
       "telefone": "(12) 3456-7890",
       "endereco": "Rua Inovação, 77",
       "ativo": true,
-      "transportesAutorizados": [
-        "c6188d4b-33f3-4cd5-add2-eb10a64798e2",
-        "5d0ba737-ca73-4b17-85ba-fb2b5c88aaa5"
-      ]
+      "transportesAutorizados": ["c6188d4b-33f3-4cd5-add2-eb10a64798e2", "5d0ba737-ca73-4b17-85ba-fb2b5c88aaa5"]
     },
     {
       "id": "601d24a5-ad43-4528-a508-0a0a0b0519ff",
@@ -140,9 +128,7 @@
       "telefone": "(16) 9999-0000",
       "endereco": "Rodovia Rural, Km 45",
       "ativo": false,
-      "transportesAutorizados": [
-        "348e50db-e7cf-4df4-9485-35a14977dda2"
-      ]
+      "transportesAutorizados": ["348e50db-e7cf-4df4-9485-35a14977dda2"]
     },
     {
       "id": "5361ad90-701f-4ac0-bac2-2af5006ea878",
@@ -152,9 +138,7 @@
       "telefone": "(19) 8888-7777",
       "endereco": "Parque Industrial Sul, 2000",
       "ativo": true,
-      "transportesAutorizados": [
-        "d7d43ad0-0800-44c7-abe5-4b1912a510d6"
-      ]
+      "transportesAutorizados": ["d7d43ad0-0800-44c7-abe5-4b1912a510d6"]
     }
   ],
   "tiposTransporte": [
