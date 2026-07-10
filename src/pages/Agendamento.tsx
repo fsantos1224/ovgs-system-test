@@ -5,12 +5,12 @@ import { agendamentoFormSchema } from '../schemas';
 import type { AgendamentoInput } from '../lib/validation';
 import { FormField } from '../components/FormField';
 import { Calendar, Clock } from 'lucide-react';
-import { useOrdensVenda, useAtualizarOV } from '../queries';
+import { useOrdensVenda } from '../queries';
+import { useAgendarEntrega } from '../queries';
 import { usePermissao } from '../hooks/usePermission';
 import { statusLabel } from '../domain/types';
 
 import { trackEvent } from '../lib/telemetry';
-import { useToast } from '../stores/toastStore';
 import { Breadcrumbs } from '../components/Breadcrumbs';
 
 const STATUS_BADGE: Record<string, string> = {
@@ -32,8 +32,7 @@ export function Agendamento() {
   const podeAgendar = usePermissao('agendamento:criar');
   const podeVer = usePermissao('agendamento:ver');
   const [editando, setEditando] = useState<string | null>(null);
-  const atualizarOV = useAtualizarOV();
-  const toast = useToast();
+  const agendarEntrega = useAgendarEntrega();
 
   const {
     register,
@@ -58,21 +57,21 @@ export function Agendamento() {
   const onSubmitForm = async (data: AgendamentoInput) => {
     const ov = agendaveis.find((o) => o.id === editando);
     if (!ov) return;
-    const body: Record<string, string> = {};
-    if (data.dataEntrega) body.dataEntregaPrevista = new Date(data.dataEntrega).toISOString();
-    if (data.janela) body.janelaAtendimento = data.janela;
-    if (ov.status === 'PLANEJADA') body.status = 'AGENDADA';
+    if (!data.dataEntrega) return;
     try {
-      await atualizarOV.mutateAsync({ id: ov.id, data: body as Parameters<typeof atualizarOV.mutateAsync>[0]['data'] });
+      await agendarEntrega.mutateAsync({
+        id: ov.id,
+        dataEntrega: data.dataEntrega!,
+        janela: data.janela!,
+      });
       trackEvent('ov:agendar', 'ordem_venda', {
         ovId: ov.id,
-        dataEntregaPrevista: data.dataEntrega,
-        janelaAtendimento: data.janela,
+        dataEntregaPrevista: data.dataEntrega!,
+        janelaAtendimento: data.janela!,
       });
       setEditando(null);
-      toast.success('Agendamento salvo com sucesso.');
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : 'Erro ao salvar agendamento');
+    } catch {
+      // erro tratado pelo hook
     }
   };
 

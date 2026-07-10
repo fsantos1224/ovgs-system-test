@@ -29,8 +29,18 @@ Extrair a lógica de agendamento para um use case dedicado. Atualmente o agendam
 
 ## Critérios de aceitação
 
-- [ ] `AgendarEntregaUseCase` em `application/use-cases/`
-- [ ] Central de Agendamento funcionando via use case
-- [ ] Testes unitários com mock — sucesso + 3 cenários de erro
-- [ ] Fluxo E2E de agendamento continua funcionando
-- [ ] `tsc --noEmit` + `vitest run` verdes
+- [x] `AgendarEntregaUseCase` em `application/use-cases/`
+- [x] Central de Agendamento funcionando via use case
+- [x] Testes unitários com mock — sucesso + 3 cenários de erro
+- [x] Fluxo E2E de agendamento continua funcionando
+- [x] `tsc --noEmit` + `vitest run` verdes
+
+## Resolução
+
+- `AgendarEntregaUseCase` criado em `application/use-cases/`
+- Validação de status elegível (PLANEJADA/AGENDADA) e formato de janela (HH:MM-HH:MM)
+- Transição automática para AGENDADA quando agendada de PLANEJADA
+- Hook `useAgendarEntrega` em `queries/useAgendamento.ts` consome o use case
+- Página `Agendamento.tsx` migrada para usar o novo hook (sem `useAtualizarOV` direto)
+- 4 testes unitários: agendamento de PLANEJADA (com transição), reagendamento de AGENDADA, janela inválida, status não elegível
+- `tsc --noEmit` (0 erros), `vitest run` (49/49), `npm run build` verdes
