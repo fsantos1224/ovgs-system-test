@@ -46,6 +46,14 @@ export function OVList() {
   const [dataAte, setDataAte] = useState("");
 
   const [page, setPage] = useState(1);
+  const [sort, setSort] = useState({ field: "dataEntregaPrevista", order: "desc" });
+
+  const toggleSort = (field: string) => {
+    setSort((prev) => ({
+      field,
+      order: prev.field === field && prev.order === "asc" ? "desc" : "asc",
+    }));
+  };
 
   const { data: clientesData } = useClientes();
   const { data: transportesData } = useTransportes();
@@ -54,7 +62,7 @@ export function OVList() {
 
   const filters = { q: debouncedSearch || undefined, status: filtroStatus || undefined, nomeCliente_like: filtroCliente || undefined, nomeTransporte_like: filtroTransporte || undefined, dataEntregaPrevista_gte: dataDe || undefined, dataEntregaPrevista_lte: dataAte || undefined };
 
-  const { data: ordensData, isLoading } = useOrdensVenda({ page, pageSize: 10, filters });
+  const { data: ordensData, isLoading } = useOrdensVenda({ page, pageSize: 10, filters, sort: sort.field, order: sort.order });
   const ordens = ordensData?.data;
   const totalCount = ordensData?.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / 10));
@@ -263,12 +271,12 @@ export function OVList() {
           <table className="w-full text-left border-collapse table-fixed">
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                <th className="px-4 py-4 w-[14%]">Número</th>
-                <th className="px-4 py-4 w-[18%]">Cliente</th>
-                <th className="px-4 py-4 w-[20%]">Transporte</th>
-                <th className="px-4 py-4 w-[14%]">Status</th>
-                <th className="px-4 py-4 w-[14%] text-right">Valor Total</th>
-                <th className="px-4 py-4 w-[12%]">Previsão</th>
+                <th className="px-4 py-4 w-[14%] cursor-pointer select-none" onClick={() => toggleSort("numero")}>Número{sort.field === "numero" ? (sort.order === "asc" ? " ↑" : " ↓") : ""}</th>
+                <th className="px-4 py-4 w-[18%] cursor-pointer select-none" onClick={() => toggleSort("nomeCliente")}>Cliente{sort.field === "nomeCliente" ? (sort.order === "asc" ? " ↑" : " ↓") : ""}</th>
+                <th className="px-4 py-4 w-[20%] cursor-pointer select-none" onClick={() => toggleSort("nomeTransporte")}>Transporte{sort.field === "nomeTransporte" ? (sort.order === "asc" ? " ↑" : " ↓") : ""}</th>
+                <th className="px-4 py-4 w-[14%] cursor-pointer select-none" onClick={() => toggleSort("status")}>Status{sort.field === "status" ? (sort.order === "asc" ? " ↑" : " ↓") : ""}</th>
+                <th className="px-4 py-4 w-[14%] text-right cursor-pointer select-none" onClick={() => toggleSort("valorTotal")}>Valor Total{sort.field === "valorTotal" ? (sort.order === "asc" ? " ↑" : " ↓") : ""}</th>
+                <th className="px-4 py-4 w-[12%] cursor-pointer select-none" onClick={() => toggleSort("dataEntregaPrevista")}>Previsão{sort.field === "dataEntregaPrevista" ? (sort.order === "asc" ? " ↑" : " ↓") : ""}</th>
                 <th className="px-4 py-4 w-[8%] text-center">Ações</th>
               </tr>
             </thead>

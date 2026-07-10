@@ -8,7 +8,7 @@ import { useToast } from "../stores/toastStore";
 
 const KEY = "ordensVenda";
 
-export function useOrdensVenda(params: { page: number; pageSize: number; filters?: Record<string, string | undefined> }) {
+export function useOrdensVenda(params: { page: number; pageSize: number; filters?: Record<string, string | undefined>; sort?: string; order?: string }) {
   return useQuery({
     queryKey: [KEY, params],
     queryFn: async () => {
@@ -19,6 +19,8 @@ export function useOrdensVenda(params: { page: number; pageSize: number; filters
       for (const [k, v] of Object.entries(params.filters ?? {})) {
         if (v) searchParams.set(k, v);
       }
+      if (params.sort) searchParams.set("_sort", params.sort);
+      if (params.order) searchParams.set("_order", params.order);
       return apiGetPaginated(`/ordensVenda?${searchParams}`, z.array(ordemVendaSchema));
     },
     placeholderData: keepPreviousData,

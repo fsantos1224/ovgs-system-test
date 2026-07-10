@@ -41,7 +41,9 @@ export function Clientes() {
   }, [search]);
   useEffect(() => { setPage(1); }, [debouncedSearch]);
 
-  const filtrados = (clientes ?? []).filter((c) => {
+  // ponytail: reverse para mostrar registros mais recentes primeiro (seed + novos via POST)
+  const ordenados = (clientes ?? []).slice().reverse();
+  const filtrados = ordenados.filter((c) => {
     if (!debouncedSearch) return true;
     const q = debouncedSearch.toLowerCase();
     return c.nome.toLowerCase().includes(q) || c.documento.includes(q) || c.email.toLowerCase().includes(q);
