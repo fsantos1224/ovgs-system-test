@@ -80,14 +80,14 @@ Sistema de gestão de Ordens de Venda (backoffice/ERP) em React 18 + Vite 5 + Ty
 - `server.cjs` e `db.seed.json` atualizados com os novos status
 - `OVDetail.tsx`, `OVNew.tsx`, `Agendamento.tsx` — referências de status corrigidas
 
-### Ticket 4 — Estado (resolvido)
+### Ticket 4 — Estado (resolvido, posteriormente refatorado)
 
-- Padrão `useFetch` + `usePaginatedFetch` + `apiGet`/`apiPost`/`apiPatch` — sem TanStack Query, sem Zustand, sem Redux
-- `useFetch<T>(path)` — fetch com `useEffect`, `refresh()` via `refreshKey`, cancelamento em unmount
-- `usePaginatedFetch<T>(basePath, pageSize)` — paginação server-side com json-server (`_page`, `_limit`, `X-Total-Count`)
-- Mutação: `apiPost`, `apiPatch` com parse de erro do json-server middleware
-- Refresh após mutação via `.refresh()` — pattern simples sem cache layer
-- Estado local em páginas (filters, page, form state) sem Context global
+- **Abordagem original** (substituída em refatoração posterior): `useFetch` + `usePaginatedFetch` + `apiGet`/`apiPost`/`apiPatch` (fetch nativo + useEffect, sem cache layer)
+- **Estado final atual** (após refatoração para Clean Architecture):
+  - **TanStack Query** (`@tanstack/react-query`) — cache automático, `useQuery`/`useMutation`, `keepPreviousData` na paginação, invalidação automática via `queryKey`
+  - **Zustand** (`zustand`) — 3 stores atómicas: `authStore` (perfil + role), `toastStore` (fila de notificações), `uiStore` (tema/sidebar)
+  - **Fetch wrapper** em `src/queries/api.ts` — `apiGet`, `apiGetPaginated`, `apiPost`, `apiPatch`, `apiDelete` com validação Zod de respostas e header `x-user` (identity gate)
+- Estado local (filters, page, form state) via `useState` e React Hook Form
 
 ### Ticket 7 — Formulários (resolvido)
 

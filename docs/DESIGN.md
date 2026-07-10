@@ -180,13 +180,12 @@ A inversão de dependência foi aplicada: o domínio não depende de infraestrut
 
 ```
 src/
-├── api/fetch.ts              # Fetch nativo com helpers (GET, POST, PATCH, DELETE)
 ├── application/              # ← Camada de aplicação (orquestração)
 │   ├── ports/                #   Interfaces (IOrdemVendaRepository, IClienteRepository,
 │   │                         #   IItemRepository, ITransporteRepository, IAuditoriaRepository, IApiClient)
 │   │                         #   + DTOs e PaginatedResult
 │   └── use-cases/            #   Regras de orquestração de negócio:
-│   │                         #   CriarOrdemVendaUseCase, AlterarStatusOVUseCase, AgendarEntregaUseCase
+│                             #   CriarOrdemVendaUseCase, AlterarStatusOVUseCase, AgendarEntregaUseCase
 ├── auth/credentials.ts       # Fake data de login (demo)
 ├── components/               # Componentes reutilizáveis (Modal, Pagination, Toaster)
 ├── data/usuarios.json        # Contas de demo
@@ -198,14 +197,15 @@ src/
 ├── hooks/                    # Hooks de UI (useConfirm, usePermission)
 ├── infrastructure/           # ← Camada de infraestrutura (adapters)
 │   └── repositories/         #   Implementações concretas dos ports:
-│   │                         #   OrdemVendaRepository, ClienteRepository, ItemRepository,
-│   │                         #   TransporteRepository, AuditoriaRepository
+│                             #   OrdemVendaRepository, ClienteRepository, ItemRepository,
+│                             #   TransporteRepository, AuditoriaRepository
 ├── layouts/AppLayout.tsx     # Layout principal com sidebar e navegação
 ├── lib/                      # Utilitários (telemetry, validation, money, id)
 ├── pages/                    # 11 páginas (lazy loaded)
 ├── queries/                  # ← Camada de apresentação (TanStack Query hooks)
-│   ├── api.ts                #   Cliente API + validação Zod de respostas
-│   └── use*.ts               #   Hooks de query/mutation que consomem use cases
+│   ├── api.ts                #   Fetch wrapper com validação Zod de respostas
+│   ├── queryClient.ts        #   Configuração TanStack Query
+│   └── use*.ts               #   Hooks de query/mutation que consomem use cases + repositórios
 ├── schemas/                  # Schemas Zod (ordemVenda, cliente, transporte, item, auditoria)
 ├── stores/                   # Zustand stores (auth, toast, ui)
 ├── App.tsx                   # Rotas com lazy loading + Suspense
