@@ -282,10 +282,10 @@ Depois: 14b (depende de 14a) → 19 (depende de 13 + 14b).
 | ~~40~~ | Prefactor: inverter dependência do domínio         | `40-inverter-dependencia-dominio`                      | `wayfinder:refactor` | —             | ✔      |
 | ~~41~~ | DTOs base + API Client interface                   | `41-dtos-api-client-interface`                         | `wayfinder:feature`  | 40            | ✔      |
 | ~~42~~ | OrdemVenda: repository ports + concreto + migração | `42-ordemvenda-repository-migracao`                    | `wayfinder:feature`  | 40, 41        | ✔      |
-| 43     | Clientes/Transportes/Itens/Auditoria: repositories | `43-clientes-transportes-itens-auditoria-repositories` | `wayfinder:feature`  | 40, 41        | 🔲     |
-| 44     | Use case: CriarOrdemVenda + AlterarStatusOV        | `44-use-case-criar-ov-alterar-status`                  | `wayfinder:feature`  | 42            | 🔲     |
-| 45     | Use case: AgendarEntrega                           | `45-use-case-agendar-entrega`                          | `wayfinder:feature`  | 42            | 🔲     |
-| 46     | Limpeza pós-expand-contract + doc drift            | `46-limpeza-pos-expand-contract`                       | `wayfinder:refactor` | 40, 42, 43    | 🔲     |
+| ~~43~~ | Clientes/Transportes/Itens/Auditoria: repositories | `43-clientes-transportes-itens-auditoria-repositories` | `wayfinder:feature`  | 40, 41        | ✔      |
+| ~~44~~ | Use case: CriarOrdemVenda + AlterarStatusOV        | `44-use-case-criar-ov-alterar-status`                  | `wayfinder:feature`  | 42            | ✔      |
+| ~~45~~ | Use case: AgendarEntrega                           | `45-use-case-agendar-entrega`                          | `wayfinder:feature`  | 42            | ✔      |
+| ~~46~~ | Limpeza pós-expand-contract + doc drift            | `46-limpeza-pos-expand-contract`                       | `wayfinder:refactor` | 40, 42, 43    | ✔      |
 
 ### Ticket 40 — Prefactor: inverter dependência do domínio (resolvido)
 
@@ -309,7 +309,41 @@ Depois: 14b (depende de 14a) → 19 (depende de 13 + 14b).
 - `OrdemVenda.observacoes` e `janelaAtendimento` ajustados para opcionais (alinhamento com Zod `.nullish()`)
 - `tsc --noEmit`, `vitest run` (39/39), `npm run build` verificados
 
-Fronteira: ticket 43 — bloqueado por 40+41 (resolvidos), pode começar.
+### Ticket 43 — Clientes/Transportes/Itens/Auditoria: repositories (resolvido)
+
+- 4 ports criadas em `application/ports/`: `IClienteRepository`, `IItemRepository`, `ITransporteRepository`, `IAuditoriaRepository` (read-only)
+- 4 implementações concretas em `infrastructure/repositories/` — todas seguem o mesmo padrão do `OrdemVendaRepository`
+- Hooks migrados: `useClientes`, `useItens`, `useTransportes`, `useAuditoria` — singleton module-level
+- `useEventosAuditoria` mantido como alias de `useAuditoria` (compatibilidade com imports existentes)
+- `EventoAuditoria.estadoAnterior`/`estadoPosterior` ajustados para opcionais (alinhamento com `.nullish()`)
+- `tsc --noEmit`, `vitest run` (39/39), `npm run build` verificados
+
+### Ticket 44 — Use case: CriarOrdemVenda + AlterarStatusOV (resolvido)
+
+- `CriarOrdemVendaUseCase` e `AlterarStatusOVUseCase` em `application/use-cases/`
+- `AlterarStatusOVUseCase` valida `canTransition` antes de chamar o repositório (defesa em profundidade — servidor também valida)
+- `CriarOrdemVendaUseCase` aceita `extraHeaders` para passar `Idempotency-Key` em cenários futuros
+- `useOrdensVenda.ts` instanciando use cases como singletons no módulo
+- 6 testes unitários com repositório mockado (3 por use case): sucesso, erro de negócio, propagação
+- `tsc --noEmit`, `vitest run` (45/45), `npm run build` verificados
+
+### Ticket 45 — Use case: AgendarEntrega (resolvido)
+
+- `AgendarEntregaUseCase` orquestra: validação de status elegível (PLANEJADA/AGENDADA), formato de janela (HH:MM-HH:MM, fim > início), transição automática para AGENDADA quando vem de PLANEJADA
+- Hook `useAgendarEntrega` em `queries/useAgendamento.ts` — singleton module-level
+- Página `Agendamento.tsx` migrada para usar o novo hook (sem `useAtualizarOV` direto)
+- 4 testes unitários: agendamento de PLANEJADA (com transição), reagendamento de AGENDADA, janela inválida, status não elegível
+- `tsc --noEmit`, `vitest run` (49/49), `npm run build` verificados
+
+### Ticket 46 — Limpeza pós-expand-contract + doc drift (resolvido)
+
+- `Usuario` e `UserRole` movidos para `domain/entities/Usuario.ts` — `domain/types.ts` agora é puramente um barrel
+- `Role` type extraído para evitar duplicação entre `Usuario.role` e `UserRole.role`
+- `docs/DESIGN.md` seção 4 atualizada com estrutura de camadas Clean Architecture (`application/ports`, `application/use-cases`, `infrastructure/repositories`)
+- Seção 4.4 nova: "Use Cases (orquestração de regras de negócio)" descrevendo os 3 use cases criados
+- `docs/MAP.md` tickets 43-46 marcados como resolvidos na tabela + 4 "Decisions so far" adicionadas
+- Nenhum re-export de schema em `domain/` — schemas permanecem em `src/schemas/`, independentes
+- `tsc --noEmit`, `vitest run` (49/49), `npm run build` verificados
 
 ## Not yet specified
 

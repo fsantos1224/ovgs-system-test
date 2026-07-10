@@ -172,27 +172,48 @@ interface EventoAuditoria {
 
 ## 4. ARQUITETURA DE SOFTWARE & ESTADO
 
-O XPTO foi projetado como uma **Single-Page Application (SPA)** construída em **React 18** + **Vite**, seguindo uma arquitetura de **camadas horizontais** com TanStack Query, Zustand e json-server como mock API.
+O XPTO foi projetado como uma **Single-Page Application (SPA)** construída em **React 18** + **Vite**, seguindo **Clean Architecture** em camadas com inversão de dependência do domínio, TanStack Query, Zustand e json-server como mock API.
+
+### 4.0 Estrutura de Camadas (Clean Architecture)
+
+A inversão de dependência foi aplicada: o domínio não depende de infraestrutura; casos de uso orquestram regras de negócio via **ports** (interfaces) que são implementados por **repositories** (adapters). A camada de UI (queries/hooks, pages) consome casos de uso, não acessa diretamente a rede.
 
 ```
 src/
-├── api/fetch.ts         # Fetch nativo com helpers (GET, POST, PATCH, DELETE, paginado)
-├── auth/credentials.ts  # Fake data de login (demo)
-├── components/          # Componentes reutilizáveis (Modal, Pagination, Toaster)
-├── data/usuarios.json   # Contas de demo
-├── domain/types.ts      # Interfaces + máquina de estados + helpers puros
-├── hooks/               # Hooks de domínio (useConfirm, usePermission)
-├── layouts/AppLayout.tsx # Layout principal com sidebar e navegação
-├── lib/                 # Utilitários (telemetry, validation, money, id)
-├── pages/               # 11 páginas (lazy loaded)
-├── queries/             # TanStack Query hooks (useOrdensVenda, useClientes, etc.)
-│   └── api.ts           # Cliente API com validação Zod de respostas
-├── schemas/             # Schemas Zod (ordemVenda, cliente, transporte, item, auditoria)
-├── stores/              # Zustand stores (auth, toast, ui)
-├── App.tsx              # Rotas com lazy loading + Suspense
-├── main.tsx             # Entry point
-└── index.css            # Tailwind v4 @theme + design tokens
+├── api/fetch.ts              # Fetch nativo com helpers (GET, POST, PATCH, DELETE)
+├── application/              # ← Camada de aplicação (orquestração)
+│   ├── ports/                #   Interfaces (IOrdemVendaRepository, IClienteRepository,
+│   │                         #   IItemRepository, ITransporteRepository, IAuditoriaRepository, IApiClient)
+│   │                         #   + DTOs e PaginatedResult
+│   └── use-cases/            #   Regras de orquestração de negócio:
+│   │                         #   CriarOrdemVendaUseCase, AlterarStatusOVUseCase, AgendarEntregaUseCase
+├── auth/credentials.ts       # Fake data de login (demo)
+├── components/               # Componentes reutilizáveis (Modal, Pagination, Toaster)
+├── data/usuarios.json        # Contas de demo
+├── domain/                   # ← Camada de domínio (pura, sem framework)
+│   ├── entities/             #   Interfaces e funções puras:
+│   │                         #   OrdemVenda (canTransition, statusLabel),
+│   │                         #   Cliente (canUseTransporte), Item, TipoTransporte, EventoAuditoria, Usuario
+│   └── types.ts              #   Barrel de re-exports
+├── hooks/                    # Hooks de UI (useConfirm, usePermission)
+├── infrastructure/           # ← Camada de infraestrutura (adapters)
+│   └── repositories/         #   Implementações concretas dos ports:
+│   │                         #   OrdemVendaRepository, ClienteRepository, ItemRepository,
+│   │                         #   TransporteRepository, AuditoriaRepository
+├── layouts/AppLayout.tsx     # Layout principal com sidebar e navegação
+├── lib/                      # Utilitários (telemetry, validation, money, id)
+├── pages/                    # 11 páginas (lazy loaded)
+├── queries/                  # ← Camada de apresentação (TanStack Query hooks)
+│   ├── api.ts                #   Cliente API + validação Zod de respostas
+│   └── use*.ts               #   Hooks de query/mutation que consomem use cases
+├── schemas/                  # Schemas Zod (ordemVenda, cliente, transporte, item, auditoria)
+├── stores/                   # Zustand stores (auth, toast, ui)
+├── App.tsx                   # Rotas com lazy loading + Suspense
+├── main.tsx                  # Entry point
+└── index.css                 # Tailwind v4 @theme + design tokens
 ```
+
+**Regra de dependência:** `pages` → `queries` → `application/use-cases` → `application/ports` ← `infrastructure/repositories`. O domínio não conhece infraestrutura; dependências apontam para dentro.
 
 ### 4.1 Gerenciamento de Estado
 
@@ -225,6 +246,16 @@ O servidor `server.cjs` é um `json-server` programático com middleware custom:
 - **Allowlist de campos PATCH** — apenas campos permitidos por entidade (F3)
 - **Auditoria automática** — todo POST/PATCH/DELETE gera `EventoAuditoria`
 - **Paginação** — `_page` + `_limit` + `X-Total-Count` (json-server nativo)
+
+### 4.4 Use Cases (orquestração de regras de negócio)
+
+Casos de uso encapsulam validações de domínio e chamadas ao repositório, mantendo a UI livre de regras de negócio:
+
+- **`CriarOrdemVendaUseCase`** — orquestra criação de OV; suporta headers extras (idempotência)
+- **`AlterarStatusOVUseCase`** — valida `canTransition` antes de chamar o repositório (defesa em profundidade — servidor também valida)
+- **`AgendarEntregaUseCase`** — valida status elegível (PLANEJADA/AGENDADA), formato da janela (HH:MM-HH:MM), transiciona automaticamente para AGENDADA quando vem de PLANEJADA
+
+Os casos de uso são puros (sem React/Query/Zustand), recebem um `IOrdemVendaRepository` no construtor e são testáveis com mocks — cobertura unitária sem rede.
 
 ---
 

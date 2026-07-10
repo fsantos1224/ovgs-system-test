@@ -126,6 +126,9 @@ Permissões:
 src/
 ├── api/
 │   └── fetch.ts           # Wrapper fetch nativo (GET, POST, PATCH, DELETE, paginado)
+├── application/           # ← Camada de aplicação (Clean Architecture)
+│   ├── ports/             #   Interfaces (repositories) + DTOs
+│   └── use-cases/         #   Orquestração de regras de negócio
 ├── auth/
 │   └── credentials.ts     # Credenciais fake de demo
 ├── components/
@@ -134,13 +137,16 @@ src/
 │   └── Toaster.tsx        # Notificações toast (Sonner wrapper)
 ├── data/
 │   └── usuarios.json      # Contas de demo (4 roles)
-├── domain/
-│   ├── types.ts           # Interfaces, máquina de estados, helpers
-│   └── types.test.ts      # Testes unitários (Vitest)
+├── domain/                # ← Camada de domínio (pura, sem framework)
+│   ├── entities/          #   Interfaces e funções puras (OrdemVenda, Cliente, Item, ...)
+│   ├── types.ts           #   Barrel de re-exports
+│   └── types.test.ts      #   Testes unitários (Vitest)
 ├── hooks/
 │   ├── useConfirm.tsx     # Modal de confirmação (Context + Modal)
 │   │   └── useConfirm.test.tsx  # Teste RTL
 │   └── usePermission.ts   # RBAC: usePermissao, permissoesPorRole
+├── infrastructure/        # ← Camada de infraestrutura (adapters)
+│   └── repositories/      #   Implementações concretas dos ports
 ├── layouts/
 │   └── AppLayout.tsx      # Sidebar + skip-to-content + role switcher + toaster
 ├── lib/
@@ -164,11 +170,12 @@ src/
 ├── queries/
 │   ├── api.ts             # Cliente API com validação Zod de respostas
 │   ├── queryClient.ts     # Config TanStack Query
-│   ├── useOrdensVenda.ts  # Query/mutation OVs (paginada)
+│   ├── useOrdensVenda.ts  # Query/mutation OVs (consome use cases)
 │   ├── useClientes.ts     # Query/mutation clientes
 │   ├── useTransportes.ts  # Query/mutation transportes
 │   ├── useItens.ts        # Query/mutation itens
-│   └── useAuditoria.ts    # Query eventos de auditoria
+│   ├── useAuditoria.ts    # Query eventos de auditoria
+│   └── useAgendamento.ts  # Hook que consome AgendarEntregaUseCase
 ├── schemas/
 │   ├── index.ts           # Re-export
 │   ├── ordemVenda.ts      # Schema Zod OV

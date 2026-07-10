@@ -23,9 +23,9 @@ Após todos os consumers terem sido migrados para os novos tipos de domínio, re
 
 ## Critérios de aceitação
 
-- [ ] Nenhum re-export de schema em `domain/`
-- [ ] `domain/types.ts` limpo ou removido
-- [ ] `docs/DESIGN.md` reflete nova arquitetura
-- [ ] `docs/MAP.md` lista tickets 40-46 como resolvidos + "Decisions so far" preenchido
-- [ ] `tsc --noEmit` + `vitest run` verdes
-- [ ] `npm run build` funciona
+- [x] Nenhum re-export de schema em `domain/`
+- [x] `domain/types.ts` limpo ou removido — agora puramente um barrel (Usuario/UserRole movidos para entities/)
+- [x] `docs/DESIGN.md` reflete nova arquitetura (seção 4.0 + 4.4)
+- [x] `docs/MAP.md` lista tickets 40-46 como resolvidos + "Decisions so far" preenchido (4 novos registros)
+- [x] `tsc --noEmit` + `vitest run` (49/49) verdes
+- [x] `npm run build` funciona
