@@ -2,7 +2,7 @@
 // Zero dependências. Zero SDKs. Zero serviços externos.
 
 interface VitalRecord {
-  name: "LCP" | "CLS" | "INP";
+  name: 'LCP' | 'CLS' | 'INP';
   value: number;
   id?: string;
   ts: number;
@@ -37,22 +37,22 @@ export function initWebVitals() {
         lcpValue = value;
         lcpId = last.id;
       }
-    }).observe({ type: "largest-contentful-paint", buffered: true });
+    }).observe({ type: 'largest-contentful-paint', buffered: true });
 
     const finalizeLCP = () => {
       if (lcpValue > 0) {
         recordVital({
-          name: "LCP",
+          name: 'LCP',
           value: lcpValue,
           id: lcpId,
           ts: Date.now(),
         });
       }
     };
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") finalizeLCP();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') finalizeLCP();
     });
-    window.addEventListener("pagehide", finalizeLCP);
+    window.addEventListener('pagehide', finalizeLCP);
   } catch {
     /* browser sem suporte */
   }
@@ -62,26 +62,24 @@ export function initWebVitals() {
   // Sessão termina em `visibilitychange === hidden` ou `hidden` antes do unload.
   try {
     let clsSessionValue = 0;
-    let clsSessionStart = performance.now();
+    const clsSessionStart = performance.now();
     new PerformanceObserver((list) => {
-      for (const entry of list.getEntries() as Array<
-        PerformanceEntry & { value: number; hadRecentInput: boolean }
-      >) {
+      for (const entry of list.getEntries() as Array<PerformanceEntry & { value: number; hadRecentInput: boolean }>) {
         if (entry.hadRecentInput) continue;
         clsSessionValue += entry.value;
       }
       if (clsSessionValue > clsValue) clsValue = clsSessionValue;
-    }).observe({ type: "layout-shift", buffered: true });
+    }).observe({ type: 'layout-shift', buffered: true });
 
     const finalizeCLS = () => {
       if (clsValue > 0) {
-        recordVital({ name: "CLS", value: clsValue, ts: Date.now() });
+        recordVital({ name: 'CLS', value: clsValue, ts: Date.now() });
       }
     };
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") finalizeCLS();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') finalizeCLS();
     });
-    window.addEventListener("pagehide", finalizeCLS);
+    window.addEventListener('pagehide', finalizeCLS);
     void clsSessionStart;
   } catch {
     /* browser sem suporte */
@@ -105,35 +103,33 @@ export function initWebVitals() {
           inpInteractions.set(entry.interactionId, entry.duration);
         }
       }
-    }).observe({ type: "event", buffered: true } as PerformanceObserverInit);
+    }).observe({ type: 'event', buffered: true } as PerformanceObserverInit);
 
     const finalizeINP = () => {
       const durations = [...inpInteractions.values()].sort((a, b) => b - a);
       const top = durations.slice(0, 4);
       if (top.length === 0) return;
       const worst = Math.max(...top);
-      recordVital({ name: "INP", value: worst, ts: Date.now() });
+      recordVital({ name: 'INP', value: worst, ts: Date.now() });
     };
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "hidden") finalizeINP();
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') finalizeINP();
     });
-    window.addEventListener("pagehide", finalizeINP);
+    window.addEventListener('pagehide', finalizeINP);
   } catch {
     /* browser sem suporte */
   }
 }
 
-export function trackEvent(
-  action: string,
-  entity: string,
-  details?: Record<string, unknown>,
-) {
+export function trackEvent(action: string, entity: string, details?: Record<string, unknown>) {
   if (import.meta.env.DEV) {
-    console.table([{
-      timestamp: new Date().toISOString(),
-      action,
-      entity,
-      details,
-    }]);
+    console.table([
+      {
+        timestamp: new Date().toISOString(),
+        action,
+        entity,
+        details,
+      },
+    ]);
   }
 }
