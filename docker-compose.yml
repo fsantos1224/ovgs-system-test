@@ -1,22 +1,23 @@
 services:
   api:
-    image: node:20-alpine
-    working_dir: /app
-    volumes:
-      - .:/app
-      - XPTO-data:/app/data
-    command: node server.cjs
-    environment:
-      - NODE_ENV=production
+    build:
+      context: .
+      target: api
     ports:
       - "3001:3001"
+    volumes:
+      - api-data:/app/data
+    environment:
+      - CORS_ORIGINS=http://localhost:8080
 
   frontend:
-    build: .
+    build:
+      context: .
+      target: frontend
     ports:
       - "8080:80"
     depends_on:
       - api
 
 volumes:
-  XPTO-data:
+  api-data:
