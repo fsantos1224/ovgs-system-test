@@ -14,23 +14,16 @@ interface UIState {
   toggleMobileMenu: () => void;
 }
 
-function getInitialTheme(): Theme {
-  const stored = localStorage.getItem("XPTO:theme");
-  if (stored === "light" || stored === "dark") return stored;
-  return "dark";
-}
-
 function isMobile(): boolean {
   if (typeof window === "undefined") return false;
   return window.innerWidth < 1024;
 }
 
 export const useUIStore = create<UIState>((set) => ({
-  theme: getInitialTheme(),
+  theme: "dark",
   sidebarOpen: !isMobile(),
   mobileMenuOpen: false,
   setTheme: (theme) => {
-    localStorage.setItem("XPTO:theme", theme);
     document.documentElement.dataset.theme = theme;
     set({ theme });
   },

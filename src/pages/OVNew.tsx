@@ -5,7 +5,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { useFieldArray, useForm } from "react-hook-form";
 import { ArrowLeft, Plus, Trash2 } from "lucide-react";
 import { useClientes, useTransportes, useItens, useCriarOV } from "../queries";
-import type { ItemOV } from "../domain/types";
+import type { ItemOV } from "../schemas";
 import { canUseTransporte } from "../domain/types";
 import { trackEvent } from "../lib/telemetry";
 import { useMemo, useState } from "react";
@@ -16,7 +16,7 @@ import { useToast } from "../stores/toastStore";
 type FormData = {
   clienteId: string;
   transporteId: string;
-  dataEntrega: string;
+  dataEntregaPrevista: string;
   observacoes: string;
   itens: { itemId: string; quantidade: number }[];
 };
@@ -113,7 +113,7 @@ export function OVNew() {
       clienteId: data.clienteId,
       nomeCliente: cliente?.nome ?? "",
       dataEmissao: new Date().toISOString(),
-      dataEntregaPrevista: new Date(data.dataEntrega).toISOString(),
+      dataEntregaPrevista: new Date(data.dataEntregaPrevista).toISOString(),
       transporteId: data.transporteId,
       nomeTransporte: transporte?.nome ?? "",
       status: "CRIADA",
@@ -202,11 +202,11 @@ export function OVNew() {
             <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block">Data de Entrega Prevista <span className="text-amber-500">*</span></label>
             <input
               type="date"
-              {...register("dataEntrega", { required: "Informe a data de entrega" })}
+              {...register("dataEntregaPrevista", { required: "Informe a data de entrega" })}
               className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
             />
-            {fieldErrors.dataEntrega && (
-              <p role="alert" className="text-rose-400 text-xs mt-1">{fieldErrors.dataEntrega.message}</p>
+            {fieldErrors.dataEntregaPrevista && (
+              <p role="alert" className="text-rose-400 text-xs mt-1">{fieldErrors.dataEntregaPrevista.message}</p>
             )}
           </div>
 

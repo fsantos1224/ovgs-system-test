@@ -6,85 +6,89 @@
 
 ## Stack
 
-| Camada           | Tecnologia                            | Justificação                              |
-| ---------------- | ------------------------------------- | ----------------------------------------- |
-| Runtime          | Node 20 + TypeScript strict           |                                           |
-| UI               | React 18 + Vite 5                     | Dev server rápido, HMR nativo             |
-| Roteamento       | React Router v6                       | lazy loading + Suspense                   |
-| Estilização      | Tailwind CSS v3                       | Utilitário, sem runtime CSS               |
-| Formulários      | React Hook Form                       | `useFieldArray` para itens dinâmicos      |
-| Mock API         | json-server + `server.cjs`            | Prototipagem rápida com middleware custom |
-| Testes unitários | Vitest                                | Nativo Vite, zero config                  |
-| Testes E2E       | Playwright                            | `getByRole` nativo, sem Testing Library   |
-| Contentorização  | Docker (multi-stage) + docker-compose |                                           |
+| Camada             | Tecnologia                            | Justificação                              |
+| ------------------ | ------------------------------------- | ----------------------------------------- |
+| Runtime            | Node 20 + TypeScript strict           |                                           |
+| UI                 | React 18 + Vite 8                     | Dev server rápido, HMR nativo             |
+| Roteamento         | React Router v6                       | lazy loading + Suspense                   |
+| Estilização        | Tailwind CSS v4                       | CSS-first, `@theme` tokens                |
+| Formulários        | React Hook Form                       | `useFieldArray` para itens dinâmicos      |
+| Data Fetching      | TanStack React Query                  | Cache, refetch automático, paginação      |
+| Validação          | Zod                                   | Schemas de formulário + respostas API     |
+| Estado (global)    | Zustand                               | Auth, toast, UI (tema/sidebar)            |
+| Mock API           | json-server + `server.cjs`            | Middleware custom (validação, auditoria)   |
+| Testes unitários   | Vitest                                | Nativo Vite, zero config                  |
+| Testes integração  | Vitest + `node:http`                  | Servidor mock `server.cjs`                |
+| Testes E2E         | Playwright                            | `getByRole` nativo, sem Testing Library   |
+| Contentorização    | Docker (multi-stage) + docker-compose |                                           |
 
 ---
 
 ## ADRs (Architecture Decision Records)
 
-### ADR-01: Zero dependências externas desnecessárias
+### ADR-01: TanStack Query para data fetching
 
-**Contexto:** É tentador adicionar TanStack Query, Zustand, Zod, shadcn/ui, PostHog, CASL.
+**Contexto:** Múltiplas páginas precisam de dados do servidor com cache, refetch automático e paginação.
 
-**Decisão:** Nenhuma das anteriores. Fetch nativo, `useState`/`useEffect`, validação manual, Tailwind puro, observabilidade nativa, RBAC caseiro.
+**Decisão:** TanStack React Query gerencia cache, loading/error states e paginação em todas as queries. Mutations invalidam queries relacionadas automaticamente. `keepPreviousData` mantém dados visuais durante transições de página.
 
-**Consequências:** Menos bundle, zero breaking changes externos, código mais explícito. `🐴` Marca compensações intencionais (ex.: sem optimistic updates, sem refetch automático).
+**Consequências:** Cache partilhado entre páginas, zero fetching duplicado. Menos boilerplate que fetch + useState. Bundle ~5 kB gzip.
 
-### ADR-02: Estado local com refreshKey, não global
+### ADR-02: Estado global mínimo com Zustand
 
-**Contexto:** Múltiplas páginas precisam de dados do servidor.
+**Contexto:** Auth (user/role), toasts e tema UI precisam de estado global acessível em toda árvore de componentes.
 
-**Decisão:** Cada página declara `useFetch()`/`usePaginatedFetch()` com `refreshKey` para refetch. Sem Context/Redux/Zustand.
+**Decisão:** Zustand para 3 stores atómicas (`authStore`, `toastStore`, `uiStore`). Sem Context, sem Provider. Role persistida em `localStorage`.
 
-**Consequências:** Dados duplicados em memória se duas páginas montadas ao mesmo tempo (não acontece com lazy loading). Simplicidade máxima.
+**Consequências:** Zero re-renders em cascata (Zustand faz selects finos). Stores independentes — auth não depende de UI. Role switcher no sidebar com reload para resetar estado React (`🐴` simplificação intencional).
 
-### ADR-03: Máquina de estados linear
+### ADR-03: Zod para validação em duas camadas
+
+**Contexto:** Formulários e respostas da API precisam de validação consistente.
+
+**Decisão:** `src/schemas/` define schemas Zod reutilizados no frontend (`validation.ts`) e na camada de API (`queries/api.ts`). Schemas validam tanto input de formulário quanto respostas do servidor.
+
+**Consequências:** Mesmo schema serve para form + response validation. Erros de tipagem capturados em runtime próximo ao servidor (mau sinal de json-server fora de sync).
+
+### ADR-04: Máquina de estados linear
 
 **Contexto:** Status de OV precisa de transições válidas.
 
-**Decisão:** `STATUS_FLOW = ['CRIADA','PLANEJADA','AGENDADA','EM_TRANSPORTE','ENTREGUE']`. `canTransition(a,b)` compara índices adjacentes. Linear — sem bifurcações, sem cancelamento.
+**Decisão:** `STATUS_FLOW = ['CRIADA','PLANEJADA','AGENDADA','EM_TRANSPORTE','ENTREGUE']`. `canTransition(a,b)` compara índices adjacentes. Linear — sem bifurcações, sem cancelamento. Regra validada tanto no frontend (UI condicional) quanto no servidor (middleware).
 
-**Consequências:** Lógica de transição em O(1) e imutável. Se um dia o domínio exigir cancelamento ou reabertura, a máquina passa a grafo.
+**Consequências:** Lógica de transição em O(1) e imutável. Frontend só exibe botões de transição válida. Servidor rejeita 422 se algo passar. Se um dia o domínio exigir cancelamento ou reabertura, a máquina passa a grafo.
 
-### ADR-04: RBAC cumulativo por hierarquia
+### ADR-05: RBAC cumulativo por hierarquia
 
 **Contexto:** 4 papéis (viewer < operator < manager < admin) com permissões granulares.
 
-**Decisão:** `PERMISSOES_POR_ROLE` mapeia permissões literais por role. A função `can()` verifica se a role do utilizador ou qualquer role superior tem a permissão. Role persistida em `localStorage`.
+**Decisão:** `PERMISSOES_POR_ROLE` mapeia permissões literais por role. `getPermissoes()` acumula permissões baseado na hierarquia. `usePermissao()` verifica se a role do utilizador ou qualquer role superior tem a permissão. Role lida do Zustand `authStore` (em memória, sem `localStorage`).
 
-**Consequências:** Admin herda todas as permissões automaticamente. UI condicional (`usePermissao()`) esconde elementos que o utilizador não pode usar. Sem CASL, sem guardas de rota no servidor.
+**Consequências:** Admin herda todas as permissões automaticamente. UI condicional esconde elementos que o utilizador não pode usar. Login expira ao recarregar (necessário re-autenticar). Sem CASL.
 
-### ADR-05: json-server com middleware custom
+### ADR-06: json-server com middleware custom
 
 **Contexto:** Precisamos de validação de regras de negócio, idempotência e auditoria.
 
-**Decisão:** json-server programático com `server.use()` custom para POST e PATCH. Idempotency store in-memory via header `Idempotency-Key`. Auditoria escrita inline nas mesmas chamadas.
+**Decisão:** json-server programático com `server.use()` custom para POST, PATCH e DELETE. Regras de negócio (transporte autorizado, cliente ativo, máquina de estados) validadas no servidor. Idempotency store in-memory com TTL via header `Idempotency-Key`. Auditoria automática em todas as mutações.
 
-**Consequências:** Mock funcional sem backend real. Store de idempotência volatiliza ao reiniciar. Transações simuladas (writes síncronas).
-
-### ADR-06: Idempotência no POST de criação
-
-**Contexto:** O formulário pode ser submetido duas vezes por acidente (duplo clique, rede lenta).
-
-**Decisão:** `crypto.randomUUID()` gera `Idempotency-Key` em cada submissão. O servidor retorna 200 se a key já foi processada, 201 se é nova.
-
-**Consequências:** Zero OVs duplicadas mesmo com submissão simultânea. Store in-memory — reseta ao reiniciar o servidor.
+**Consequências:** Mock funcional com as mesmas regras que um backend real teria. Store de idempotência bounded (1000 entradas, TTL 1h). Transações simuladas (writes síncronas). Identity gate (`x-user`) em todas as mutações.
 
 ### ADR-07: Observabilidade nativa
 
 **Contexto:** Precisamos de métricas de performance e eventos de negócio.
 
-**Decisão:** `PerformanceObserver` para LCP/CLS/INP. `trackEvent()` escreve para `localStorage` (últimos 100 eventos) e `console.table`. Sem PostHog, Sem Sentry.
+**Decisão:** `PerformanceObserver` para LCP/CLS/INP (3 observers com try/catch). `trackEvent()` escreve para `localStorage` (últimos 100 eventos) e `console.table`. Sem PostHog, Sem Sentry.
 
-**Consequências:** Dados disponíveis para debug sem dependências externas. Sem telemetria remota — `🐴` Aceitável para protótipo.
+**Consequências:** Dados disponíveis para debug sem dependências externas. Eventos rastreados: criação de OV, alteração de status. Sem telemetria remota — `🐴` Aceitável para protótipo.
 
-### ADR-08: Testes sem RTL / Testing Library
+### ADR-08: Testes em 3 camadas
 
-**Contexto:** O mínimo do desafio são 2 testes unitários + 1 E2E.
+**Contexto:** O mínimo do desafio são 2 testes unitários + 1 de integração. Buscamos cobertura relevante.
 
-**Decisão:** Vitest para lógica de domínio pura (funções `canTransition`, `statusLabel`). Playwright para E2E com `webServer`. Sem RTL, sem Testing Library — `getByRole` nativo do Playwright é suficiente.
+**Decisão:** 3 camadas de teste: (1) **unitários** (Vitest) — lógica de domínio pura (`canTransition`, `canUseTransporte`, `parseBRLtoCents`) + hook `useConfirm` (RTL); (2) **integração** (Vitest + `node:http`) — servidor mock `server.cjs` end-to-end (regras de negócio, idempotência, auditoria, allowlist PATCH, identity gate); (3) **E2E** (Playwright) — fluxos completos (RBAC, criar OV, detalhe, listagem).
 
-**Consequências:** 6 testes unitários + 3 E2E. Cobertura de componentes via E2E apenas. `🐴` Submissão de formulário RHF via Playwright tem uma limitação conhecida.
+**Consequências:** ~15 testes unitários, ~7 de integração, ~9 E2E. Cobertura de componentes via RTL + E2E. `🐴` Submissão RHF via Playwright tem limitação conhecida (handleSubmit não reconhece eventos sintéticos).
 
 ---
 
@@ -95,14 +99,23 @@ Status (máquina linear):
   CRIADA → PLANEJADA → AGENDADA → EM_TRANSPORTE → ENTREGUE
 
 Entidades:
-  OrdemVenda { id, numero, cliente, transporte, status, itens[], valorTotal, datas, observacoes }
-  Cliente { id, nome, documento, email, telefone, ativo }
-  Item { id, nome, sku, categoria, precoUnitario, unidadeMedida }
+  OrdemVenda { id, numero, clienteId, clienteNome, transporte, tipoTransporteId, status,
+               itens[{ itemId, nome, quantidade, precoUnitario }], valorTotal,
+               dataCriacao, dataEntregaPrevista, janelaAtendimento, observacoes }
+  Cliente { id, nome, documento, email, telefone, endereco, ativo, transportesAutorizados[] }
+  Item { id, nome, sku, categoria, precoUnitario, unidadeMedida, ativo }
   TipoTransporte { id, nome, modal, ativo }
-  EventoAuditoria { id, entidade, entidadeId, acao, usuario, dataHora, detalhes }
+  EventoAuditoria { id, entidade, entidadeId, acao, usuario, dataHora,
+                    estadoAnterior, estadoPosterior, detalhes }
 
 Papéis (RBAC):
   viewer → operator → manager → admin  (hierarquia cumulativa)
+
+Permissões:
+  viewer   — listar OVs, clientes, transportes, itens
+  operator — + criar/editar OVs, alterar status
+  manager  — + editar cadastros, agendar entregas, ver auditoria
+  admin    — + gerir utilizadores
 ```
 
 ---
@@ -111,35 +124,72 @@ Papéis (RBAC):
 
 ```
 src/
-├── api/fetch.ts           # Wrapper fetch nativo (GET, POST, PATCH, DELETE, paginado)
+├── api/
+│   └── fetch.ts           # Wrapper fetch nativo (GET, POST, PATCH, DELETE, paginado)
+├── auth/
+│   └── credentials.ts     # Credenciais fake de demo
 ├── components/
-│   └── Pagination.tsx     # Controlo de paginação reutilizável
-├── domain/types.ts        # Interfaces, máquina de estados, helpers
+│   ├── Modal.tsx          # Modal dialog reutilizável (teclado + foco)
+│   ├── Pagination.tsx     # Controlo de paginação server-side
+│   └── Toaster.tsx        # Notificações toast (Sonner wrapper)
+├── data/
+│   └── usuarios.json      # Contas de demo (4 roles)
+├── domain/
+│   ├── types.ts           # Interfaces, máquina de estados, helpers
 │   └── types.test.ts      # Testes unitários (Vitest)
 ├── hooks/
-│   ├── useFetch.ts        # GET simples com loading/error
-│   ├── usePaginatedFetch.ts  # GET com paginação (X-Total-Count)
-│   └── usePermission.ts   # RBAC: usePermissao, useRole, setRole
-├── layouts/AppLayout.tsx  # Sidebar + skip-to-content + role switcher
-├── lib/telemetry.ts       # PerformanceObserver + trackEvent
+│   ├── useConfirm.tsx     # Modal de confirmação (Context + Modal)
+│   │   └── useConfirm.test.tsx  # Teste RTL
+│   └── usePermission.ts   # RBAC: usePermissao, permissoesPorRole
+├── layouts/
+│   └── AppLayout.tsx      # Sidebar + skip-to-content + role switcher + toaster
+├── lib/
+│   ├── id.ts              # Geração/validação de UUID
+│   ├── money.ts           # parseBRLtoCents
+│   │   └── money.test.ts  # Testes unitários
+│   ├── telemetry.ts       # PerformanceObserver + trackEvent
+│   └── validation.ts      # Schemas Zod para formulários
 ├── pages/
-│   ├── OVList.tsx         # Listagem com filtro + paginação
-│   ├── OVDetail.tsx       # Detalhe + transição de status
-│   ├── OVNew.tsx          # Criação (React Hook Form)
-│   ├── Agendamento.tsx    # (placeholder)
-│   ├── Clientes.tsx       # Tabela de clientes
-│   ├── Transportes.tsx    # Tabela de transportes
-│   ├── Itens.tsx          # Tabela de itens
-│   ├── Auditoria.tsx      # Log de eventos
-│   └── Dashboard.tsx      # Dashboard (placeholder)
+│   ├── Login.tsx          # Login fake (demo)
+│   ├── Dashboard.tsx      # KPIs com indicadores
+│   ├── OVList.tsx         # Listagem com filtros + paginação
+│   ├── OVDetail.tsx       # Detalhe + transição de status + agendamento
+│   ├── OVNew.tsx          # Criação (React Hook Form + useFieldArray)
+│   ├── Agendamento.tsx    # Central de agendamento
+│   ├── Clientes.tsx       # CRUD clientes (tabela + modal)
+│   ├── Transportes.tsx    # CRUD tipos de transporte
+│   ├── Itens.tsx          # CRUD itens
+│   ├── Auditoria.tsx      # Log de eventos de auditoria
+│   └── NotFound.tsx       # Página 404
+├── queries/
+│   ├── api.ts             # Cliente API com validação Zod de respostas
+│   ├── queryClient.ts     # Config TanStack Query
+│   ├── useOrdensVenda.ts  # Query/mutation OVs (paginada)
+│   ├── useClientes.ts     # Query/mutation clientes
+│   ├── useTransportes.ts  # Query/mutation transportes
+│   ├── useItens.ts        # Query/mutation itens
+│   └── useAuditoria.ts    # Query eventos de auditoria
+├── schemas/
+│   ├── index.ts           # Re-export
+│   ├── ordemVenda.ts      # Schema Zod OV
+│   ├── cliente.ts         # Schema Zod cliente
+│   ├── transporte.ts      # Schema Zod transporte
+│   ├── item.ts            # Schema Zod item
+│   └── auditoria.ts       # Schema Zod auditoria
+├── stores/
+│   ├── authStore.ts       # Zustand: auth (user, login, logout)
+│   ├── toastStore.ts      # Zustand: toasts
+│   └── uiStore.ts         # Zustand: tema, sidebar, menu mobile
 ├── App.tsx                # Rotas com lazy loading + Suspense
-└── main.tsx               # Entry point
+├── main.tsx               # Entry point
+├── index.css              # Tailwind v4 @theme + tokens + scrollbar
+└── vite-env.d.ts          # Tipos Vite
 
-server.cjs      # json-server programático com middleware de negócio
-db.seed.json    # Seed versionado (25 OVs, 3 clientes, 3 transportes, 5 itens)
-data/db.json    # Runtime gerado pelo json-server (ignorado no git)
-nginx.conf      # Config nginx para SPA routing
-Dockerfile      # Multi-stage build
+server.cjs          # json-server programático com middleware de negócio
+db.seed.json        # Seed versionado (25 OVs, 3 clientes, 3 transportes, 10 itens)
+data/db.json        # Runtime gerado pelo json-server (ignorado no git)
+nginx.conf          # Config nginx para SPA routing + proxy reverso /api/
+Dockerfile          # Multi-stage build (node:22-alpine → nginx:alpine)
 docker-compose.yml  # frontend + api
 ```
 
@@ -147,7 +197,17 @@ docker-compose.yml  # frontend + api
 
 ## Como Executar
 
-### Local (npm)
+### Local (tudo num comando)
+
+```bash
+npm install
+npm run dev:full     # Vite (frontend) + json-server (API) em paralelo
+open http://localhost:5173
+```
+
+O `dev:full` usa o `concurrently` para levantar ambos os servidores no mesmo terminal. A API fica em `http://localhost:3001` e o frontend em `http://localhost:5173`.
+
+### Local (terminais separados)
 
 ```bash
 npm install
@@ -163,11 +223,13 @@ docker compose up --build
 open http://localhost:8080
 ```
 
+O Docker levanta dois contentores: `api` (json-server em `:3001`) e `frontend` (nginx servindo o build de produção em `:8080`, com proxy reverso para `/api/`).
+
 ### Testes
 
 ```bash
-npm test            # Vitest (unitários)
-npm run test:e2e    # Playwright (E2E) — levanta servidores automaticamente
+npm test            # Vitest — unitários + integração (servidor mock)
+npm run test:e2e    # Playwright (E2E) — levanta servidores automaticamente via webServer
 ```
 
 ---
@@ -192,18 +254,22 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 - **`db.seed.json`** — template versionado no git; ponto de partida dos dados mock.
 - **`data/db.json`** — ficheiro de runtime em memória persistente (ignorado no `.gitignore` e `.dockerignore`); o `server.cjs` copia o `db.seed.json` para cá no primeiro boot se não existir.
 - **`idempotencyStore`** — `Map` em memória no processo `server.cjs`. Reseta ao reiniciar.
-- **`localStorage`** — role do utilizador (`XPTO:role`), tema (`XPTO:theme`) e eventos de telemetria.
+- **TanStack Query cache** — dados do servidor em memória (volátil, recria ao recarregar).
+- **Zustand stores** — estado de sessão (auth) e UI (tema, sidebar) em memória; sem `localStorage`. O login expira ao recarregar a página.
 - Sem base de dados real. `🐴` Aceitável para protótipo/desafio.
 
 ---
 
 ## Considerações de Performance
 
-- lazy loading (`React.lazy` + Suspense) em todas as rotas
-- Debounce de 300ms no filtro de pesquisa
-- Paginação server-side (json-server `_page` + `_limit` + `X-Total-Count`)
-- Performance Observer nativo para LCP/CLS/INP
-- Zero bibliotecas de runtime CSS (Tailwind purgado em produção)
+- **TanStack Query** — cache automático, refetch apenas quando necessário, `keepPreviousData` durante paginação
+- **Lazy loading** (`React.lazy` + Suspense) em todas as rotas — cada página é um chunk separado
+- **Debounce de 300ms** no filtro de pesquisa da listagem de OVs
+- **Paginação server-side** (json-server `_page` + `_limit` + `X-Total-Count`)
+- **Performance Observer** nativo para LCP/CLS/INP (W3C compliant)
+- **Bundle splitting** — Vite `manualChunks` separa react, react-router-dom e vendors
+- **Tailwind CSS v4** — sem runtime CSS, purgado em produção
+- **Zustand** — selects finos evitam re-renders em cascata
 
 ---
 
@@ -214,25 +280,31 @@ Não é autenticação real — o json-server não valida senhas. O login é uma
 - **CORS restrito** — apenas origens do frontend (`localhost:5173/4173/8080`)
 - **CSP no `index.html`** — `default-src 'self'`, sem `frame-ancestors`, sem `unsafe-eval`
 - **Headers nginx** — `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`, `server_tokens off`
-- **Idempotency store com TTL** — chaves expiram em 1h; máximo 1000 entradas; evita DoS via keys arbitrárias
+- **Identity gate** — servidor exige header `x-user` em todas as mutações (retorna 401 se ausente)
+- **Allowlist de campos em PATCH** — apenas campos permitidos por entidade (F3)
+- **Idempotency store com TTL** — chaves expiram em 1h; máximo 1000 entradas; bounded, evita DoS
 - **`NODE_ENV=production` no Docker** — sem stack traces em runtime
+- **Sem localStorage para dados sensíveis** — role e user armazenados apenas em memória (Zustand); recarregar a página requer novo login
+- **Auditoria em DELETE** — cada exclusão é registada com utilizador e estado anterior
 - **Container API como root apenas onde necessário**; nginx master/workers separados
-- **Seed sem credenciais reais** — `src/data/usuarios.json` é fake data explícita, não `.env`
 - **CSP via meta tag + nginx add_header** — defesa em profundidade
 
 ---
 
 ## Trade-offs e Limitações
 
-| Decisão                         | Trade-off                                                                          |
-| ------------------------------- | ---------------------------------------------------------------------------------- |
-| Fetch nativo vs TanStack Query  | Sem cache, sem refetch automático, sem optimistic updates. Mas zero bundle.        |
-| useState vs Zustand             | Sem estado global partilhado. Cada página gere os seus dados.                      |
-| Validação manual vs Zod         | Mais código, menos segurança de tipos runtime. Mas zero deps.                      |
-| json-server vs backend real     | Sem persistência relacional, sem auth real. Mas prototipagem instantânea.          |
-| Store de idempotência in-memory | Perde-se ao reiniciar o servidor. Agora bounded por TTL (1h) e tamanho máx (1000). |
-| RBAC só no frontend             | Inerente ao json-server. Documentado como limitação.                               |
-| Playwright sem RTL              | Testes de componente requerem E2E. Submissão RHF tem limitação conhecida.          |
+| Decisão                                   | Trade-off                                                                                   |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------- |
+| TanStack Query                            | Cache em memória sem persistência. Zero bundle ~5 kB.                                       |
+| Zustand em vez de Context                 | Stores atómicas sem Provider. Selects finos evitam re-renders.                              |
+| Zod em vez de validação manual            | Schemas centralizados, reutilizados form + API. Bundle ~7 kB.                               |
+| json-server vs backend real               | Sem persistência relacional, sem auth real. Mas prototipagem instantânea com middleware.    |
+| Store de idempotência in-memory           | Perde-se ao reiniciar o servidor. Bounded por TTL (1h) e tamanho máx. (1000).              |
+| RBAC só no frontend                       | Inerente ao json-server. Documentado como limitação.                                        |
+| Playwright + RTL                          | Testes de componente com RTL + E2E com Playwright. Submissão RHF tem limitação conhecida.   |
+| Autenticação fake (Zustand em memória)    | Simulada para demonstrar RBAC. Sem JWT, sem OAuth. Login expira ao recarregar a página.      |
+| Web Vitals nativos vs PostHog/Sentry      | Dados apenas no console em dev. Sem telemetria remota.                                      |
+| Docker com `npm install` em vez de `npm ci` | Lockfile incompatível com esbuild linux. `🐴` Aceitável para protótipo.                   |
 
 ---
 

@@ -1,14 +1,16 @@
 # DESIGN SYSTEM & ARQUITETURA — XPTO
 
-Este documento detalha as decisões de design visual, arquitetura de software, modelagem de dados e as especificações de experiência do usuário (UX) adotadas no **XPTO** (_Sales Order & Logistics Management System_).
+Este documento detalha as decisões de design visual, arquitetura de software, modelagem de dados e as especificações de experiência do usuário (UX) adotadas no **XPTO** (_Sistema de Gestão de Ordens de Venda_).
 
 ---
 
 ## 1. INTRODUÇÃO & CONCEITO
 
-O **XPTO** é um sistema moderno de gestão de ordens de venda, portfólio de clientes, catálogo de itens/SKUs e agendamento logístico de entregas. O sistema foi construído visando alta confiabilidade operacional, segurança por meio de logs de auditoria detalhados e uma interface imersiva de alto desempenho.
+O **XPTO** é um sistema _backoffice_ de gestão de ordens de venda, portfólio de clientes, catálogo de itens/SKUs e agendamento logístico de entregas. O sistema foi construído visando alta confiabilidade operacional, segurança por meio de logs de auditoria detalhados e uma interface imersiva de alto desempenho.
 
 O principal objetivo de negócios do sistema é garantir que cada transição de estado de uma ordem de venda (de _Criada_ a _Entregue_) seja acompanhada de perto, planejada logisticamente em janelas de tempo específicas, e registrada para fins de conformidade e auditoria.
+
+A arquitetura segue o padrão **SPA + Mock API**: o frontend em React consome uma API simulada via `json-server` com middleware custom que implementa as regras de negócio, audit trail e idempotência. Não há backend real — a decisão é intencional para um desafio técnico focado em frontend.
 
 ---
 
@@ -18,7 +20,7 @@ A interface do XPTO segue uma estética **Dark Minimalist / Tech-Editorial** ins
 
 ### 2.1 Sistema de Temas
 
-O XPTO oferece dois temas visuais alternativos comutáveis pelo usuário a partir do botão de sol/lua no _sidebar_ (atalho persistido em `localStorage` sob a chave `XPTO:theme`). A seleção é aplicada via `data-theme="dark" | "light"` no elemento raiz (`<html>`) e os tokens são declarados como **CSS custom properties** no `src/index.css` (Tailwind v4 `@theme`), o que permite trocar a paleta inteira sem _rebuild_ e sem libs de tema em tempo de execução.
+O XPTO oferece dois temas visuais alternativos comutáveis pelo usuário a partir do botão de sol/lua no _sidebar_. A seleção é aplicada via `data-theme="dark" | "light"` no elemento raiz (`<html>`) e os tokens são declarados como **CSS custom properties** no `src/index.css` (Tailwind v4 `@theme`), o que permite trocar a paleta inteira sem _rebuild_ e sem libs de tema em tempo de execução. O tema atual é mantido em memória (Zustand) — recarregar a página restaura o tema escuro padrão.
 
 - **Tema padrão (Dark) — `data-theme="dark"`:** estética principal do sistema; declarada dentro do bloco `@theme` (escopo `:root`).
 - **Tema alternativo (Light) — `data-theme="light"`:** declaradono bloco `[data-theme="light"] { ... }`, sobrescrevendo somente os tokens do `@theme` (cascade nativa do CSS).
@@ -68,83 +70,101 @@ Para alcançar um ritmo visual refinado e uma distinção clara entre informaç�
 
 ## 3. MODELAGEM DE DADOS (TYPES)
 
-As entidades do sistema foram rigidamente tipadas no TypeScript (`src/types.ts`) para garantir robustez e consistência durante o fluxo de mutações de estado:
+As entidades do sistema foram rigidamente tipadas no TypeScript (`src/domain/types.ts` + `src/schemas/`) para garantir robustez e consistência. Schemas Zod (`src/schemas/`) validam tanto formulários quanto respostas da API.
 
-### 3.1 Ordem de Venda (`SalesOrder`)
+### 3.1 Ordem de Venda
 
 Representa o documento principal do fluxo operacional.
 
 ```typescript
-export type OrderStatus =
-  | "Criada"
-  | "Planejada"
-  | "Agendada"
-  | "Em Transporte"
-  | "Entregue";
+type OrderStatus = "CRIADA" | "PLANEJADA" | "AGENDADA" | "EM_TRANSPORTE" | "ENTREGUE";
 
-export interface SalesOrder {
+interface OrdemVenda {
   id: string;
-  numero: string; // Ex: "OV-2024-0001"
+  numero: string;
   clienteId: string;
   clienteNome: string;
-  transporte: string; // Ex: "Transportadora Rápida"
+  tipoTransporteId: string;
+  transporte: string;
   status: OrderStatus;
-  valorTotal: number;
-  previsao: string; // Formato "YYYY-MM-DD"
-  janela: string; // Janela logística ("08:00 - 12:00", "13:00 - 17:00", etc.)
   itens: Array<{
     itemId: string;
-    itemName: string;
-    quantity: number;
-    unitPrice: number;
+    nome: string;
+    quantidade: number;
+    precoUnitario: number;
   }>;
+  valorTotal: number;
+  dataCriacao: string;
+  dataEntregaPrevista: string | null;
+  janelaAtendimento: string | null;
+  observacoes: string;
 }
+
+// Máquina de estados linear:
+// CRIADA → PLANEJADA → AGENDADA → EM_TRANSPORTE → ENTREGUE
 ```
 
-### 3.2 Cliente (`Client`)
+### 3.2 Cliente
 
-Cadastro do portfólio de parceiros e destinos comerciais.
+Cadastro do portfólio de parceiros com transporte autorizado.
 
 ```typescript
-export interface Client {
+interface Cliente {
   id: string;
-  name: string;
-  document: string; // CPF ou CNPJ
+  nome: string;
+  documento: string; // CPF ou CNPJ (11-14 dígitos)
   email: string;
-  telefone: string;
+  telefone: string; // 10-11 dígitos
   endereco: string;
-  active: boolean; // Habilitado/Desabilitado para novas ordens
+  ativo: boolean;
+  transportesAutorizados: string[]; // IDs dos tipos de transporte
 }
 ```
 
-### 3.3 Item de Estoque/Catálogo (`Item`)
+### 3.3 Item
 
 Produto ou insumo passível de transação comercial.
 
 ```typescript
-export interface Item {
+interface Item {
   id: string;
-  sku: string; // Nome amigável do produto
-  name: string; // Código técnico identificador (Ex: "PAR-M10-001")
-  category: string;
-  unitPrice: number;
-  measureUnit: string; // Ex: "un", "m", "kg"
-  active: boolean;
+  nome: string;
+  sku: string; // Código técnico identificador, único
+  categoria: string;
+  precoUnitario: number; // Em centavos
+  unidadeMedida: string; // Ex: "un", "m", "kg"
+  ativo: boolean;
 }
 ```
 
-### 3.4 Logs de Auditoria (`AuditLog`)
+### 3.4 Tipo de Transporte
 
-Histórico transacional imutável de operações efetuadas pelos usuários.
+Modalidade logística.
 
 ```typescript
-export interface AuditLog {
+interface TipoTransporte {
   id: string;
-  timestamp: string; // Formato local "DD/MM/YYYY, HH:MM:SS"
-  user: string; // E-mail do operador responsável
-  entidade: "ordemVenda" | "cliente" | "item" | "geral";
-  action: string; // Ex: "alteracao_status", "agendamento"
-  detalhes: string; // Ex: "CRIADA ➔ PLANEJADA"
+  nome: string; // Ex: "Caminhão", "Carreta", "Bi-truck"
+  modal: "rodoviario" | "aereo" | "maritimo" | "ferroviario";
+  ativo: boolean;
+}
+```
+
+### 3.5 Evento de Auditoria
+
+Histórico transacional imutável de operações.
+
+```typescript
+interface EventoAuditoria {
+  id: string;
+  entidade: string;
+  entidadeId: string;
+  acao: string;
+  usuario: string;
+  dataHora: string;
+  estadoAnterior: unknown | null;
+  estadoPosterior: unknown | null;
+  detalhes: string;
 }
 ```
 
@@ -152,70 +172,180 @@ export interface AuditLog {
 
 ## 4. ARQUITETURA DE SOFTWARE & ESTADO
 
-O XPTO foi projetado como uma **Single-Page Application (SPA)** escalável construída em **React 18** e **Vite**, estruturada em componentes modulares com divisão clara de responsabilidades.
+O XPTO foi projetado como uma **Single-Page Application (SPA)** construída em **React 18** + **Vite**, seguindo uma arquitetura de **camadas horizontais** com TanStack Query, Zustand e json-server como mock API.
 
 ```
-/src
-  ├── types.ts          # Definições estritas de interfaces
-  ├── data.ts           # Carga de dados inicial para testes e demonstração
-  ├── index.css         # Importação do Tailwind CSS e definições de Fontes / Temas
-  ├── App.tsx           # Ponto de entrada, container de layout e engine de estado global
-  └── components/
-        ├── Sidebar.tsx        # Navegação persistente e dados da sessão ativa
-        ├── LoginView.tsx      # Tela de autenticação e seleção de papéis
-        ├── DashboardView.tsx  # Visão analítica, métricas macro e KPIs
-        ├── OrdersView.tsx     # Gestão, criação e detalhamento de ordens
-        ├── SchedulingView.tsx # Agendamento de janelas e alocação logística
-        ├── ClientsView.tsx    # Controle da carteira de clientes ativos
-        ├── ItemsView.tsx      # Catálogo de ativos comercializáveis
-        └── AuditView.tsx      # Histórico cronológico detalhado de transações
+src/
+├── api/fetch.ts         # Fetch nativo com helpers (GET, POST, PATCH, DELETE, paginado)
+├── auth/credentials.ts  # Fake data de login (demo)
+├── components/          # Componentes reutilizáveis (Modal, Pagination, Toaster)
+├── data/usuarios.json   # Contas de demo
+├── domain/types.ts      # Interfaces + máquina de estados + helpers puros
+├── hooks/               # Hooks de domínio (useConfirm, usePermission)
+├── layouts/AppLayout.tsx # Layout principal com sidebar e navegação
+├── lib/                 # Utilitários (telemetry, validation, money, id)
+├── pages/               # 11 páginas (lazy loaded)
+├── queries/             # TanStack Query hooks (useOrdensVenda, useClientes, etc.)
+│   └── api.ts           # Cliente API com validação Zod de respostas
+├── schemas/             # Schemas Zod (ordemVenda, cliente, transporte, item, auditoria)
+├── stores/              # Zustand stores (auth, toast, ui)
+├── App.tsx              # Rotas com lazy loading + Suspense
+├── main.tsx             # Entry point
+└── index.css            # Tailwind v4 @theme + design tokens
 ```
 
-### 4.1 Gerenciamento de Estado Reativo
+### 4.1 Gerenciamento de Estado
 
-Para evitar re-renderizações desnecessárias e manter a sincronia em tempo real, a aplicação adota uma estratégia de **Estado Centralizado** em `App.tsx`:
+O sistema usa **3 camadas de estado**, cada uma resolvendo um problema específico:
 
-1. **Coleções de Estado:** `orders`, `clients`, `items` e `auditLogs` residem no componente raiz `App.tsx`.
-2. **Atualização Baseada em Callbacks:** As visualizações filhas recebem funções puras de manipulação (ex: `handleScheduleOrder`, `handleUpdateOrderStatus`) para despachar atualizações de volta ao container principal.
-3. **Auditoria Automatizada:** Qualquer alteração no estado de uma entidade (como ativação de cliente ou agendamento de janela) chama automaticamente o método `appendAuditLog`, acoplando o autor da ação, o carimbo de data/hora preciso e a descrição exata da mutação.
+1. **TanStack Query (queries/)** — dados do servidor (OVs, clientes, transportes, itens, auditoria). Cache com refetch automático, paginação server-side, mutations com invalidação automática.
+
+2. **Zustand (stores/)** — estado global de UI que não vem do servidor:
+   - `authStore` — user atual, login/logout (role persistida em `localStorage`)
+   - `toastStore` — fila de notificações
+   - `uiStore` — tema (dark/light), sidebar colapsada, menu mobile
+
+3. **Estado local (useState/useReducer)** — estado de formulários (React Hook Form), filtros de página, controle de paginação.
+
+### 4.2 Comunicação com o Servidor
+
+A comunicação é feita via API REST mockada pelo `server.cjs`:
+
+- **Fetch nativo** em `src/api/fetch.ts` — wrapper com headers, parsing de erro e helpers de paginação
+- **Camada de validação** em `src/queries/api.ts` — Zod schema valida cada resposta da API (tipo-safe em runtime)
+- **TanStack Query hooks** em `src/queries/` — cada entidade tem seu hook com `queryKey` tipada
+
+### 4.3 Servidor Mock (server.cjs)
+
+O servidor `server.cjs` é um `json-server` programático com middleware custom:
+
+- **Identity gate** — exige header `x-user` em mutações (401 se ausente)
+- **Validação de regras de negócio** — transporte autorizado por cliente, cliente ativo, máquina de estados
+- **Idempotência** — chave SHA-256 via header `Idempotency-Key`, store bounded (TTL 1h, max 1000)
+- **Allowlist de campos PATCH** — apenas campos permitidos por entidade (F3)
+- **Auditoria automática** — todo POST/PATCH/DELETE gera `EventoAuditoria`
+- **Paginação** — `_page` + `_limit` + `X-Total-Count` (json-server nativo)
 
 ---
 
 ## 5. REQUISITOS OPERACIONAIS & MÓDULOS
 
-### 5.1 Dashboard Analítico
+### 5.1 Dashboard Analítico (`src/pages/Dashboard.tsx`)
 
-- **KPI Cards:** Exibe o faturamento total acumulado, o total de ordens criadas, o total de entregas concluídas e a taxa de eficiência de agendamento.
-- **Gráficos de Funil:** Integra componentes visuais interativos que mostram a distribuição percentual das ordens de venda através de seus respectivos estados.
-- **Ordens Críticas:** Destaca ordens pendentes de agendamento ou com previsão próxima.
+- **KPI Cards:** Faturamento total acumulado, total de ordens criadas, entregas concluídas, taxa de agendamento.
+- **Distribuição de Status:** Cards por estado (CRIADA, PLANEJADA, AGENDADA, EM_TRANSPORTE, ENTREGUE) com contagem e cor semântica.
+- **Ordens Recentes:** Lista das últimas OVs criadas.
 
-### 5.2 Gerenciador de Ordens de Venda
+### 5.2 Gestão de Ordens de Venda (`src/pages/OVList.tsx`, `OVDetail.tsx`, `OVNew.tsx`)
 
-- **Criação Dinâmica:** Operadores criam novas ordens de venda selecionando clientes habilitados e adicionando itens múltiplos diretamente do catálogo ativo com recálculo automático do valor total em tempo real.
-- **Visualizador de Detalhes:** Painel lateral ou gaveta que detalha cada item, quantidade, transporte e histórico específico da ordem selecionada.
+- **Listagem (`OVList.tsx`):** Tabela paginada com filtros por status, cliente, transporte e data; debounce de 300ms na pesquisa.
+- **Criação (`OVNew.tsx`):** React Hook Form com `useFieldArray` para itens dinâmicos; validação Zod; dropdown de transporte dependente do cliente selecionado (transporte autorizado).
+- **Detalhe (`OVDetail.tsx`):** Botões de transição de status condicionais (só exibe transições válidas); agendamento inline (data + janela).
 
-### 5.3 Central de Agendamento Logístico
+### 5.3 Central de Agendamento (`src/pages/Agendamento.tsx`)
 
-- **Gargalo de Decisão:** Filtra apenas ordens que necessitam de janela logística.
-- **Slots de Entrega:** O operador seleciona a data e aloca a ordem em um turno operacional específico (_Manhã_, _Tarde_, _Noite_). Ao confirmar, a ordem é migrada automaticamente para o estado **Agendada**.
+- Lista OVs elegíveis para agendamento (status PLANEJADA ou AGENDADA).
+- Edição inline de `dataEntregaPrevista` e `janelaAtendimento`.
+- Transição automática para AGENDADA ao confirmar data.
 
-### 5.4 Auditoria & Segurança Transacional
+### 5.4 Cadastros (`Clientes.tsx`, `Transportes.tsx`, `Itens.tsx`)
 
-- **Aparência Imutável:** Histórico cronológico de atividades.
-- **Filtros Avançados:** Permite pesquisar por operador, buscar por palavras-chave específicas ou filtrar por módulo afetado.
-- **Representação Visual de Transições:** Modificações de status de ordens de venda são renderizadas como caminhos de badges direcionais (ex: `CRIADA ➔ PLANEJADA`), facilitando a compreensão rápida de alterações.
+- CRUD completo (criar, editar, consultar) com modal de formulário.
+- Clientes: campo `transportesAutorizados` (multiselect dos tipos de transporte ativos).
+- Validação Zod em todos os formulários.
+- RBAC condicional: só exibe botões de editar/excluir se o utilizador tem permissão.
+
+### 5.5 Auditoria & Segurança Transacional (`src/pages/Auditoria.tsx`)
+
+- **Histórico cronológico:** Tabela paginada de eventos imutáveis gerados automaticamente pelo servidor.
+- **Eventos registados:** criação de OV, alteração de status, alteração de agendamento, alteração de transporte.
+- **Campos por evento:** dataHora, acao, entidade, entidadeId, estadoAnterior, estadoPosterior, detalhes, usuario.
+- **Filtros:** pesquisa por utilizador, entidade ou termo nos detalhes.
 
 ---
 
 ## 6. CONTROLE DE ACESSO (RBAC)
 
-O sistema possui suporte básico para controle de acesso baseado em papéis (_Role-Based Access Control_), dividindo as permissões em dois perfis de operadores:
+O sistema implementa RBAC com **4 papéis** em hierarquia cumulativa:
 
-- **Operador Administrador (`admin`):** Permissão completa para criar ordens, editar cadastros de clientes, adicionar novos produtos ao catálogo, reagendar janelas logísticas e inspecionar os registros de auditoria.
-- **Operador Visualizador (`viewer`):** Permissão de leitura em todo o sistema, sem capacidade de modificar registros, garantindo proteção contra alterações não autorizadas.
+```
+viewer → operator → manager → admin
+```
+
+Cada papel herda as permissões do anterior e adiciona as suas:
+
+| Papel     | Permissões |
+|-----------|-----------|
+| `viewer`  | Listar OVs, clientes, transportes, itens |
+| `operator`| + Criar/editar OVs, alterar status |
+| `manager` | + Editar cadastros, agendar entregas, ver auditoria |
+| `admin`   | + Gerir utilizadores, todas as permissões |
+
+**Implementação:**
+- Matriz declarativa `PERMISSOES_POR_ROLE` em `src/hooks/usePermission.ts`
+- `usePermissao(perm)` — hook que verifica se a role atual ou qualquer role superior tem a permissão
+- UI condicional: botões, abas e nav items escondem-se se o utilizador não tem permissão
+- Role persistida em `localStorage` (`XPTO:user`, `XPTO:role`)
+- Demo: 4 contas em `src/data/usuarios.json`
 
 ---
 
 ## 7. PERSISTÊNCIA & ARMAZENAMENTO
 
-Para o ambiente atual em preview, os dados utilizam estados reativos em memória com sementes carregadas do arquivo `src/data.ts`. A arquitetura de callbacks implementada em `App.tsx` foi desenhada especificamente para facilitar uma migração transparente para o **Firebase Firestore** ou um banco de dados relacional como o **PostgreSQL (via Cloud SQL com Drizzle)** sem a necessidade de reescrever as views de interface.
+O sistema usa **3 camadas de armazenamento**:
+
+### 7.1 Dados do Servidor (json-server)
+
+- **`db.seed.json`** — template versionado no git com dados mock (25 OVs, 3 clientes, 3 transportes, 10 itens, eventos de auditoria)
+- **`data/db.json`** — ficheiro de runtime gerado pelo json-server no primeiro boot (cópia do seed), ignorado no `.gitignore`
+- O `server.cjs` copia o seed para `data/db.json` automaticamente se o ficheiro não existir
+- A store de idempotência (`Map` em memória) reseta ao reiniciar o servidor
+
+### 7.2 Estado do Cliente (navegador)
+
+| Dado | Local | Persistência |
+|------|-------|-------------|
+| Role do utilizador | Zustand (memória) | Volátil — recarregar a página requer novo login |
+| Tema (dark/light) | Zustand (memória) | Volátil — sempre dark ao recarregar |
+| Cache TanStack Query | Memória | Volátil (recria ao recarregar) |
+
+### 7.3 Estratégia para Produção
+
+Para um ambiente real, a arquitetura atual (TanStack Query + Zustand) permite migrar o `server.cjs` para um backend NestJS + PostgreSQL (ou similar) sem alterar os hooks de query — apenas o `src/queries/api.ts` precisaria de novos endpoints.
+
+---
+
+## 8. COMO EXECUTAR
+
+### Local (tudo num comando)
+
+```bash
+npm install
+npm run dev:full     # Vite (frontend) + json-server (API) em paralelo
+open http://localhost:5173
+```
+
+### Local (terminais separados)
+
+```bash
+npm install
+npm run mock:api    # Terminal 1: json-server em :3001
+npm run dev         # Terminal 2: Vite dev em :5173
+open http://localhost:5173
+```
+
+### Docker
+
+```bash
+docker compose up --build
+open http://localhost:8080
+```
+
+### Credenciais de Demo
+
+| Email               | Senha       | Role     |
+| ------------------- | ----------- | -------- |
+| admin@XPTO.local    | admin123    | admin    |
+| manager@XPTO.local  | manager123  | manager  |
+| operator@XPTO.local | operator123 | operator |
+| viewer@XPTO.local   | viewer123   | viewer   |

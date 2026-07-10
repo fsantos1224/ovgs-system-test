@@ -1,4 +1,8 @@
-// Domínio alinhado com a especificação do desafio. 5 status lineares, sem lib de state machine.
+import type { ClienteResponse } from "../schemas/cliente";
+import type { TransporteResponse } from "../schemas/transporte";
+import type { ItemResponse } from "../schemas/item";
+import type { OrdemVendaResponse } from "../schemas/ordemVenda";
+import type { AuditoriaResponse } from "../schemas/auditoria";
 
 export interface Usuario {
   email: string;
@@ -33,78 +37,20 @@ export function statusLabel(status: OVStatus): string {
   return labels[status];
 }
 
-export interface Cliente {
-  id: string;
-  nome: string;
-  documento: string;
-  email: string;
-  telefone: string;
-  endereco: string;
-  ativo: boolean;
-  transportesAutorizados: string[];
-}
+export type Cliente = ClienteResponse;
 
 export function canUseTransporte(
   cliente: Pick<Cliente, "transportesAutorizados"> | null | undefined,
   transporteId: string,
 ): boolean {
   if (!cliente) return false;
-  // Backward-compat: clientes antigos sem o campo são tratados como "nenhum autorizado".
   return cliente.transportesAutorizados?.includes(transporteId) ?? false;
 }
 
-export interface TipoTransporte {
-  id: string;
-  nome: string;
-  modal: "rodoviario" | "aereo" | "maritimo" | "ferroviario";
-  ativo: boolean;
-}
-
-export interface Item {
-  id: string;
-  nome: string;
-  sku: string;
-  categoria: string;
-  precoUnitario: number;
-  unidadeMedida: string;
-  ativo: boolean;
-}
-
-export interface ItemOV {
-  id: string; // UUID
-  itemId: string; // UUID do item no catálogo
-  nomeItem: string;
-  quantidade: number;
-  precoUnitario: number;
-}
-
-export interface OrdemVenda {
-  id: string;
-  numero: string;
-  clienteId: string;
-  nomeCliente: string;
-  dataEmissao: string;
-  dataEntregaPrevista: string;
-  transporteId: string;
-  nomeTransporte: string;
-  status: OVStatus;
-  itens: ItemOV[];
-  valorTotal: number;
-  observacoes?: string;
-  janelaAtendimento?: string;
-}
-
-export interface EventoAuditoria {
-  id: string;
-  entidade: string;
-  entidadeId: string;
-  acao: string;
-  usuario: string;
-  dataHora: string;
-  detalhes: string;
-  estadoAnterior?: string;
-  estadoPosterior?: string;
-}
+export type TipoTransporte = TransporteResponse;
+export type Item = ItemResponse;
+export type OrdemVenda = OrdemVendaResponse;
+export type EventoAuditoria = AuditoriaResponse;
 
 export interface UserRole {
   role: "admin" | "manager" | "operator" | "viewer";

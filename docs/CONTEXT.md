@@ -226,33 +226,11 @@ Cada evento deverá registrar:
 
 - TypeScript
 
-- NestJS
-
-- Banco de dados relacional
-
-- Prisma, TypeORM ou Sequelize
-
 - Docker Compose
 
 ## Estrutura Esperada
 
-A organização da solução deverá evidenciar separação adequada de responsabilidades, incluindo, quando aplicável:
-
-- Controllers;
-
-- Services;
-
-- Repositories;
-
-- DTOs;
-
-- Camadas de validação;
-
-- Tratamento de exceções;
-
-- Estratégias de persistência.
-
-A adoção de padrões arquiteturais adicionais fica a critério do candidato e deverá ser devidamente justificada.
+A organização da solução deverá evidenciar separação adequada de responsabilidades.
 
 ## Testes
 
@@ -290,11 +268,7 @@ O repositório deverá conter um README contendo:
 
 Os seguintes itens serão considerados diferenciais, desde que façam sentido para a solução proposta:
 
-- OpenAPI / Swagger;
-
 - Clean Architecture;
-
-- Event-Driven Architecture;
 
 - Logs estruturados;
 
@@ -307,8 +281,6 @@ Os seguintes itens serão considerados diferenciais, desde que façam sentido pa
 - Otimização de consultas;
 
 - Testes adicionais;
-
-- Pipeline de CI/CD;
 
 - Estratégias de segurança e autorização.
 

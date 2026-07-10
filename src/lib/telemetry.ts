@@ -1,8 +1,5 @@
 // Observabilidade: Performance Observer nativo conforme W3C para LCP/CLS/INP.
 // Zero dependências. Zero SDKs. Zero serviços externos.
-//
-// Métricas são persistidas em localStorage no formato
-// { name, value, id, ts } e ficam inspecionáveis no DevTools.
 
 interface VitalRecord {
   name: "LCP" | "CLS" | "INP";
@@ -11,25 +8,9 @@ interface VitalRecord {
   ts: number;
 }
 
-const VITALS_KEY = "XPTO:vitals";
-const VITALS_MAX = 100;
-
 function recordVital(v: VitalRecord) {
-  try {
-    const history = JSON.parse(localStorage.getItem(VITALS_KEY) ?? "[]");
-    history.push(v);
-    if (history.length > VITALS_MAX) history.shift();
-    localStorage.setItem(VITALS_KEY, JSON.stringify(history));
-  } catch {
-    /* localStorage indisponível */
-  }
-}
-
-function readVitals(): VitalRecord[] {
-  try {
-    return JSON.parse(localStorage.getItem(VITALS_KEY) ?? "[]");
-  } catch {
-    return [];
+  if (import.meta.env.DEV) {
+    console.table([v]);
   }
 }
 
@@ -142,44 +123,17 @@ export function initWebVitals() {
   }
 }
 
-export function getVitals(): VitalRecord[] {
-  return readVitals();
-}
-
-// Eventos de negócio — persistidos em localStorage com bounded buffer.
-
-const STORAGE_KEY = "XPTO:events";
-
 export function trackEvent(
   action: string,
   entity: string,
   details?: Record<string, unknown>,
 ) {
-  const event = {
-    timestamp: new Date().toISOString(),
-    action,
-    entity,
-    usuario: (() => {
-      try {
-        return (
-          JSON.parse(localStorage.getItem("XPTO:user") ?? "{}").email ||
-          "desconhecido"
-        );
-      } catch {
-        return "desconhecido";
-      }
-    })(),
-    details,
-  };
-
-  console.table([event]);
-
-  try {
-    const history = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-    history.push(event);
-    if (history.length > 100) history.shift();
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-  } catch {
-    /* localStorage indisponível */
+  if (import.meta.env.DEV) {
+    console.table([{
+      timestamp: new Date().toISOString(),
+      action,
+      entity,
+      details,
+    }]);
   }
 }

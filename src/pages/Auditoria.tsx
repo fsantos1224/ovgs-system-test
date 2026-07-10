@@ -73,10 +73,10 @@ export function Auditoria() {
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
                 <th className="px-4 py-4 w-[18%]">Data/Hora</th>
-                <th className="px-4 py-4 w-[14%]">Usuário</th>
+                <th className="px-4 py-4 w-[22%]">Usuário</th>
                 <th className="px-4 py-4 w-[12%]">Entidade</th>
                 <th className="px-4 py-4 w-[10%]">Ação</th>
-                <th className="px-4 py-4 w-[46%]">Detalhes</th>
+                <th className="px-4 py-4 w-[38%]">Detalhes</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">

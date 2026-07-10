@@ -20,7 +20,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
-import { usePermissao, useRole } from "../hooks/usePermission";
+import { usePermissao } from "../hooks/usePermission";
 import { Toaster } from "../components/Toaster";
 import { useAuthStore } from "../stores/authStore";
 import { useUIStore } from "../stores/uiStore";
@@ -47,8 +47,8 @@ function getPageTitle(pathname: string): string {
 
 export function AppLayout() {
   const location = useLocation();
-  const role = useRole();
   const { user, logout } = useAuthStore();
+  const role = user!.role;
   const {
     sidebarOpen,
     mobileMenuOpen,

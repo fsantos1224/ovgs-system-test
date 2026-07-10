@@ -5,10 +5,14 @@ import App from "./App";
 import { queryClient } from "./queries/queryClient";
 import "./index.css";
 import { initWebVitals } from "./lib/telemetry";
+import { useAuthStore } from "./stores/authStore";
 
-// Aplica tema persistido antes do React montar (evita FOUC).
-document.documentElement.dataset.theme =
-  localStorage.getItem("XPTO:theme") ?? "dark";
+document.documentElement.dataset.theme = "dark";
+
+if (import.meta.env.DEV) {
+  (window as any).__login = (email: string, senha: string) =>
+    useAuthStore.getState().login(email, senha);
+}
 
 // Performance monitoring via Performance Observer nativo
 initWebVitals();

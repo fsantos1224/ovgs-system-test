@@ -36,7 +36,7 @@ export function useCriarOV() {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: ({ data, headers }: { data: Record<string, unknown>; headers?: Record<string, string> }) =>
-      apiPost("/ordensVenda", data, headers),
+      apiPost("/ordensVenda", data, ordemVendaSchema, headers),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }
@@ -44,7 +44,7 @@ export function useCriarOV() {
 export function useAtualizarOV() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/ordensVenda/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/ordensVenda/${id}`, data, ordemVendaSchema),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }
@@ -60,7 +60,7 @@ export function useExcluirOV() {
 export function useAlterarStatusOV() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: { status: string } }) => apiPatch(`/ordensVenda/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: { status: string } }) => apiPatch(`/ordensVenda/${id}`, data, ordemVendaSchema),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

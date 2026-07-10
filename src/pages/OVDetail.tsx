@@ -71,7 +71,6 @@ export function OVDetail() {
       setErroStatus(
         err instanceof Error ? err.message : "Erro ao alterar status",
       );
-      toast.error("Erro ao alterar status.");
     }
   };
 

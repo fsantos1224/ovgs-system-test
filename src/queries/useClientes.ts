@@ -24,7 +24,7 @@ export function useCliente(id: string) {
 export function useCriarCliente() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) => apiPost("/clientes", data),
+    mutationFn: (data: Record<string, unknown>) => apiPost("/clientes", data, clienteSchema),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }
@@ -32,7 +32,7 @@ export function useCriarCliente() {
 export function useAtualizarCliente() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/clientes/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/clientes/${id}`, data, clienteSchema),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

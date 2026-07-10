@@ -1,14 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Plus, Calendar, Eye, Pencil, Trash2 } from "lucide-react";
-import { useOrdensVenda, useClientes, useTransportes, useExcluirOV, useOrdemVenda, useAtualizarOV } from "../queries";
+import { Plus, Calendar, Eye } from "lucide-react";
+import { useOrdensVenda, useClientes, useTransportes } from "../queries";
 import type { OVStatus } from "../domain/types";
 import { statusLabel, STATUS_FLOW } from "../domain/types";
 import { usePermissao } from "../hooks/usePermission";
 import { Pagination } from "../components/Pagination";
-import { Modal } from "../components/Modal";
-import { useToast } from "../stores/toastStore";
-import { useConfirm } from "../hooks/useConfirm";
 
 const STATUS_BADGE: Record<OVStatus, string> = {
   CRIADA:
@@ -61,10 +58,6 @@ export function OVList() {
   const totalCount = ordensData?.totalCount ?? 0;
   const totalPages = Math.max(1, Math.ceil(totalCount / 10));
 
-  const excluirOV = useExcluirOV();
-  const toast = useToast();
-  const confirm = useConfirm();
-
   useEffect(() => {
     const id = setTimeout(() => setDebouncedSearch(search), 300);
     return () => clearTimeout(id);
@@ -83,48 +76,6 @@ export function OVList() {
     inicio.setDate(hoje.getDate() - (dias - 1));
     setDataDe(toInputDate(inicio));
     setDataAte(toInputDate(hoje));
-  };
-
-  const handleDelete = async (id: string) => {
-    const ok = await confirm({ title: "Excluir OV", body: "Tem certeza que deseja excluir esta ordem de venda?", confirmLabel: "Excluir", cancelLabel: "Cancelar", variant: "danger" });
-    if (!ok) return;
-    try {
-      await excluirOV.mutateAsync(id);
-      toast.success("Ordem de venda excluída com sucesso.");
-    } catch {
-      toast.error("Erro ao excluir ordem de venda.");
-    }
-  };
-
-  const [editandoId, setEditandoId] = useState<string | null>(null);
-  const [erro, setErro] = useState("");
-  const { data: ovEditando } = useOrdemVenda(editandoId ?? "");
-  const atualizarOV = useAtualizarOV();
-
-  const handleEditar = (id: string) => {
-    setEditandoId(id);
-    setErro("");
-  };
-
-  const handleSalvar = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!editandoId) return;
-    const fd = new FormData(e.currentTarget);
-    const data: Record<string, string> = {};
-    const dataEntrega = fd.get("dataEntrega") as string;
-    const observacoes = fd.get("observacoes") as string;
-    const janela = fd.get("janela") as string;
-    if (dataEntrega) data.dataEntregaPrevista = new Date(dataEntrega).toISOString();
-    if (observacoes !== undefined) data.observacoes = observacoes;
-    if (janela !== undefined) data.janelaAtendimento = janela;
-    try {
-      await atualizarOV.mutateAsync({ id: editandoId, data });
-      setEditandoId(null);
-      toast.success("Ordem de venda atualizada com sucesso.");
-    } catch (err) {
-      setErro(err instanceof Error ? err.message : "Erro ao salvar");
-      toast.error("Erro ao salvar alterações.");
-    }
   };
 
   if (isLoading)
@@ -367,29 +318,13 @@ export function OVList() {
                       </span>
                     </td>
                     <td className="px-4 py-4 text-center">
-                      <div className="flex items-center justify-center gap-0.5">
-                        <Link
-                          to={`/ovs/${ov.id}`}
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                          title="Visualizar"
-                        >
-                          <Eye className="w-4 h-4" />
-                        </Link>
-                        <button
-                          onClick={() => handleEditar(ov.id)}
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                          title="Editar"
-                        >
-                          <Pencil className="w-4 h-4" />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(ov.id)}
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                          title="Excluir"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      </div>
+                      <Link
+                        to={`/ovs/${ov.id}`}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Visualizar"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </Link>
                     </td>
                   </tr>
                 ))
@@ -464,20 +399,6 @@ export function OVList() {
                   >
                     <Eye className="w-4 h-4" />
                   </Link>
-                  <button
-                    onClick={() => handleEditar(ov.id)}
-                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                    title="Editar"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(ov.id)}
-                    className="inline-flex items-center justify-center min-w-[44px] h-11 rounded-md text-text-faint hover:text-rose-400 hover:bg-rose-500/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
-                    title="Excluir"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             ))
@@ -490,79 +411,6 @@ export function OVList() {
           onPageChange={setPage}
         />
       </div>
-
-      <Modal
-        open={editandoId !== null}
-        title={ovEditando ? `Editar OV: ${ovEditando.numero}` : ""}
-        onClose={() => setEditandoId(null)}
-      >
-        {ovEditando && (
-          <form onSubmit={handleSalvar} className="flex flex-col gap-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Cliente</label>
-                <p className="text-text text-sm font-medium">{ovEditando.nomeCliente}</p>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Transporte</label>
-                <p className="text-text text-sm font-medium">{ovEditando.nomeTransporte}</p>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Valor Total</label>
-                <p className="text-text text-sm font-mono font-medium">{formatCurrency(ovEditando.valorTotal)}</p>
-              </div>
-              <div>
-                <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Itens</label>
-                <p className="text-text text-sm">{ovEditando.itens.length} item(ns)</p>
-              </div>
-              <div className="col-span-2">
-                <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Data Prevista</label>
-                <input
-                  name="dataEntrega"
-                  type="date"
-                  defaultValue={ovEditando.dataEntregaPrevista?.split("T")[0] ?? ""}
-                  className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden"
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Janela de Atendimento</label>
-                <input
-                  name="janela"
-                  type="text"
-                  placeholder="ex: 08:00-12:00"
-                  defaultValue={ovEditando.janelaAtendimento ?? ""}
-                  className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden placeholder:text-text-faint"
-                />
-              </div>
-              <div className="col-span-2">
-                <label className="text-[10px] font-bold text-text-faint uppercase tracking-widest block mb-1.5">Observações</label>
-                <textarea
-                  name="observacoes"
-                  rows={3}
-                  defaultValue={ovEditando.observacoes ?? ""}
-                  className="w-full bg-input-bg border border-border text-text text-xs rounded-lg px-3 py-2.5 focus:ring-2 focus:ring-accent focus:border-transparent outline-hidden resize-none"
-                />
-              </div>
-            </div>
-            {erro && <p role="alert" className="text-rose-400 text-xs">{erro}</p>}
-            <div className="flex gap-3 justify-end pt-4 border-t border-border">
-              <button
-                type="button"
-                onClick={() => setEditandoId(null)}
-                className="px-5 py-2.5 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted focus-visible:outline-2 focus-visible:outline-accent"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-2.5 bg-surface-elevated hover:bg-accent text-text hover:text-on-accent font-bold text-[11px] uppercase tracking-wider rounded-lg shadow-lg transition-all border border-border-strong focus-visible:outline-2 focus-visible:outline-accent"
-              >
-                Salvar
-              </button>
-            </div>
-          </form>
-        )}
-      </Modal>
     </div>
   );
 }

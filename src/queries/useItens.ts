@@ -16,7 +16,7 @@ export function useItens() {
 export function useCriarItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) => apiPost("/itens", data),
+    mutationFn: (data: Record<string, unknown>) => apiPost("/itens", data, itemSchema),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }
@@ -24,7 +24,7 @@ export function useCriarItem() {
 export function useAtualizarItem() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/itens/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/itens/${id}`, data, itemSchema),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

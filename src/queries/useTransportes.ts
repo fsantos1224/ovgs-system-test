@@ -16,7 +16,7 @@ export function useTransportes() {
 export function useCriarTransporte() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (data: Record<string, unknown>) => apiPost("/tiposTransporte", data),
+    mutationFn: (data: Record<string, unknown>) => apiPost("/tiposTransporte", data, transporteSchema),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }
@@ -24,7 +24,7 @@ export function useCriarTransporte() {
 export function useAtualizarTransporte() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/tiposTransporte/${id}`, data),
+    mutationFn: ({ id, data }: { id: string; data: Record<string, unknown> }) => apiPatch(`/tiposTransporte/${id}`, data, transporteSchema),
     onSuccess: () => qc.invalidateQueries({ queryKey: [KEY] }),
   });
 }

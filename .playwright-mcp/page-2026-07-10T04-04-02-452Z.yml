@@ -1,0 +1,31 @@
+- generic [ref=f10e3]:
+  - link "Ir para o conteúdo principal" [ref=f10e4] [cursor=pointer]:
+    - /url: "#main-content"
+  - navigation "Navegação principal" [ref=f10e5]:
+    - generic [ref=f10e6]:
+      - generic [ref=f10e7]:
+        - generic [ref=f10e8]: XPTO
+        - generic [ref=f10e9]: Gestão
+      - generic [ref=f10e10]:
+        - button "Ativar tema claro" [ref=f10e11]
+        - button "Colapsar menu" [expanded] [ref=f10e18]
+    - navigation "Menu principal" [ref=f10e21]:
+      - link "Dashboard" [ref=f10e22] [cursor=pointer]:
+        - /url: /
+      - link "Ordens de Venda" [ref=f10e29] [cursor=pointer]:
+        - /url: /ovs
+      - link "Agendamento" [ref=f10e34] [cursor=pointer]:
+        - /url: /agendamento
+      - link "Clientes" [ref=f10e38] [cursor=pointer]:
+        - /url: /cadastros/clientes
+      - link "Transportes" [ref=f10e45] [cursor=pointer]:
+        - /url: /cadastros/transportes
+      - link "Itens" [ref=f10e52] [cursor=pointer]:
+        - /url: /cadastros/itens
+      - link "Auditoria" [ref=f10e58] [cursor=pointer]:
+        - /url: /auditoria
+    - generic [ref=f10e64]:
+      - generic [ref=f10e65]: Administrador (admin)
+      - button "Sair" [ref=f10e66]
+  - main [ref=f10e72]:
+    - generic [ref=f10e73]: Carregando...

@@ -1,21 +1,21 @@
 // E2E: RBAC — viewer não vê botão "Nova OV", admin vê
 import { test, expect } from "@playwright/test";
 
+async function login(page: any, email: string) {
+  const senhas: Record<string, string> = {
+    "admin@XPTO.local": "admin123",
+    "viewer@XPTO.local": "viewer123",
+  };
+  await page.goto("/");
+  await page.evaluate(({ e, s }: { e: string; s: string }) => {
+    (window as any).__login(e, s);
+  }, { e: email, s: senhas[email] });
+  await page.reload();
+}
+
 test.describe("RBAC — autorização por role", () => {
   test("viewer não vê botão de criar OV", async ({ page }) => {
-    await page.goto("/");
-    await page.evaluate(() => {
-      localStorage.setItem(
-        "XPTO:user",
-        JSON.stringify({
-          email: "viewer@XPTO.local",
-          nome: "Visualizador",
-          role: "viewer",
-        }),
-      );
-      localStorage.setItem("XPTO:role", "viewer");
-    });
-    await page.reload();
+    await login(page, "viewer@XPTO.local");
 
     await page.goto("/ovs");
     await page.waitForLoadState("domcontentloaded").catch(() => {});
@@ -25,19 +25,7 @@ test.describe("RBAC — autorização por role", () => {
   });
 
   test("admin vê botão de criar OV", async ({ page }) => {
-    await page.goto("/");
-    await page.evaluate(() => {
-      localStorage.setItem(
-        "XPTO:user",
-        JSON.stringify({
-          email: "admin@XPTO.local",
-          nome: "Administrador",
-          role: "admin",
-        }),
-      );
-      localStorage.setItem("XPTO:role", "admin");
-    });
-    await page.reload();
+    await login(page, "admin@XPTO.local");
 
     await page.goto("/ovs");
     await page.waitForLoadState("domcontentloaded", { timeout: 15000 }).catch(() => {});
@@ -60,19 +48,7 @@ test.describe("RBAC — autorização por role", () => {
       if (msg.type() === "error") errors.push(msg.text());
     });
 
-    await page.goto("/");
-    await page.evaluate(() => {
-      localStorage.setItem(
-        "XPTO:user",
-        JSON.stringify({
-          email: "admin@XPTO.local",
-          nome: "Administrador",
-          role: "admin",
-        }),
-      );
-      localStorage.setItem("XPTO:role", "admin");
-    });
-    await page.reload();
+    await login(page, "admin@XPTO.local");
     await page.waitForLoadState("domcontentloaded").catch(() => {});
 
     await page.goto("/ovs/nova");

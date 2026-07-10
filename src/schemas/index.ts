@@ -1,13 +1,13 @@
-export { clienteSchema } from "./cliente";
+export { clienteSchema, clienteFormSchema } from "./cliente";
 export type { ClienteResponse } from "./cliente";
 
-export { ordemVendaSchema } from "./ordemVenda";
-export type { OrdemVendaResponse } from "./ordemVenda";
+export { ordemVendaSchema, ovFormSchema } from "./ordemVenda";
+export type { OrdemVendaResponse, ItemOV } from "./ordemVenda";
 
-export { transporteSchema } from "./transporte";
+export { transporteSchema, transporteFormSchema } from "./transporte";
 export type { TransporteResponse } from "./transporte";
 
-export { itemSchema } from "./item";
+export { itemSchema, itemFormSchema } from "./item";
 export type { ItemResponse } from "./item";
 
 export { auditoriaSchema } from "./auditoria";
