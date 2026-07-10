@@ -6,6 +6,6 @@ export interface EventoAuditoria {
   usuario: string;
   dataHora: string;
   detalhes: string;
-  estadoAnterior: string | null | undefined;
-  estadoPosterior: string | null | undefined;
+  estadoAnterior?: string | null;
+  estadoPosterior?: string | null;
 }

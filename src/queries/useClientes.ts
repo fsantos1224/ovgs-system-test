@@ -1,24 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
-import { apiGet, apiPost, apiPatch, apiDelete } from './api';
-import { clienteSchema } from '../schemas/cliente';
-import type { ClienteResponse } from '../schemas/cliente';
+import { ClienteRepository } from '../infrastructure/repositories/ClienteRepository';
+import type { IClienteRepository } from '../application/ports/IClienteRepository';
 import type { CriarClienteDTO, AtualizarClienteDTO } from '../application/ports/DTOs';
 import { useToast } from '../stores/toastStore';
 
 const KEY = 'clientes';
 
+const repo: IClienteRepository = new ClienteRepository();
+
 export function useClientes() {
   return useQuery({
     queryKey: [KEY],
-    queryFn: () => apiGet<ClienteResponse[]>('/clientes', z.array(clienteSchema)),
+    queryFn: () => repo.listar(),
   });
 }
 
 export function useCliente(id: string) {
   return useQuery({
     queryKey: [KEY, id],
-    queryFn: () => apiGet<ClienteResponse>(`/clientes/${id}`, clienteSchema),
+    queryFn: () => repo.obterPorId(id),
     enabled: !!id,
   });
 }
@@ -27,7 +27,7 @@ export function useCriarCliente() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: (data: CriarClienteDTO) => apiPost('/clientes', data, clienteSchema),
+    mutationFn: (data: CriarClienteDTO) => repo.criar(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Cliente criado com sucesso.');
@@ -40,8 +40,7 @@ export function useAtualizarCliente() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AtualizarClienteDTO }) =>
-      apiPatch(`/clientes/${id}`, data, clienteSchema),
+    mutationFn: ({ id, data }: { id: string; data: AtualizarClienteDTO }) => repo.atualizar(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Cliente atualizado com sucesso.');
@@ -54,7 +53,7 @@ export function useExcluirCliente() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: (id: string) => apiDelete(`/clientes/${id}`),
+    mutationFn: (id: string) => repo.excluir(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Cliente excluído.');

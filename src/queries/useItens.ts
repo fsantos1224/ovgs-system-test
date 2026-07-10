@@ -1,17 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
-import { apiGet, apiPost, apiPatch, apiDelete } from './api';
-import { itemSchema } from '../schemas/item';
-import type { ItemResponse } from '../schemas/item';
+import { ItemRepository } from '../infrastructure/repositories/ItemRepository';
+import type { IItemRepository } from '../application/ports/IItemRepository';
 import type { CriarItemDTO, AtualizarItemDTO } from '../application/ports/DTOs';
 import { useToast } from '../stores/toastStore';
 
 const KEY = 'itens';
 
+const repo: IItemRepository = new ItemRepository();
+
 export function useItens() {
   return useQuery({
     queryKey: [KEY],
-    queryFn: () => apiGet<ItemResponse[]>('/itens', z.array(itemSchema)),
+    queryFn: () => repo.listar(),
   });
 }
 
@@ -19,7 +19,7 @@ export function useCriarItem() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: (data: CriarItemDTO) => apiPost('/itens', data, itemSchema),
+    mutationFn: (data: CriarItemDTO) => repo.criar(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Item criado.');
@@ -32,7 +32,7 @@ export function useAtualizarItem() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AtualizarItemDTO }) => apiPatch(`/itens/${id}`, data, itemSchema),
+    mutationFn: ({ id, data }: { id: string; data: AtualizarItemDTO }) => repo.atualizar(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Item atualizado.');
@@ -45,7 +45,7 @@ export function useExcluirItem() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: (id: string) => apiDelete(`/itens/${id}`),
+    mutationFn: (id: string) => repo.excluir(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Item excluído.');

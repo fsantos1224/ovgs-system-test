@@ -1,17 +1,17 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { z } from 'zod';
-import { apiGet, apiPost, apiPatch, apiDelete } from './api';
-import { transporteSchema } from '../schemas/transporte';
-import type { TransporteResponse } from '../schemas/transporte';
+import { TransporteRepository } from '../infrastructure/repositories/TransporteRepository';
+import type { ITransporteRepository } from '../application/ports/ITransporteRepository';
 import type { CriarTransporteDTO, AtualizarTransporteDTO } from '../application/ports/DTOs';
 import { useToast } from '../stores/toastStore';
 
 const KEY = 'transportes';
 
+const repo: ITransporteRepository = new TransporteRepository();
+
 export function useTransportes() {
   return useQuery({
     queryKey: [KEY],
-    queryFn: () => apiGet<TransporteResponse[]>('/tiposTransporte', z.array(transporteSchema)),
+    queryFn: () => repo.listar(),
   });
 }
 
@@ -19,7 +19,7 @@ export function useCriarTransporte() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: (data: CriarTransporteDTO) => apiPost('/tiposTransporte', data, transporteSchema),
+    mutationFn: (data: CriarTransporteDTO) => repo.criar(data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Transporte criado.');
@@ -32,8 +32,7 @@ export function useAtualizarTransporte() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: ({ id, data }: { id: string; data: AtualizarTransporteDTO }) =>
-      apiPatch(`/tiposTransporte/${id}`, data, transporteSchema),
+    mutationFn: ({ id, data }: { id: string; data: AtualizarTransporteDTO }) => repo.atualizar(id, data),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Transporte atualizado.');
@@ -46,7 +45,7 @@ export function useExcluirTransporte() {
   const qc = useQueryClient();
   const toast = useToast();
   return useMutation({
-    mutationFn: (id: string) => apiDelete(`/tiposTransporte/${id}`),
+    mutationFn: (id: string) => repo.excluir(id),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: [KEY] });
       toast.success('Transporte excluído.');

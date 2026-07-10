@@ -1,14 +1,16 @@
-import { useQuery } from "@tanstack/react-query";
-import { z } from "zod";
-import { apiGet } from "./api";
-import { auditoriaSchema } from "../schemas/auditoria";
-import type { AuditoriaResponse } from "../schemas/auditoria";
+import { useQuery } from '@tanstack/react-query';
+import { AuditoriaRepository } from '../infrastructure/repositories/AuditoriaRepository';
+import type { IAuditoriaRepository } from '../application/ports/IAuditoriaRepository';
 
-const KEY = "auditoria";
+const KEY = 'auditoria';
 
-export function useEventosAuditoria() {
+const repo: IAuditoriaRepository = new AuditoriaRepository();
+
+export function useAuditoria() {
   return useQuery({
     queryKey: [KEY],
-    queryFn: () => apiGet<AuditoriaResponse[]>("/eventosAuditoria", z.array(auditoriaSchema)),
+    queryFn: () => repo.listar(),
   });
 }
+
+export const useEventosAuditoria = useAuditoria;
