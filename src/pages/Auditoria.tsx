@@ -1,10 +1,14 @@
+import { useState } from "react";
 import {
   User as UserIcon,
   ShieldCheck,
+  Eye,
 } from "lucide-react";
 import { useEventosAuditoria } from "../queries";
 import { usePermissao } from "../hooks/usePermission";
+import { Modal } from "../components/Modal";
 import { Breadcrumbs } from "../components/Breadcrumbs";
+import type { AuditoriaResponse } from "../schemas/auditoria";
 
 function formatDateTime(dateStr: string) {
   const d = new Date(dateStr);
@@ -12,9 +16,48 @@ function formatDateTime(dateStr: string) {
   return d.toLocaleString("pt-BR");
 }
 
+const acaoLabels: Record<string, string> = {
+  criacao: "Criação",
+  alteracao_status: "Alteração de Status",
+  alteracao_agendamento: "Alteração de Agendamento",
+  alteracao_transporte: "Alteração de Transporte",
+  alteracao: "Alteração",
+  exclusao: "Exclusão",
+};
+
+function formatEstado(raw: string | null | undefined): string {
+  if (!raw) return "—";
+  try {
+    return JSON.stringify(JSON.parse(raw), null, 2);
+  } catch {
+    return raw;
+  }
+}
+
+function estadoEntidade(evento: AuditoriaResponse): React.ReactNode {
+  if (!evento.estadoAnterior && !evento.estadoPosterior) return null;
+  return (
+    <div className="grid grid-cols-2 gap-4">
+      <div>
+        <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Estado Anterior</span>
+        <pre className="text-text-muted text-[10px] font-mono whitespace-pre-wrap bg-hover rounded-lg p-3 border border-border max-h-48 overflow-y-auto">
+          {formatEstado(evento.estadoAnterior)}
+        </pre>
+      </div>
+      <div>
+        <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Estado Posterior</span>
+        <pre className="text-text-muted text-[10px] font-mono whitespace-pre-wrap bg-hover rounded-lg p-3 border border-border max-h-48 overflow-y-auto">
+          {formatEstado(evento.estadoPosterior)}
+        </pre>
+      </div>
+    </div>
+  );
+}
+
 export function Auditoria() {
   const podeVer = usePermissao("auditoria:ver");
   const { data: eventos, isLoading } = useEventosAuditoria();
+  const [consultando, setConsultando] = useState<AuditoriaResponse | null>(null);
 
   if (!podeVer) {
     return (
@@ -69,11 +112,12 @@ export function Auditoria() {
             </caption>
             <thead>
               <tr className="bg-surface-elevated/20 border-b border-border text-[10px] font-bold text-text-faint uppercase tracking-widest">
-                <th className="px-4 py-4 w-[18%]">Data/Hora</th>
-                <th className="px-4 py-4 w-[22%]">Usuário</th>
-                <th className="px-4 py-4 w-[12%]">Entidade</th>
+                <th className="px-4 py-4 w-[16%]">Data/Hora</th>
+                <th className="px-4 py-4 w-[20%]">Usuário</th>
+                <th className="px-4 py-4 w-[10%]">Entidade</th>
                 <th className="px-4 py-4 w-[10%]">Ação</th>
-                <th className="px-4 py-4 w-[38%]">Detalhes</th>
+                <th className="px-4 py-4 w-[34%]">Detalhes</th>
+                <th className="px-4 py-4 w-[10%] text-center">Ações</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border-subtle text-xs">
@@ -109,12 +153,21 @@ export function Auditoria() {
                     <td className="px-4 py-4 text-text-muted truncate">
                       {e.detalhes}
                     </td>
+                    <td className="px-4 py-4 text-center">
+                      <button
+                        onClick={() => setConsultando(e)}
+                        className="inline-flex items-center justify-center w-7 h-7 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors focus-visible:outline-2 focus-visible:outline-accent"
+                        title="Detalhes"
+                      >
+                        <Eye className="w-4 h-4" />
+                      </button>
+                    </td>
                   </tr>
                 ))}
               {eventos?.length === 0 && (
                 <tr>
                   <td
-                    colSpan={5}
+                    colSpan={6}
                     className="px-4 py-12 text-center text-text-subtle italic"
                   >
                     Nenhum evento de auditoria registrado.
@@ -158,11 +211,70 @@ export function Auditoria() {
                     <p className="text-text-muted mt-0.5 text-xs">{e.detalhes}</p>
                   </div>
                 </div>
+                <div className="flex justify-end pt-2 border-t border-border-subtle">
+                  <button
+                    onClick={() => setConsultando(e)}
+                    className="inline-flex items-center gap-1.5 min-w-[44px] h-11 px-3 rounded-md text-text-faint hover:text-accent hover:bg-accent/10 transition-colors text-xs font-bold focus-visible:outline-2 focus-visible:outline-accent"
+                    title="Detalhes"
+                  >
+                    <Eye className="w-4 h-4" aria-hidden="true" />
+                    Detalhes
+                  </button>
+                </div>
               </div>
             ))
           )}
         </div>
       </div>
+
+      <Modal
+        open={!!consultando}
+        title="Detalhes do Evento"
+        onClose={() => setConsultando(null)}
+      >
+        {consultando && (
+          <div className="space-y-4 text-xs">
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Data/Hora</span>
+                <p className="text-text font-mono font-medium">{formatDateTime(consultando.dataHora)}</p>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Usuário</span>
+                <p className="text-text font-mono font-medium">{consultando.usuario}</p>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Entidade</span>
+                <span className="inline-block font-bold text-text-muted bg-hover border border-border px-2 py-0.5 rounded-md text-[10px] font-mono uppercase tracking-wider">
+                  {consultando.entidade}
+                </span>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">ID da Entidade</span>
+                <p className="text-text font-mono font-medium">{consultando.entidadeId}</p>
+              </div>
+              <div>
+                <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Ação</span>
+                <p className="text-text font-bold">{acaoLabels[consultando.acao] || consultando.acao}</p>
+              </div>
+            </div>
+            <div>
+              <span className="text-[9px] font-bold text-text-faint uppercase tracking-widest block mb-1">Detalhes</span>
+              <p className="text-text-muted bg-hover rounded-lg p-3 border border-border">{consultando.detalhes}</p>
+            </div>
+            {estadoEntidade(consultando)}
+            <div className="flex justify-end pt-4 border-t border-border">
+              <button
+                type="button"
+                onClick={() => setConsultando(null)}
+                className="px-5 py-2.5 border border-border rounded-lg hover:bg-hover text-[10px] uppercase tracking-wider font-bold text-text-muted focus-visible:outline-2 focus-visible:outline-accent"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }
